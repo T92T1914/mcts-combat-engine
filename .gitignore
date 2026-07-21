@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# OS and editor junk
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
