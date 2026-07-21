@@ -54,14 +54,18 @@ def greedy_decider(state: GameState, rng: random.Random) -> Action:
 
 def mcts_decider(budget_ms: int = 300, horizon: int = 5,
                  parallel: bool = False, workers: int | None = None,
-                 seed: int | None = None) -> Decider:
+                 seed: int | None = None,
+                 max_sims: int | None = None) -> Decider:
     """Build an MCTS decider. Single-process by default so it is safe to call
     from anywhere; pass ``parallel=True`` for the root-parallel engine.
-    ``seed`` makes the single-process search deterministic (used in tests)."""
+
+    For determinism (tests), pass BOTH ``seed`` and ``max_sims``: a seed alone
+    is not enough, because a wall-clock budget stops at a machine-dependent
+    simulation count."""
     engine = (ParallelMCTS(horizon_rounds=horizon, workers=workers)
               if parallel else MCTS(horizon_rounds=horizon))
     if isinstance(engine, MCTS):
-        engine.max_sims = 1_000_000  # let the time budget rule
+        engine.max_sims = max_sims if max_sims is not None else 1_000_000
         if seed is not None:
             engine.rng = random.Random(seed)
 

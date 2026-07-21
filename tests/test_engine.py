@@ -54,11 +54,15 @@ class TestMechanics(unittest.TestCase):
                        damage_min=0, damage_max=0, dot_tick=100, dot_rounds=2)],
         )
         rng = random.Random(0)
+        # fully deterministic: the card is 100% accurate with 0 direct damage,
+        # the enemy has no resist and never damages itself — so each tick is
+        # exactly 100 and there are exactly two of them
         advance_round(state, Action(card_idx=0, target_idx=0), rng)  # applies DoT + 1 tick
-        after_first = state.enemies[0].hp
+        self.assertEqual(state.enemies[0].hp, 900)
         advance_round(state, Action(card_idx=None), rng)             # 2nd tick
+        self.assertEqual(state.enemies[0].hp, 800)
         advance_round(state, Action(card_idx=None), rng)             # expired
-        self.assertLess(after_first, 1000)
+        self.assertEqual(state.enemies[0].hp, 800)
         self.assertEqual(len(state.enemies[0].dots), 0)
 
 
@@ -86,11 +90,18 @@ class TestActions(unittest.TestCase):
 class TestSearch(unittest.TestCase):
     def test_clone_is_deep_where_it_must_be(self):
         state, _ = SCENARIOS["duel"](random.Random(1))
+        enemy_hp = state.enemies[0].hp
+        enemy_pips = (state.enemies[0].pips, state.enemies[0].power_pips)
         clone = state.clone()
         advance_round(clone, Action(card_idx=None), random.Random(1))
-        # mutating the clone must not touch the original
+        # mutating the clone must not touch the original — including the
+        # enemies, whose pips regenerated inside the clone
         self.assertEqual(state.round_num, 1)
         self.assertIsNot(state.player, clone.player)
+        self.assertIsNot(state.enemies[0], clone.enemies[0])
+        self.assertEqual(state.enemies[0].hp, enemy_hp)
+        self.assertEqual(
+            (state.enemies[0].pips, state.enemies[0].power_pips), enemy_pips)
 
     def test_search_finds_lethal_over_stalling(self):
         # one Fire Blast (440-520) kills a 300-HP enemy; Pass does not
@@ -122,16 +133,19 @@ class TestBeatsBaselines(unittest.TestCase):
     """The headline claim: search dominates the naive policies on the boss.
 
     The boss is tuned to be genuinely hard, so the claim is a wide MARGIN
-    over the baselines, not a near-certain win. Game seeds are paired across
-    policies and the search itself is seeded, so this is deterministic.
+    over the baselines, not a near-certain win. Deterministic because game
+    seeds are paired across policies AND the search pins both its seed and
+    its simulation count — a seed alone is not enough, since a wall-clock
+    budget stops at a machine-dependent number of simulations.
     """
 
     def test_mcts_beats_random_and_greedy_on_the_boss(self):
         games = 30
-        mcts = mcts_decider(budget_ms=120, horizon=5, seed=42)
-        rnd = play_match(SCENARIOS["boss"], 0, random_decider, games=games)
-        grd = play_match(SCENARIOS["boss"], 0, greedy_decider, games=games)
-        mct = play_match(SCENARIOS["boss"], 0, mcts, games=games)
+        mcts = mcts_decider(budget_ms=60_000, horizon=5, seed=42,
+                            max_sims=3000)
+        rnd = play_match(SCENARIOS["boss"], random_decider, games=games)
+        grd = play_match(SCENARIOS["boss"], greedy_decider, games=games)
+        mct = play_match(SCENARIOS["boss"], mcts, games=games)
         self.assertGreaterEqual(mct["win_rate"], grd["win_rate"] + 0.25)
         self.assertGreaterEqual(mct["win_rate"], rnd["win_rate"] + 0.25)
         self.assertGreater(mct["win_rate"], 0.4)

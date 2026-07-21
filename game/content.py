@@ -75,7 +75,7 @@ def boss_fight(rng: random.Random) -> tuple[GameState, list[Card]]:
     player = Combatant("Player", E, hp=3000, max_hp=3000, power_pip_chance=0.65)
     hit = Card("(boss strike)", Element.FROST, CardType.DAMAGE,
                pip_cost=4, accuracy=0.9, damage_min=340, damage_max=470)
-    boss = Combatant("Frost Tyrant", Element.FROST, hp=3200, max_hp=3200,
+    boss = Combatant("Frost Tyrant", Element.FROST, hp=3000, max_hp=3000,
                      is_boss=True, base_attack=hit, resist={Element.EMBER: 0.15})
     state = GameState(player=player, enemies=[boss], hand=_hand(deck, rng))
     # elite mechanics: punishes traps, enrages below half HP
