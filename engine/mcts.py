@@ -187,5 +187,9 @@ class MCTS:
         """
         if result >= 1.0:
             return 1.0 - 0.045 * min(6, depth)
-        # loss: 0 (died round 1) .. 0.15 (survived the full horizon then died)
-        return 0.15 * (depth / max(1, self.horizon_rounds))
+        # loss: 0 (died round 1) .. 0.15 (survived the full horizon then died).
+        # depth is clamped because tree paths CAN outgrow the rollout horizon
+        # (selection/expansion don't stop at it) — unclamped, a deep slow loss
+        # would outscore a clean win, inverting the guarantee above.
+        h = max(1, self.horizon_rounds)
+        return 0.15 * (min(depth, h) / h)

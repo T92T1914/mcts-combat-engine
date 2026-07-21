@@ -40,9 +40,15 @@ def _consume_charms(charms: list, element: Element) -> float:
 
 
 def resolve_damage(attacker: Combatant, target: Combatant,
-                   base: int, element: Element) -> int:
+                   base: int, element: Element,
+                   blade_mult: float | None = None) -> int:
+    """``blade_mult`` lets a multi-target cast consume the caster's blades
+    once and apply the multiplier to every target; when None (single-target
+    path), blades are consumed here."""
     dmg = float(base)
-    dmg *= _consume_charms(attacker.blades, element)
+    if blade_mult is None:
+        blade_mult = _consume_charms(attacker.blades, element)
+    dmg *= blade_mult
     dmg *= _consume_charms(target.traps, element)
     dmg *= _consume_charms(target.shields, element)
     dmg *= (1.0 - max(0.0, target.resist.get(element, 0.0)))
@@ -65,11 +71,14 @@ def cast(state: GameState, caster: Combatant, card: Card,
     fire_rules(state, RuleEvent("cast", caster=caster, card=card), rng)
 
     if card.card_type == CardType.DAMAGE:
-        for t in targets:
-            if not t.alive:
-                continue
+        living = [t for t in targets if t.alive]
+        # blades are consumed once per CAST, not once per target — an AoE
+        # behind a blade multiplies every hit (this is also what the search
+        # heuristic assumes when it credits blades against the enemy pool)
+        blade_mult = _consume_charms(caster.blades, card.element) if living else 1.0
+        for t in living:
             base = rng.randint(card.damage_min, max(card.damage_min, card.damage_max))
-            dealt = resolve_damage(caster, t, base, card.element)
+            dealt = resolve_damage(caster, t, base, card.element, blade_mult)
             # drain: a DAMAGE card carrying a heal value restores half the
             # damage actually dealt back to the caster
             if card.heal > 0 and dealt > 0:
@@ -125,7 +134,10 @@ def enemy_act(state: GameState, enemy: Combatant, rng: random.Random) -> None:
 
 def _tick_dots(c: Combatant) -> None:
     for d in c.dots:
-        c.hp = max(0, c.hp - d.tick)
+        # ticks respect elemental resist/boost like any other damage
+        tick = int(d.tick * (1.0 - c.resist.get(d.element, 0.0))
+                   * (1.0 + c.boost.get(d.element, 0.0)))
+        c.hp = max(0, c.hp - max(0, tick))
         d.rounds_left -= 1
     c.dots = [d for d in c.dots if d.rounds_left > 0]
 
@@ -152,14 +164,18 @@ def advance_round(state: GameState, action: Action, rng: random.Random) -> GameS
     idx = action.card_idx
     if idx is not None and player.alive and idx < len(state.hand):
         card = state.hand[idx]
-        if card.hits_all:
-            targets = state.living_enemies
-        elif action.target_idx is not None:
-            targets = [state.enemies[action.target_idx]]
-        else:
-            targets = [player]
-        cast(state, player, card, targets, rng)
-        state.hand = [c for i, c in enumerate(state.hand) if i != idx]
+        # re-check affordability: pip regen is stochastic, so an action minted
+        # as legal in one realization can be unaffordable in this one — it
+        # degrades to a pass instead of casting at a free discount
+        if player.effective_pips(card.element) >= card.pip_cost:
+            if card.hits_all:
+                targets = state.living_enemies
+            elif action.target_idx is not None:
+                targets = [state.enemies[action.target_idx]]
+            else:
+                targets = [player]
+            cast(state, player, card, targets, rng)
+            state.hand = [c for i, c in enumerate(state.hand) if i != idx]
 
     # 2. enemies respond
     for enemy in state.enemies:
