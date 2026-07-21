@@ -69,9 +69,9 @@ affordable hit at the best target — the strongest "obvious" strategy.
 
 | scenario | random | greedy | mcts (120 ms) |
 |---|---|---|---|
-| duel (1v1) | 92% · 20.5r | 35% · 16.3r | **100% · 18.0r** |
-| gauntlet (1v3) | 52% · 24.5r | 32% · 18.2r | **97% · 19.5r** |
-| boss (enrage + trap punish) | 22% · 26.9r | 3% · 17.5r | **52% · 24.0r** |
+| duel (1v1) | 90% · 20.2r | 35% · 16.2r | **100% · 17.9r** |
+| gauntlet (1v3) | 55% · 23.4r | 32% · 17.2r | **95% · 17.9r** |
+| boss (enrage + trap punish) | 20% · 25.9r | 3% · 17.0r | **55% · 23.4r** |
 
 *win % = clean wins · Nr = average rounds to win, when it won*
 
@@ -82,8 +82,8 @@ Two things worth noticing:
   future damage, never healing is worse than playing randomly — the
   clearest possible demonstration that "deal max damage now" is a trap.
 - **The boss is tuned to be genuinely hard** (enrages below half HP,
-  punishes traps). Search wins 52% where the best naive policy manages
-  22% — it learns to blade before it hits, race the enrage timer, and
+  punishes traps). Search wins 55% where the best naive policy manages
+  20% — it learns to blade before it hits, race the enrage timer, and
   spend pips on heals only when the math demands it. Greedy's 3% is what
   "hit hardest every turn" is actually worth against a boss with a clock.
 
