@@ -41,10 +41,12 @@ def fire_rules(state, event: RuleEvent, rng: random.Random) -> None:
 
 class PunishTraps(BossRule):
     """The boss counter-hits whenever the player casts a trap."""
-    description = "Boss hits back for 300 whenever the player casts a trap"
 
     def __init__(self, damage: int = 300):
         self.damage = damage
+        self.description = (
+            f"Boss hits back for {damage} whenever the player casts a trap"
+        )
 
     def apply(self, state, event, rng):
         from .state import CardType  # local import avoids an import cycle
@@ -56,10 +58,12 @@ class PunishTraps(BossRule):
 
 class EnrageBelowHalf(BossRule):
     """Once under 50% HP, the boss blades itself every round."""
-    description = "Under 50% HP the boss blades itself each round"
 
     def __init__(self, blade: float = 0.25):
         self.blade = blade
+        self.description = (
+            f"Under 50% HP the boss gains a +{blade:.0%} blade each round"
+        )
 
     def apply(self, state, event, rng):
         from .state import Charm, Element

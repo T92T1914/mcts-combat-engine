@@ -37,7 +37,7 @@ def play_game(state: GameState, deck: list[Card], decider: Decider,
     return result if result is not None else state.heuristic_value()
 
 
-def play_match(scenario, deck_builder_seed_base: int, decider: Decider,
+def play_match(scenario, decider: Decider,
                games: int, seed: int = 0) -> dict:
     """Play ``games`` independent games of a scenario with one decider.
 
@@ -54,7 +54,9 @@ def play_match(scenario, deck_builder_seed_base: int, decider: Decider,
         wins += score
         if score >= 1.0:
             clean_wins += 1
-            rounds_to_win.append(state.round_num)
+            # advance_round increments round_num at the END of every round,
+            # so after a kill during round k the counter reads k+1
+            rounds_to_win.append(state.round_num - 1)
     avg_score = wins / games
     avg_rounds = (sum(rounds_to_win) / len(rounds_to_win)
                   if rounds_to_win else None)

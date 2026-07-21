@@ -35,7 +35,7 @@ def main() -> None:
     for sname, scenario in SCENARIOS.items():
         row = f"{sname:12}"
         for decider in policies.values():
-            r = play_match(scenario, 0, decider, games=games)
+            r = play_match(scenario, decider, games=games)
             rounds = r["avg_rounds_to_win"]
             cell = f"{r['win_rate']:.0%}" + (f" / {rounds:.1f}r" if rounds else "")
             row += f"{cell:>18}"
