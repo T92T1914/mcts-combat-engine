@@ -50,16 +50,37 @@ engine/            the search engine (game-agnostic)
   mcts.py          open-loop UCB1 search with priors support
   parallel.py      root-parallel search: N processes, merged statistics
 game/              the example game (content, not engine)
-  content.py       a 9-card elemental deck and three scenarios
+  loader.py        JSON -> validated Card/Combatant/rule objects
+  content.py       loads data/ at import; exposes CARDS and SCENARIOS
   baselines.py     random and greedy policies to beat
   runner.py        seed-paired match harness
+data/
+  cards.json       the 9-card elemental deck
+  scenarios.json   three encounters, incl. the boss and its rules
 demo.py            watch one decision with ranked moves
 benchmark.py       the table below
-tests/             11 tests: mechanics, search sanity, beats-the-baselines
+tests/             25 tests: mechanics, search sanity, loader validation,
+                   beats-the-baselines
 ```
 
-The engine knows nothing about the example game's cards or numbers — swap
-`game/content.py` for your own content without touching `engine/`.
+## Data-driven content
+
+The engine never reads a data file — it consumes plain `Card`/`Combatant`
+objects. All example content lives in `data/*.json`, parsed by
+`game/loader.py`, which validates loudly at load time: unknown elements,
+malformed cards, deck references to missing cards, out-of-range stats, and
+unknown boss-rule types all fail with a message naming the offending entry.
+Boss mechanics are data too — a registry maps rule names in
+`scenarios.json` to `BossRule` classes, so `{"type": "punish_traps",
+"damage": 350}` builds the same object code would. Adding a card or an
+encounter means editing JSON; adding a new *mechanic* means one `BossRule`
+subclass plus a registry entry. This mirrors the parent project's
+architecture, where a scraped knowledge base of thousands of cards and
+encounters fed the same generic engine.
+
+A parity test pins the shipped JSON to the exact RNG stream the benchmark
+was measured with, so content edits can't silently invalidate the numbers
+below.
 
 ## Results
 
