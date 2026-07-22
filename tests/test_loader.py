@@ -136,6 +136,61 @@ class TestScenarioValidation(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "must be in"):
                 load_scenarios(d / "scenarios.json", cards=CARDS)
 
+    def _scenario_with_enemy(self, tmp, enemy):
+        bad = {"scenarios": {"s": dict(self._MINIMAL_SCENARIO,
+                                       enemies=[enemy])}}
+        return self._write(tmp, scenarios=bad)
+
+    def test_rule_param_value_validated_not_just_name(self):
+        import tempfile
+        for damage in ("350", -350, 0):
+            with tempfile.TemporaryDirectory() as tmp:
+                enemy = {"name": "E", "element": "frost", "hp": 100,
+                         "rules": [{"type": "punish_traps",
+                                    "damage": damage}]}
+                d = self._scenario_with_enemy(tmp, enemy)
+                with self.assertRaisesRegex(ValueError, "positive integer",
+                                            msg=repr(damage)):
+                    load_scenarios(d / "scenarios.json", cards=CARDS)
+
+    def test_power_pip_chance_validated(self):
+        import tempfile
+        for ppc in ("0.6", 7.5, -0.1):
+            with tempfile.TemporaryDirectory() as tmp:
+                enemy = {"name": "E", "element": "frost", "hp": 100,
+                         "power_pip_chance": ppc}
+                d = self._scenario_with_enemy(tmp, enemy)
+                with self.assertRaisesRegex(ValueError, "power_pip_chance",
+                                            msg=repr(ppc)):
+                    load_scenarios(d / "scenarios.json", cards=CARDS)
+
+    def test_is_boss_must_be_boolean(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            enemy = {"name": "E", "element": "frost", "hp": 100,
+                     "is_boss": "false"}
+            d = self._scenario_with_enemy(tmp, enemy)
+            with self.assertRaisesRegex(ValueError, "is_boss"):
+                load_scenarios(d / "scenarios.json", cards=CARDS)
+
+    def test_empty_deck_rejected_at_load_time(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = {"scenarios": {"s": dict(self._MINIMAL_SCENARIO, deck=[])}}
+            d = self._write(tmp, scenarios=bad)
+            with self.assertRaisesRegex(ValueError, "deck"):
+                load_scenarios(d / "scenarios.json", cards=CARDS)
+
+    def test_non_damage_attack_rejected(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            enemy = {"name": "E", "element": "frost", "hp": 100,
+                     "attack": {"name": "Sneaky Heal", "element": "frost",
+                                "type": "heal", "heal": 200}}
+            d = self._scenario_with_enemy(tmp, enemy)
+            with self.assertRaisesRegex(ValueError, "damage-type"):
+                load_scenarios(d / "scenarios.json", cards=CARDS)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

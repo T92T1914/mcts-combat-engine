@@ -20,11 +20,27 @@ from engine.rules import EnrageBelowHalf, PunishTraps
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
-# rule type -> (class, allowed params). Adding a boss mechanic = one entry
-# here plus its BossRule subclass in engine/rules.py.
+def _positive_int(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool) and v > 0
+
+
+def _modifier_fraction(v) -> bool:
+    return (isinstance(v, (int, float)) and not isinstance(v, bool)
+            and 0.0 < float(v) <= 2.0)
+
+
+# rule type -> (class, {param: (validator, requirement)}). Values are
+# validated here, not just names — a string "350" or a negative damage
+# would otherwise load fine and only blow up (or silently heal the player)
+# thousands of simulations deep. Adding a boss mechanic = one entry here
+# plus its BossRule subclass in engine/rules.py.
 RULE_REGISTRY = {
-    "punish_traps": (PunishTraps, {"damage"}),
-    "enrage_below_half": (EnrageBelowHalf, {"blade"}),
+    "punish_traps": (PunishTraps, {
+        "damage": (_positive_int, "a positive integer"),
+    }),
+    "enrage_below_half": (EnrageBelowHalf, {
+        "blade": (_modifier_fraction, "a number in (0, 2]"),
+    }),
 }
 
 _CARD_FIELDS = {
@@ -138,19 +154,39 @@ def _parse_combatant(raw: dict, context: str) -> tuple[Combatant, list]:
                            f"(valid: {sorted(RULE_REGISTRY)})")
         cls, allowed = RULE_REGISTRY[rule_type]
         params = {k: v for k, v in rule_raw.items() if k != "type"}
-        if params.keys() - allowed:
+        if params.keys() - allowed.keys():
             _fail(context, f"rule {rule_type!r} got unknown params "
-                           f"{sorted(params.keys() - allowed)}")
+                           f"{sorted(params.keys() - allowed.keys())}")
+        for param, value in params.items():
+            validator, requirement = allowed[param]
+            if not validator(value):
+                _fail(context, f"rule {rule_type!r} param {param!r} "
+                               f"must be {requirement}, got {value!r}")
         rules.append(cls(**params))
+
+    ppc = raw.get("power_pip_chance", 0.55)
+    if not isinstance(ppc, (int, float)) or isinstance(ppc, bool) \
+            or not 0.0 <= ppc <= 1.0:
+        _fail(context, f"power_pip_chance must be a number in [0, 1], "
+                       f"got {ppc!r}")
+    if not isinstance(raw.get("is_boss", False), bool):
+        _fail(context, f"is_boss must be true or false, "
+                       f"got {raw['is_boss']!r}")
+
+    base_attack = None
+    if "attack" in raw:
+        base_attack = parse_card(raw["attack"], f"{context} attack")
+        if base_attack.card_type is not CardType.DAMAGE:
+            _fail(context, f"attack must be a damage-type card, "
+                           f"got {base_attack.card_type.value!r}")
 
     combatant = Combatant(
         name=raw["name"],
         element=_parse_element(raw["element"], context),
         hp=raw["hp"], max_hp=raw["hp"],
-        power_pip_chance=raw.get("power_pip_chance", 0.55),
+        power_pip_chance=float(ppc),
         is_boss=raw.get("is_boss", False),
-        base_attack=(parse_card(raw["attack"], f"{context} attack")
-                     if "attack" in raw else None),
+        base_attack=base_attack,
     )
     combatant.resist = _parse_resist(raw.get("resist", {}), context)
     combatant.boost = _parse_resist(raw.get("boost", {}), context)
@@ -177,6 +213,8 @@ def load_scenarios(path: Path | None = None,
                 _fail(context, f"missing required field {field!r}")
         if not spec["enemies"]:
             _fail(context, "needs at least one enemy")
+        if not spec["deck"]:
+            _fail(context, "needs at least one card in the deck")
 
         deck = []
         for card_name in spec["deck"]:
