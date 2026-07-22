@@ -1,0 +1,24 @@
+{
+  "cards": [
+    { "name": "Spark", "element": "ember", "type": "damage",
+      "pip_cost": 0, "accuracy": 1.0, "damage_min": 65, "damage_max": 95 },
+    { "name": "Flame Dart", "element": "ember", "type": "damage",
+      "pip_cost": 2, "accuracy": 0.9, "damage_min": 205, "damage_max": 275 },
+    { "name": "Fire Blast", "element": "ember", "type": "damage",
+      "pip_cost": 4, "accuracy": 0.85, "damage_min": 440, "damage_max": 520 },
+    { "name": "Cinder", "element": "ember", "type": "damage",
+      "pip_cost": 3, "accuracy": 0.85, "damage_min": 120, "damage_max": 160,
+      "dot_tick": 130, "dot_rounds": 3 },
+    { "name": "Firestorm", "element": "ember", "type": "damage",
+      "pip_cost": 5, "accuracy": 0.8, "damage_min": 340, "damage_max": 420,
+      "hits_all": true },
+    { "name": "Ember Blade", "element": "ember", "type": "blade",
+      "pip_cost": 1, "accuracy": 1.0, "modifier": 0.35 },
+    { "name": "Weakness Mark", "element": "ember", "type": "trap",
+      "pip_cost": 0, "accuracy": 1.0, "modifier": 0.30 },
+    { "name": "Stone Ward", "element": "neutral", "type": "shield",
+      "pip_cost": 1, "accuracy": 1.0, "modifier": 0.70 },
+    { "name": "Mend", "element": "ember", "type": "heal",
+      "pip_cost": 2, "accuracy": 1.0, "heal": 520 }
+  ]
+}

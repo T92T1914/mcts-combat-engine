@@ -1,0 +1,55 @@
+{
+  "scenarios": {
+    "duel": {
+      "description": "1v1 against a resistant enemy",
+      "player": { "name": "Player", "element": "ember",
+                  "hp": 2400, "power_pip_chance": 0.6 },
+      "deck": ["Spark", "Flame Dart", "Fire Blast", "Cinder", "Firestorm",
+               "Ember Blade", "Weakness Mark", "Stone Ward", "Mend"],
+      "enemies": [
+        { "name": "Frost Warden", "element": "frost", "hp": 2100,
+          "resist": { "ember": 0.15 } }
+      ]
+    },
+    "gauntlet": {
+      "description": "1v3 against weaker attackers",
+      "player": { "name": "Player", "element": "ember",
+                  "hp": 2600, "power_pip_chance": 0.6 },
+      "deck": ["Spark", "Flame Dart", "Fire Blast", "Cinder", "Firestorm",
+               "Ember Blade", "Weakness Mark", "Stone Ward", "Mend"],
+      "enemies": [
+        { "name": "Warden", "element": "frost", "hp": 900,
+          "attack": { "name": "(minion strike)", "element": "frost",
+                      "type": "damage", "pip_cost": 3, "accuracy": 0.85,
+                      "damage_min": 140, "damage_max": 210 } },
+        { "name": "Acolyte", "element": "frost", "hp": 750,
+          "attack": { "name": "(minion strike)", "element": "frost",
+                      "type": "damage", "pip_cost": 3, "accuracy": 0.85,
+                      "damage_min": 140, "damage_max": 210 } },
+        { "name": "Adept", "element": "frost", "hp": 1100,
+          "attack": { "name": "(minion strike)", "element": "frost",
+                      "type": "damage", "pip_cost": 3, "accuracy": 0.85,
+                      "damage_min": 140, "damage_max": 210 } }
+      ]
+    },
+    "boss": {
+      "description": "elite encounter with enrage and trap punishment",
+      "player": { "name": "Player", "element": "ember",
+                  "hp": 3000, "power_pip_chance": 0.65 },
+      "deck": ["Spark", "Flame Dart", "Fire Blast", "Cinder", "Firestorm",
+               "Ember Blade", "Weakness Mark", "Stone Ward", "Mend"],
+      "enemies": [
+        { "name": "Frost Tyrant", "element": "frost", "hp": 3000,
+          "is_boss": true,
+          "resist": { "ember": 0.15 },
+          "attack": { "name": "(boss strike)", "element": "frost",
+                      "type": "damage", "pip_cost": 4, "accuracy": 0.9,
+                      "damage_min": 340, "damage_max": 470 },
+          "rules": [
+            { "type": "punish_traps", "damage": 350 },
+            { "type": "enrage_below_half", "blade": 0.25 }
+          ] }
+      ]
+    }
+  }
+}
