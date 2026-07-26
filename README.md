@@ -4,13 +4,13 @@ A Monte Carlo Tree Search engine for stochastic, imperfect-information,
 turn-based combat — pure Python, zero dependencies, with a toy card-duel
 game to prove it plays well.
 
-Extracted and generalized from a larger private project: a real-time
-decision-support system I built for an online turn-based strategy game,
-where this engine (compiled with mypyc and fanned out across cores)
-evaluated 400,000+ simulations per decision against live game states. This
-repo is the algorithmic core of that system with an original, self-contained
-example game, so every claim here is runnable and testable on any machine
-with Python 3.11+.
+Extracted and generalized from a larger private project — a decision-support
+engine for a complex turn-based strategy game, where this search core
+(compiled with mypyc and fanned out across cores) evaluated 400,000+
+simulations per decision inside a one-second budget. This repo is the
+algorithmic core of that system with an original, self-contained example
+game, so every claim here is runnable and testable on any machine with
+Python 3.11+.
 
 ## Why open-loop MCTS
 
@@ -59,7 +59,7 @@ data/
   scenarios.json   three encounters, incl. the boss and its rules
 demo.py            watch one decision with ranked moves
 benchmark.py       the table below
-tests/             25 tests: mechanics, search sanity, loader validation,
+tests/             30 tests: mechanics, search sanity, loader validation,
                    beats-the-baselines
 ```
 
@@ -75,8 +75,8 @@ Boss mechanics are data too — a registry maps rule names in
 "damage": 350}` builds the same object code would. Adding a card or an
 encounter means editing JSON; adding a new *mechanic* means one `BossRule`
 subclass plus a registry entry. This mirrors the parent project's
-architecture, where a scraped knowledge base of thousands of cards and
-encounters fed the same generic engine.
+architecture, where a knowledge base of thousands of cards and encounters
+fed the same generic engine.
 
 A parity test pins the shipped JSON to the exact RNG stream the benchmark
 was measured with, so content edits can't silently invalidate the numbers
@@ -113,7 +113,7 @@ Two things worth noticing:
 ```
 python demo.py boss        # one decision, ranked moves, sims/sec
 python benchmark.py        # the table above (a few minutes)
-python -m unittest discover -s tests
+python -m unittest discover -s tests   # ~3-5 min: includes full search-vs-baseline matches
 ```
 
 No dependencies. Python 3.11+.

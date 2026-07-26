@@ -35,7 +35,7 @@ class TestMechanics(unittest.TestCase):
         dealt = resolve_damage(_combatant(), tgt, 100, E)
         self.assertEqual(dealt, 30)            # 100 * 0.30
 
-    def test_resist_and_offschool_charm_not_consumed(self):
+    def test_resist_and_off_element_charm_not_consumed(self):
         tgt = _combatant(resist={E: 0.25}, traps=[Charm(0.30, Element.FROST)])
         dealt = resolve_damage(_combatant(), tgt, 100, E)
         self.assertEqual(dealt, 75)            # frost trap ignored, 25% resist
