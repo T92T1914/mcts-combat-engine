@@ -110,6 +110,28 @@ Two things worth noticing:
   spend pips on heals only when the math demands it. Greedy's 3% is what
   "hit hardest every turn" is actually worth against a boss with a clock.
 
+## What these numbers do not prove
+
+- **Sixty games per cell is not many.** The 95% Wilson intervals are wide: the
+  boss row's 55% is 42.5-66.9%, random's 20% is 11.8-31.8%. The gap between them
+  is still decisive (two-proportion z = 3.96), and so is greedy's collapse. But
+  the duel row, where search wins 100% against random's 90%, is z = 2.51 - real,
+  and thinner than a bolded 100% suggests. Seed-pairing removes luck *between*
+  policies, not the sampling error in each.
+- **One game does not establish generality.** `engine/` never imports `game/`, and
+  the split is real, but "game-agnostic" is an architectural claim demonstrated on
+  a single 9-card domain. A second, structurally different game would test it; this
+  repo has not run that test.
+- **Greedy is the strongest baseline here, and it is not strong.** It never heals,
+  which the duel row shows is a fatal flaw. Beating it is necessary, not
+  sufficient - a hand-tuned heuristic that knew when to shield would be the honest
+  next opponent.
+- **The two reward-shaping constants were tuned by watching, not swept.** The 4.5%
+  per-round win discount and the 0.15 late-loss term came from observing bad play
+  and fixing it, which is how they are described above. Neither has a sensitivity
+  analysis, so "4.5%" should be read as "a small discount that worked", not as an
+  optimum.
+
 ## Run it
 
 ```
