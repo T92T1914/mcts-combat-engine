@@ -1,5 +1,7 @@
 # mcts-combat-engine
 
+[![CI](https://github.com/T92T1914/mcts-combat-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/T92T1914/mcts-combat-engine/actions/workflows/ci.yml)
+
 A Monte Carlo Tree Search engine for stochastic, imperfect-information,
 turn-based combat — pure Python, zero dependencies, with a toy card-duel
 game to prove it plays well.
