@@ -140,6 +140,35 @@ python benchmark.py        # the table above (a few minutes)
 python -m unittest discover -s tests   # ~3-5 min: includes full search-vs-baseline matches
 ```
 
+`demo.py boss` prints one decision, so you can see the search reason rather
+than take the table on trust:
+
+```
+Scenario: boss
+You: Player  HP 3000/3000  pips 0+0p
+  vs Frost Tyrant [boss]  HP 3000/3000
+Hand: Ember Blade, Fire Blast, Weakness Mark, Spark, Flame Dart, Mend, Flame Dart
+  rule: Boss hits back for 350 whenever the player casts a trap
+  rule: Under 50% HP the boss gains a +25% blade each round
+
+10,250 simulations in 800 ms (12,812/s)
+
+move                                win%    visits
+Spark -> Frost Tyrant             50.8%     4,965
+Pass                              49.5%     3,192
+Weakness Mark -> Frost Tyrant     48.0%     2,093
+
+Recommended: Spark -> Frost Tyrant
+```
+
+The ordering is the interesting part. **Weakness Mark is rated below doing
+nothing at all** — it is a trap, and this boss hits back for 350 whenever a
+trap is cast, so the debuff costs more than it gains. Nothing told the search
+that; it is `rules.py` applied inside the rollouts and priced by the outcome.
+The visit counts show where the budget went: 4,965 of 10,250 simulations on
+the move it ended up recommending, which is what a converged UCB1 search looks
+like when one option is genuinely ahead but not by much.
+
 No dependencies. Python 3.11+.
 
 ## Performance notes
