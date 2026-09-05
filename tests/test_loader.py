@@ -5,7 +5,7 @@ import unittest
 
 from engine import CardType, Element
 from game.content import CARDS, SCENARIOS
-from game.loader import load_cards, load_scenarios, parse_card
+from game.loader import load_scenarios, parse_card
 
 
 class TestShippedContent(unittest.TestCase):

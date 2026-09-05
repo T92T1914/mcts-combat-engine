@@ -20,6 +20,7 @@ from engine.rules import EnrageBelowHalf, PunishTraps
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
+
 def _positive_int(v) -> bool:
     return isinstance(v, int) and not isinstance(v, bool) and v > 0
 

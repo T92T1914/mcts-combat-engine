@@ -5,8 +5,17 @@ Pure standard library — run with ``python -m pytest`` or ``python -m unittest`
 import random
 import unittest
 
-from engine import (Action, Card, CardType, Charm, Combatant, Element,
-                    GameState, advance_round, legal_actions)
+from engine import (
+    Action,
+    Card,
+    CardType,
+    Charm,
+    Combatant,
+    Element,
+    GameState,
+    advance_round,
+    legal_actions,
+)
 from engine.mcts import MCTS
 from engine.simulator import resolve_damage
 from game.baselines import greedy_decider, mcts_decider, random_decider
@@ -57,7 +66,8 @@ class TestMechanics(unittest.TestCase):
         # fully deterministic: the card is 100% accurate with 0 direct damage,
         # the enemy has no resist and never damages itself — so each tick is
         # exactly 100 and there are exactly two of them
-        advance_round(state, Action(card_idx=0, target_idx=0), rng)  # applies DoT + 1 tick
+        # applies the DoT and its first tick
+        advance_round(state, Action(card_idx=0, target_idx=0), rng)
         self.assertEqual(state.enemies[0].hp, 900)
         advance_round(state, Action(card_idx=None), rng)             # 2nd tick
         self.assertEqual(state.enemies[0].hp, 800)

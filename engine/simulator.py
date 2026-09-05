@@ -15,8 +15,8 @@ from __future__ import annotations
 import random
 
 from .actions import Action
-from .state import Card, CardType, Charm, Combatant, DoT, Element, GameState
 from .rules import RuleEvent, fire_rules
+from .state import Card, CardType, Charm, Combatant, DoT, Element, GameState
 
 DEFAULT_ATTACK = Card(
     name="(basic attack)", card_type=CardType.DAMAGE,
@@ -109,7 +109,7 @@ def enemy_act(state: GameState, enemy: Combatant, rng: random.Random) -> None:
     atk = enemy.base_attack or DEFAULT_ATTACK
 
     if enemy.policy:
-        kinds, weights = zip(*enemy.policy.items())
+        kinds, weights = zip(*enemy.policy.items(), strict=True)
         kind = rng.choices(kinds, weights=weights)[0]
         if kind == "attack":
             if enemy.effective_pips(atk.element) >= atk.pip_cost:
