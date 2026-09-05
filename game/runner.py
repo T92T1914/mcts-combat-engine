@@ -64,6 +64,7 @@ def play_match(scenario, decider: Decider,
                   if rounds_to_win else None)
     return {
         "games": games,
+        "wins": clean_wins,              # the count, for interval arithmetic
         "win_rate": clean_wins / games,
         "avg_score": avg_score,          # counts partial/stalemate credit
         "avg_rounds_to_win": avg_rounds,
