@@ -16,6 +16,8 @@ import random
 from dataclasses import dataclass
 from typing import Optional
 
+from .state import CardType, Charm, Element
+
 
 @dataclass
 class RuleEvent:
@@ -49,7 +51,6 @@ class PunishTraps(BossRule):
         )
 
     def apply(self, state, event, rng):
-        from .state import CardType  # local import avoids an import cycle
         if (event.kind == "cast" and event.caster is state.player
                 and event.card is not None
                 and event.card.card_type == CardType.TRAP):
@@ -66,7 +67,6 @@ class EnrageBelowHalf(BossRule):
         )
 
     def apply(self, state, event, rng):
-        from .state import Charm, Element
         if event.kind != "round_end":
             return
         for enemy in state.enemies:
