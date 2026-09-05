@@ -7,12 +7,14 @@ the deck each round, then asks the decider for an action.
 from __future__ import annotations
 
 import random
-from typing import Callable
+from collections.abc import Callable
 
-from engine import GameState, advance_round
+from engine import Action, GameState, advance_round
 from engine.state import Card
 
-Decider = Callable[[GameState, random.Random], "object"]
+# A decider is any policy: (state, rng) -> the Action to play this round.
+# The MCTS engine, wrapped, is one; the baselines are the others.
+Decider = Callable[[GameState, random.Random], Action]
 HAND_SIZE = 7
 
 

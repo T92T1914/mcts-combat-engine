@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import random
 from pathlib import Path
+from typing import NoReturn
 
 from engine import Card, CardType, Combatant, Element, GameState
 from engine.rules import EnrageBelowHalf, PunishTraps
@@ -44,7 +45,8 @@ RULE_REGISTRY = {
     }),
 }
 
-_CARD_FIELDS = {
+# field -> accepted type(s), in the shape isinstance() takes
+_CARD_FIELDS: dict[str, type | tuple[type, ...]] = {
     "name": str, "element": str, "type": str, "pip_cost": int,
     "accuracy": (int, float), "damage_min": int, "damage_max": int,
     "heal": int, "dot_tick": int, "dot_rounds": int,
@@ -56,7 +58,7 @@ _COMBATANT_FIELDS = {"name", "element", "hp", "power_pip_chance", "resist",
                      "boost", "is_boss", "attack", "rules"}
 
 
-def _fail(context: str, message: str):
+def _fail(context: str, message: str) -> NoReturn:
     raise ValueError(f"{context}: {message}")
 
 

@@ -7,13 +7,11 @@ policies are the bar the search has to clear.
 from __future__ import annotations
 
 import random
-from typing import Callable
 
 from engine import Action, CardType, GameState, legal_actions
 from engine.mcts import MCTS
 from engine.parallel import ParallelMCTS
-
-Decider = Callable[[GameState, random.Random], Action]
+from game.runner import Decider
 
 
 def random_decider(state: GameState, rng: random.Random) -> Action:
