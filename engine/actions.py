@@ -34,7 +34,7 @@ class Action:
 
 PASS = Action(card_idx=None)
 
-_SELF_TARGETED = {CardType.HEAL, CardType.BLADE}
+_SELF_TARGETED = {CardType.HEAL, CardType.BLADE, CardType.SHIELD}
 _ENEMY_TARGETED = {CardType.DAMAGE, CardType.TRAP}
 
 
@@ -44,7 +44,7 @@ def legal_actions(state: GameState) -> list[Action]:
     for i, card in enumerate(state.hand):
         if state.player.effective_pips(card.element) < card.pip_cost:
             continue
-        if card.card_type in _SELF_TARGETED or card.card_type == CardType.SHIELD:
+        if card.card_type in _SELF_TARGETED:
             actions.append(Action(card_idx=i))
         elif card.hits_all:
             actions.append(Action(card_idx=i))
