@@ -13,6 +13,8 @@ game to prove it plays well.
 44–68%) where random wins 20% and greedy 3%, over 60 seed-paired games per
 policy at 120 ms per decision on one core; run 1 landed at 53%.**
 
+[Results](#results) | [Run it](#run-it) | [How it works](#how-it-works) | [Design decisions](#design-decisions) | [What these numbers do not prove](#what-these-numbers-do-not-prove)
+
 Extracted and generalized from a larger private project — a decision-support
 engine for a complex turn-based strategy game, where this search core
 (compiled with mypyc and fanned out across cores) evaluated 400,000+
@@ -37,107 +39,70 @@ Python 3.11+.
   greedy baselines, Wilson intervals and z-scores computed by code, machine
   recorded.
 
-## Why open-loop MCTS
+## Run it
 
-Classic MCTS stores a game state in every tree node. That breaks down when
-the game is stochastic: accuracy rolls, resource regeneration, and enemy
-behavior mean one action sequence leads to many possible states, and
-state-per-node search needs explicit chance nodes for every die roll.
-
-The open-loop variant stores only **action sequences** in the tree. Every
-simulation replays its path from the root under fresh randomness, so a
-node's value automatically averages over the whole outcome distribution —
-which is exactly what "win probability of this move" means. The trade-off
-(re-simulating from the root every time) is paid back by much smaller trees
-and no chance-node bookkeeping.
-
-Two reward-shaping details in `engine/mcts.py` came directly from watching
-the engine play badly, and are the difference between "correct" and "plays
-like a human":
-
-- **Wins are discounted by depth** (4.5%/round). Without it, "kill in 3
-  rounds" and "chip away for 6" score within noise of each other and the
-  engine looks indifferent to finishing fights.
-- **Losses are worth more the later they come** (up to 0.15). With a flat
-  0.0 for every loss, healing at 5% win probability scores the same as
-  dying immediately — the engine was blind to survival. This term makes it
-  heal, shield, and play for time when behind, without ever preferring a
-  slow loss to any win.
-
-## How one decision is made
-
-```mermaid
-flowchart TD
-    subgraph worker["one worker — N run in parallel, each with its own seed and tree"]
-        direction TB
-        C["clone the root state"] --> S
-        S["<b>Selection</b><br/>descend fully-expanded nodes by UCB1,<br/>replaying each chosen action on the clone"] --> X
-        X["<b>Open-loop expansion</b><br/>pop one untried action and apply it"] --> RO
-        RO["<b>Rollout</b><br/>uniform-random play to the horizon<br/>or until someone dies"] --> B
-        B["<b>Backup</b><br/>add the shaped reward to every node on the path"] --> C
-    end
-    B -. "budget or max_sims reached" .-> ST["per-action visits and value sums"]
-    ST --> M["<b>Parallel merge</b><br/>sum visits and value sums across workers,<br/>re-derive each win rate"]
-    M --> OUT["root actions ranked by win rate,<br/>visits as the tie-break"]
-```
-
-Because the tree stores actions, an action minted in one realization can be
-stale in another (the hand did not shrink because the player died earlier
-here); the simulator degrades it to a pass rather than crashing. A rollout
-that reaches the horizon alive is scored by an HP heuristic that credits
-setup — a trap on an enemy or a blade on the player counts as progress —
-so "trap now, one-shot next round" is not invisible to a shallow search.
-Terminal rollouts get the shaped reward above.
-
-## What's in the box
+No install is needed; everything runs from a checkout on Python 3.11+.
 
 ```
-engine/            the search engine (game-agnostic; pip-installable)
-  state.py         combatants, cards, charms, DoTs; fast manual clone()
-  actions.py       legal-move enumeration
-  simulator.py     one stochastic round: cast -> enemy policies -> upkeep
-  rules.py         pluggable boss mechanics ("punish traps", "enrage")
-  mcts.py          open-loop UCB1 search with priors support
-  parallel.py      root-parallel search: N processes, merged statistics
-game/              the example game (content, not engine)
-  loader.py        JSON -> validated Card/Combatant/rule objects
-  content.py       loads data/ at import; exposes CARDS and SCENARIOS
-  baselines.py     random and greedy policies to beat
-  runner.py        seed-paired match harness
-  stats.py         Wilson intervals and z-scores behind the results table
-data/
-  cards.json       the 9-card elemental deck
-  scenarios.json   three encounters, incl. the boss and its rules
-docs/
-  design-decisions.md   each design choice: why, what lost, where in code
-  benchmark-results.md  the table below, as benchmark.py wrote it
-demo.py            watch one decision with ranked moves
-benchmark.py       the table below, with intervals and provenance
-tests/             47 tests: mechanics, search sanity, parallel merge,
-                   loader validation, statistics, beats-the-baselines
+python demo.py boss                  # one decision, ranked moves, sims/sec
+python benchmark.py                  # the Results table (several minutes)
+python -m unittest discover -s tests # ~4 min: includes search-vs-baseline matches
 ```
 
-`engine/` never imports `game/`. The engine consumes plain `Card` and
-`Combatant` objects and knows nothing about JSON, decks, or scenarios.
+`unittest` is what CI runs and needs nothing installed. `pytest`, listed in
+the `dev` extra of `pyproject.toml`, runs the same 47 tests; invoke it as
+`python -m pytest`, which puts the checkout on the import path. A bare
+`pytest` does not, and fails at collection.
 
-## Data-driven content
+### Reading one decision
 
-The engine never reads a data file — it consumes plain `Card`/`Combatant`
-objects. All example content lives in `data/*.json`, parsed by
-`game/loader.py`, which validates loudly at load time: unknown elements,
-malformed cards, deck references to missing cards, out-of-range stats, and
-unknown boss-rule types all fail with a message naming the offending entry.
-Boss mechanics are data too — a registry maps rule names in
-`scenarios.json` to `BossRule` classes, so `{"type": "punish_traps",
-"damage": 350}` builds the same object code would. Adding a card or an
-encounter means editing JSON; adding a new *mechanic* means one `BossRule`
-subclass plus a registry entry. This mirrors the parent project's
-architecture, where a knowledge base of thousands of cards and encounters
-fed the same generic engine.
+`demo.py boss --sims 10000` prints one decision. The simulation count and
+the search seed are pinned, so the table is the same on every machine (this
+one was checked on Python 3.11 and 3.13); only the timing line changes.
 
-A parity test pins the shipped JSON to the exact RNG stream the benchmark
-was measured with, so content edits can't silently invalidate the numbers
-below.
+```
+Scenario: boss
+You: Player  HP 3000/3000  pips 0+0p
+  vs Frost Tyrant [boss]  HP 3000/3000
+Hand: Ember Blade, Fire Blast, Weakness Mark, Spark, Flame Dart, Mend, Flame Dart
+  rule: Boss hits back for 350 whenever the player casts a trap
+  rule: Under 50% HP the boss gains a +25% blade each round
+
+10,000 simulations in 574 ms (17,420/s)
+
+move                                win%    visits
+Spark -> Frost Tyrant             51.0%     5,150
+Pass                              49.3%     2,904
+Weakness Mark -> Frost Tyrant     47.8%     1,946
+
+Recommended: Spark -> Frost Tyrant
+```
+
+The ordering is the interesting part. **Weakness Mark is rated below doing
+nothing at all** — it is a trap, and this boss hits back for 350 whenever a
+trap is cast, so the debuff costs more than it gains. Nothing told the search
+that; it is `rules.py` applied inside the rollouts and priced by the outcome.
+The visit counts show where the budget went: 5,150 of 10,000 simulations on
+the move it ended up recommending, which is what a converged UCB1 search
+looks like when one option is genuinely ahead but not by much.
+
+To pin the demo's simulation count, or to rewrite the results file with your
+own machine's numbers:
+
+```
+python demo.py boss --sims 10000     # the same table on every machine
+python benchmark.py --markdown docs/benchmark-results.md --machine "your CPU"
+```
+
+The engine alone is pip-installable (`pip install .`, zero runtime
+dependencies); `game/`, `data/` and the two scripts are the worked example
+and stay in the checkout. Development checks, which CI runs on every push:
+
+```
+pip install ruff mypy
+ruff check .                         # E, W, F, I, B; rules in pyproject.toml
+mypy                                 # engine/, game/, both scripts
+```
 
 ## Results
 
@@ -174,6 +139,147 @@ Two things worth noticing:
   spend pips on heals only when the math demands it. Greedy's 3% is what
   "hit hardest every turn" is actually worth against a boss with a clock.
 
+## How it works
+
+### Why open-loop MCTS
+
+Classic MCTS stores a game state in every tree node. That breaks down when
+the game is stochastic: accuracy rolls, resource regeneration, and enemy
+behavior mean one action sequence leads to many possible states, and
+state-per-node search needs explicit chance nodes for every die roll.
+
+The open-loop variant stores only **action sequences** in the tree. Every
+simulation replays its path from the root under fresh randomness, so a
+node's value automatically averages over the whole outcome distribution —
+which is exactly what "win probability of this move" means. The trade-off
+(re-simulating from the root every time) is paid back by much smaller trees
+and no chance-node bookkeeping.
+
+Two reward-shaping details in `engine/mcts.py` came directly from watching
+the engine play badly, and are the difference between "correct" and "plays
+like a human":
+
+- **Wins are discounted by depth** (4.5%/round). Without it, "kill in 3
+  rounds" and "chip away for 6" score within noise of each other and the
+  engine looks indifferent to finishing fights.
+- **Losses are worth more the later they come** (up to 0.15). With a flat
+  0.0 for every loss, healing at 5% win probability scores the same as
+  dying immediately — the engine was blind to survival. This term makes it
+  heal, shield, and play for time when behind, without ever preferring a
+  slow loss to any win.
+
+### How one decision is made
+
+```mermaid
+flowchart TD
+    subgraph worker["one worker — N run in parallel, each with its own seed and tree"]
+        direction TB
+        C["clone the root state"] --> S
+        S["<b>Selection</b><br/>descend fully-expanded nodes by UCB1,<br/>replaying each chosen action on the clone"] --> X
+        X["<b>Open-loop expansion</b><br/>pop one untried action and apply it"] --> RO
+        RO["<b>Rollout</b><br/>uniform-random play to the horizon<br/>or until someone dies"] --> B
+        B["<b>Backup</b><br/>add the shaped reward to every node on the path"] --> C
+    end
+    B -. "budget or max_sims reached" .-> ST["per-action visits and value sums"]
+    ST --> M["<b>Parallel merge</b><br/>sum visits and value sums across workers,<br/>re-derive each win rate"]
+    M --> OUT["root actions ranked by win rate,<br/>visits as the tie-break"]
+```
+
+Because the tree stores actions, an action minted in one realization can be
+stale in another (the hand did not shrink because the player died earlier
+here); the simulator degrades it to a pass rather than crashing. A rollout
+that reaches the horizon alive is scored by an HP heuristic that credits
+setup — a trap on an enemy or a blade on the player counts as progress —
+so "trap now, one-shot next round" is not invisible to a shallow search.
+Terminal rollouts get the shaped reward above.
+
+### Data-driven content
+
+The engine never reads a data file — it consumes plain `Card`/`Combatant`
+objects. All example content lives in `data/*.json`, parsed by
+`game/loader.py`, which validates loudly at load time: unknown elements,
+malformed cards, deck references to missing cards, out-of-range stats, and
+unknown boss-rule types all fail with a message naming the offending entry.
+Boss mechanics are data too — a registry maps rule names in
+`scenarios.json` to `BossRule` classes, so `{"type": "punish_traps",
+"damage": 350}` builds the same object code would. Adding a card or an
+encounter means editing JSON; adding a new *mechanic* means one `BossRule`
+subclass plus a registry entry. This mirrors the parent project's
+architecture, where a knowledge base of thousands of cards and encounters
+fed the same generic engine.
+
+A parity test pins the shipped JSON to the exact RNG stream the benchmark
+was measured with, so content edits can't silently invalidate the numbers
+above.
+
+### Performance notes
+
+Pure Python does roughly 13,000-22,000 simulations/second on one core here
+(boss scenario, Python 3.11 and 3.13, across several runs on the machine
+described above). The parent project needed hundreds of thousands per
+decision inside a sub-second budget; that gap closed with two orthogonal
+steps, both reflected in this codebase's design:
+
+- **mypyc compilation** (~4-5x/core). The annotations in `engine/` — typed
+  containers, `Optional` on nullable node fields, `__reduce__` on the
+  frozen dataclass — are what made the engine compile cleanly. Untyped
+  containers alone cost most of the speedup. `mypy` is clean on `engine/`
+  and CI keeps it that way.
+- **Root parallelism** (`engine/parallel.py`, ~Nx for N workers). Each
+  worker runs an independent search with its own RNG; the parent merges
+  per-action visit counts and value sums. Independent trees also
+  decorrelate exploration noise, so close decisions flip less between
+  polls than a single bigger search. The merge is exact and unit-tested;
+  its speedup is not measured in this repo.
+
+## What's in the box
+
+```
+engine/            the search engine (game-agnostic; pip-installable)
+  state.py         combatants, cards, charms, DoTs; fast manual clone()
+  actions.py       legal-move enumeration
+  simulator.py     one stochastic round: cast -> enemy policies -> upkeep
+  rules.py         pluggable boss mechanics ("punish traps", "enrage")
+  mcts.py          open-loop UCB1 search with priors support
+  parallel.py      root-parallel search: N processes, merged statistics
+  py.typed         marks the installed package as typed
+game/              the example game (content, not engine)
+  loader.py        JSON -> validated Card/Combatant/rule objects
+  content.py       loads data/ at import; exposes CARDS and SCENARIOS
+  baselines.py     random and greedy policies to beat
+  runner.py        seed-paired match harness
+  stats.py         Wilson intervals and z-scores behind the results table
+data/
+  cards.json       the 9-card elemental deck
+  scenarios.json   three encounters, incl. the boss and its rules
+docs/
+  design-decisions.md   each design choice: why, what lost, where in code
+  benchmark-results.md  the Results table, as benchmark.py wrote it
+demo.py            watch one decision with ranked moves
+benchmark.py       the Results table, with intervals and provenance
+pyproject.toml     packaging (engine/ only), ruff and mypy config, dev extra
+.github/workflows/ci.yml   tests on 3.11, 3.12 and 3.13; ruff and mypy on 3.11
+tests/             47 tests; unittest, nothing to install
+  test_engine.py     mechanics, legal moves, clone depth, search sanity,
+                     determinism, beats-the-baselines on the boss
+  test_loader.py     shipped content builds; JSON validation; RNG-stream parity
+  test_parallel.py   the root merge is a sum, not an average; pool round-trip
+  test_stats.py      Wilson intervals and z-scores on 60-game samples
+  test_benchmark.py  the markdown table renders from data; bold and z follow it
+```
+
+`engine/` never imports `game/`. The engine consumes plain `Card` and
+`Combatant` objects and knows nothing about JSON, decks, or scenarios.
+
+## Design decisions
+
+[`docs/design-decisions.md`](docs/design-decisions.md) walks through twelve
+choices — open-loop trees, stale-action handling, reward shaping, the
+horizon heuristic, ranking by mean, root parallelism, hand-written clones,
+stateless boss rules, mypyc-friendly annotations, JSON content,
+reproducibility by seed plus pinned simulation count, and code-computed
+error bars — with what each one cost, what lost, and where to read it.
+
 ## What these numbers do not prove
 
 - **Sixty games per cell is not many.** The 95% Wilson intervals are wide:
@@ -208,89 +314,6 @@ Two things worth noticing:
 - **The parallel engine's speedup is not measured here.** Its merge is
   unit-tested and a two-worker pool round-trip is tested, but the benchmark
   and the demo both use the single-process search.
-
-## Run it
-
-No install is needed; everything runs from a checkout on Python 3.11+.
-
-```
-python demo.py boss                  # one decision, ranked moves, sims/sec
-python demo.py boss --sims 10000     # the same table on every machine
-python benchmark.py                  # the table above (several minutes)
-python benchmark.py --markdown docs/benchmark-results.md --machine "your CPU"
-python -m unittest discover -s tests # ~4 min: includes search-vs-baseline matches
-```
-
-The engine alone is pip-installable (`pip install .`, zero runtime
-dependencies); `game/`, `data/` and the two scripts are the worked example
-and stay in the checkout. Development checks, which CI runs on every push:
-
-```
-pip install ruff mypy
-ruff check .                         # E, W, F, I, B; rules in pyproject.toml
-mypy                                 # engine/, game/, both scripts
-```
-
-## Reading one decision
-
-`demo.py boss --sims 10000` prints one decision. The simulation count and
-the search seed are pinned, so the table is the same on every machine (this
-one was checked on Python 3.11 and 3.13); only the timing line changes.
-
-```
-Scenario: boss
-You: Player  HP 3000/3000  pips 0+0p
-  vs Frost Tyrant [boss]  HP 3000/3000
-Hand: Ember Blade, Fire Blast, Weakness Mark, Spark, Flame Dart, Mend, Flame Dart
-  rule: Boss hits back for 350 whenever the player casts a trap
-  rule: Under 50% HP the boss gains a +25% blade each round
-
-10,000 simulations in 574 ms (17,420/s)
-
-move                                win%    visits
-Spark -> Frost Tyrant             51.0%     5,150
-Pass                              49.3%     2,904
-Weakness Mark -> Frost Tyrant     47.8%     1,946
-
-Recommended: Spark -> Frost Tyrant
-```
-
-The ordering is the interesting part. **Weakness Mark is rated below doing
-nothing at all** — it is a trap, and this boss hits back for 350 whenever a
-trap is cast, so the debuff costs more than it gains. Nothing told the search
-that; it is `rules.py` applied inside the rollouts and priced by the outcome.
-The visit counts show where the budget went: 5,150 of 10,000 simulations on
-the move it ended up recommending, which is what a converged UCB1 search
-looks like when one option is genuinely ahead but not by much.
-
-## Performance notes
-
-Pure Python does roughly 13,000-22,000 simulations/second on one core here
-(boss scenario, Python 3.11 and 3.13, across several runs on the machine
-described above). The parent project needed hundreds of thousands per
-decision inside a sub-second budget; that gap closed with two orthogonal
-steps, both reflected in this codebase's design:
-
-- **mypyc compilation** (~4-5x/core). The annotations in `engine/` — typed
-  containers, `Optional` on nullable node fields, `__reduce__` on the
-  frozen dataclass — are what made the engine compile cleanly. Untyped
-  containers alone cost most of the speedup. `mypy` is clean on `engine/`
-  and CI keeps it that way.
-- **Root parallelism** (`engine/parallel.py`, ~Nx for N workers). Each
-  worker runs an independent search with its own RNG; the parent merges
-  per-action visit counts and value sums. Independent trees also
-  decorrelate exploration noise, so close decisions flip less between
-  polls than a single bigger search. The merge is exact and unit-tested;
-  its speedup is not measured in this repo.
-
-## Design decisions
-
-[`docs/design-decisions.md`](docs/design-decisions.md) walks through twelve
-choices — open-loop trees, stale-action handling, reward shaping, the
-horizon heuristic, ranking by mean, root parallelism, hand-written clones,
-stateless boss rules, mypyc-friendly annotations, JSON content,
-reproducibility by seed plus pinned simulation count, and code-computed
-error bars — with what each one cost, what lost, and where to read it.
 
 ## License
 
