@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcts-combat-engine"
+version = "0.1.0"
+description = "Open-loop, root-parallel Monte Carlo Tree Search for stochastic turn-based combat. Pure Python, zero dependencies."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Trinidy Farris" }]
+keywords = ["mcts", "monte-carlo-tree-search", "open-loop", "game-ai", "search"]
+classifiers = [
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Games/Entertainment :: Turn Based Strategy",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Typing :: Typed",
+]
+# The engine runs on the standard library alone. Keep this empty.
+dependencies = []
+
+[project.optional-dependencies]
+# Development tools only; none of them are imported by the code.
+dev = ["ruff", "mypy", "pytest"]
+
+[project.urls]
+Source = "https://github.com/T92T1914/mcts-combat-engine"
+
+# Only the game-agnostic engine is installable. game/, data/ and the two
+# scripts are the worked example and run from a checkout.
+[tool.setuptools]
+packages = ["engine"]
+
+[tool.setuptools.package-data]
+engine = ["py.typed"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, isort, bugbear. pyupgrade is deliberately absent:
+# engine/ keeps the annotation spellings the README ties to the mypyc build,
+# and rewriting them buys nothing at runtime.
+select = ["E", "W", "F", "I", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["engine", "game", "benchmark.py", "demo.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
