@@ -1,13 +1,17 @@
 # mcts-combat-engine
 
 [![CI](https://github.com/T92T1914/mcts-combat-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/T92T1914/mcts-combat-engine/actions/workflows/ci.yml)
-![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![Python 3.11 | 3.12 | 3.13](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)
 ![runtime dependencies: none](https://img.shields.io/badge/runtime%20dependencies-none-brightgreen)
 ![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
 A Monte Carlo Tree Search engine for stochastic, imperfect-information,
 turn-based combat — pure Python, zero dependencies, with a toy card-duel
 game to prove it plays well.
+
+**Boss encounter, run 2 of 2: search wins 57% (95% Wilson interval
+44–68%) where random wins 20% and greedy 3%, over 60 seed-paired games per
+policy at 120 ms per decision on one core; run 1 landed at 53%.**
 
 Extracted and generalized from a larger private project — a decision-support
 engine for a complex turn-based strategy game, where this search core
