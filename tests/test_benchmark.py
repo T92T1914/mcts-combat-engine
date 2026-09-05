@@ -38,7 +38,9 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("in 1.5 min", self.text)
 
     def test_row_carries_intervals_bold_and_z(self):
-        # 33/60 -> 42.5-66.9%, 12/60 -> 11.8-31.8%, z = 3.96 (README numbers)
+        # 33/60 -> 42.5-66.9%, 12/60 -> 11.8-31.8%, z = 3.96: the first
+        # benchmark run's boss row (2026-09-04) as a rendering fixture; the
+        # README's committed table is a later run with its own numbers
         self.assertIn(
             "| boss | 20% (12–32) · 25.9r | 3% (1–11) · 17.0r "
             "| **55% (42–67) · 23.4r** | z = 3.96 vs random |",

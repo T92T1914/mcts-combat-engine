@@ -164,7 +164,8 @@ RNG stream so a content edit cannot silently shift every seeded result.
 **Why.** Sixty games per cell is a small sample. Every benchmark cell
 carries a Wilson interval and every row a z-score for the search against
 its best baseline, computed by `game/stats.py` and pinned by tests to the
-numbers the README quotes. The benchmark's markdown output records the
+hand-checked numbers of the first benchmark run (the committed table is a
+later run of the same code). The benchmark's markdown output records the
 interpreter, platform, and machine, so a table never travels without its
 provenance.
 
