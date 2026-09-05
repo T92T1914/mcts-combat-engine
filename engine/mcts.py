@@ -14,9 +14,13 @@ Usage::
     for r in ranked:
         print(r.label, r.win_rate, r.visits)
 
-Pure-Python throughput is a few thousand simulations per 450 ms. To go
-faster: compile ``engine/`` with mypyc/Cython, run under PyPy, or fan the
-search across cores with :class:`engine.parallel.ParallelMCTS`.
+One simulation is: select down the tree by UCB1 while replaying each chosen
+action on a fresh clone of the root; expand one untried action; roll out
+with uniform-random play to the horizon; back the shaped reward up the
+path. Pure-Python throughput is on the order of 10,000 simulations per
+second per core. To go faster: compile ``engine/`` with mypyc/Cython, run
+under PyPy, or fan the search across cores with
+:class:`engine.parallel.ParallelMCTS`.
 """
 from __future__ import annotations
 
@@ -31,6 +35,14 @@ from .state import GameState
 
 
 class Node:
+    """One edge of the tree: the action that led here, plus the statistics
+    of every simulation that has passed through it.
+
+    No game state lives here (that is the open-loop choice): each descent
+    rebuilds the state by replaying the path's actions from the root under
+    fresh randomness. ``untried`` is None until the node is first used as a
+    parent, then the legal actions not yet expanded from it.
+    """
     # No explicit __slots__: a compiled (mypyc) build makes native classes
     # implicitly slotted, which is why every attribute is annotated and the
     # root's action/parent are typed Optional.
@@ -54,6 +66,10 @@ class Node:
         return self.value_sum / self.visits if self.visits else 0.0
 
     def ucb1(self, c: float) -> float:
+        """Upper confidence bound: mean plus an exploration bonus that
+        shrinks as this node's share of the parent's visits grows. Unvisited
+        children return +inf so every action is tried once before any is
+        tried twice."""
         if self.visits == 0 or self.parent is None:
             return float("inf")
         return self.mean + c * math.sqrt(math.log(self.parent.visits) / self.visits)
@@ -61,6 +77,9 @@ class Node:
 
 @dataclass
 class RankedAction:
+    """One root action after a search: its label, estimated win rate (the
+    mean reward of every simulation that started with it), and how many
+    simulations that was."""
     action: Action
     label: str
     win_rate: float
@@ -69,17 +88,54 @@ class RankedAction:
 
 @dataclass
 class MCTS:
-    horizon_rounds: int = 4          # simulate this many rounds ahead
-    exploration: float = 1.2         # UCB1 constant
+    """Single-process open-loop MCTS; see the module docstring for why the
+    tree holds actions rather than states.
+
+    horizon_rounds
+        How far a rollout looks before scoring the position with
+        ``GameState.heuristic_value()``. Deeper sees more of a fight, but
+        every simulation costs more and the uniform-random rollout policy
+        gets noisier with depth. The demo and the parallel engine use 6,
+        the benchmark 5.
+    exploration
+        The UCB1 constant ``c``. Rewards here are in [0, 1], for which the
+        textbook value is sqrt(2) ~ 1.41; 1.2 sits slightly on the
+        exploitation side of that. It is a hand-chosen value, and this repo
+        records no sweep of it.
+    max_sims
+        Hard cap on simulations, independent of the wall-clock budget. A
+        time budget stops at a machine-dependent count, so pinning this
+        (together with the seed) is what makes a search reproducible.
+    rng
+        The single source of randomness, so one seed reproduces a search
+        exactly. Parallel workers each carry their own.
+    last_sims
+        Simulations actually run by the most recent ``search()``.
+    """
+    horizon_rounds: int = 4
+    exploration: float = 1.2
     max_sims: int = 10_000
     rng: random.Random = field(default_factory=random.Random)
+    last_sims: int = field(init=False, default=0)
 
     def search(self, root_state: GameState, time_budget_ms: int = 450,
-               priors: dict | None = None) -> list:
-        """priors: ``{card_name: (games, win_rate)}`` from a self-play opening
-        book. Book moves enter the root with VIRTUAL visits, so learned
-        experience biases early exploration but is washed out (or confirmed)
-        by real simulations — a simple way to close a learning loop."""
+               priors: "dict[str, tuple[int, float]] | None" = None,
+               ) -> list[RankedAction]:
+        """Search from ``root_state`` until the budget or ``max_sims`` runs
+        out; return every root action ranked by estimated win rate, visits
+        breaking ties.
+
+        Ranking by mean rather than by visit count (the usual "robust
+        child" rule) means a lightly visited action with a lucky mean can
+        outrank a well-explored one; the visit column is reported so a
+        reader can see when that is happening.
+
+        ``priors``: ``{card_name: (games, win_rate)}`` from a self-play
+        opening book. Book moves enter the root with VIRTUAL visits, so
+        learned experience biases early exploration but is washed out (or
+        confirmed) by real simulations — a simple way to close a learning
+        loop.
+        """
         deadline = time.perf_counter() + time_budget_ms / 1000.0
         root = Node(action=None, parent=None)
         root.untried = list(legal_actions(root_state))
@@ -154,6 +210,11 @@ class MCTS:
         return ranked
 
     def _rollout(self, state: GameState, depth: int) -> float:
+        """Uniform-random play from ``state`` until someone dies or the
+        horizon arrives. Terminal states get the shaped reward below; a
+        still-live horizon state is scored by the HP-differential heuristic,
+        which is what keeps a shallow search from calling every unfinished
+        fight a coin flip."""
         while depth < self.horizon_rounds:
             result = state.result()
             if result is not None:

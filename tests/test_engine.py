@@ -125,6 +125,17 @@ class TestSearch(unittest.TestCase):
         self.assertFalse(ranked[0].action.is_pass)
         self.assertGreater(ranked[0].win_rate, 0.9)
 
+    def test_last_sims_reports_the_pinned_count(self):
+        # max_sims is the reproducibility lever: with a generous clock the
+        # search must stop at exactly that many simulations and say so
+        m = MCTS(horizon_rounds=3)
+        self.assertEqual(m.last_sims, 0)
+        m.max_sims = 500
+        state, _ = SCENARIOS["duel"](random.Random(1))
+        ranked = m.search(state, time_budget_ms=60_000)
+        self.assertEqual(m.last_sims, 500)
+        self.assertEqual(sum(r.visits for r in ranked), 500)
+
     def test_determinism_under_fixed_seed(self):
         # a wall-clock budget varies the sim count run to run, so pin the
         # stopping criterion to max_sims — then a fixed seed must reproduce
