@@ -284,9 +284,9 @@ steps, both reflected in this codebase's design:
 [`docs/design-decisions.md`](docs/design-decisions.md) walks through twelve
 choices — open-loop trees, stale-action handling, reward shaping, the
 horizon heuristic, ranking by mean, root parallelism, hand-written clones,
-stateless boss rules, mypyc-friendly annotations, JSON content, seed-plus-
-pinned-count reproducibility, and code-computed error bars — with what each
-one cost, what lost, and where to read it.
+stateless boss rules, mypyc-friendly annotations, JSON content,
+reproducibility by seed plus pinned simulation count, and code-computed
+error bars — with what each one cost, what lost, and where to read it.
 
 ## License
 
