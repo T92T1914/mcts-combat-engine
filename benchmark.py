@@ -33,11 +33,15 @@ from game.stats import two_proportion_z, wilson_interval
 Results = dict[str, dict[str, dict]]
 
 
-def _policies(budget_ms: int) -> dict[str, Decider]:
+def _policies(budget_ms: int, sims: int | None = None,
+              seed: int = 42) -> dict[str, Decider]:
+    label = f"mcts ({sims} sims)" if sims is not None else f"mcts ({budget_ms} ms)"
     return {
         "random": random_decider,
         "greedy": greedy_decider,
-        f"mcts ({budget_ms} ms)": mcts_decider(budget_ms=budget_ms, horizon=5),
+        label: mcts_decider(budget_ms=60000 if sims is not None else budget_ms,
+                            horizon=5, max_sims=sims,
+                            seed=seed if sims is not None else None),
     }
 
 
@@ -60,13 +64,17 @@ def _versus_best_baseline(row: dict[str, dict], search: str) -> tuple[str, float
 
 
 def render_markdown(results: Results, games: int, budget_ms: int,
-                    machine: str = "", elapsed_s: float = 0.0) -> str:
+                    machine: str = "", elapsed_s: float = 0.0,
+                    sims: int | None = None, seed: int = 42) -> str:
     """The README results table, with provenance, from one benchmark run."""
     policies = list(next(iter(results.values())))
     search = policies[-1]
     lines = [
         f"{games} games per policy per scenario, game seeds paired across "
-        f"policies; {budget_ms} ms of search per decision, single process.",
+        "policies; " + (f"{sims} simulations per decision, search seed {seed}, "
+                        "horizon 5, 60-second safety cap, single process."
+                        if sims is not None else
+                        f"{budget_ms} ms of search per decision, single process."),
         f"Python {platform.python_version()} on {platform.platform()}, "
         f"{os.cpu_count()} logical CPUs"
         + (f"; {machine}" if machine else "") + ".",
@@ -102,12 +110,19 @@ def main() -> None:
                     help="search budget per decision in ms (default 120)")
     ap.add_argument("--markdown", metavar="PATH",
                     help="also write the table as markdown with provenance")
+    ap.add_argument("--sims", type=int,
+                    help="fixed simulations per decision (60-second safety cap)")
+    ap.add_argument("--seed", type=int, default=42,
+                    help="search seed for --sims mode (default 42)")
     ap.add_argument("--machine", default="",
                     help='free-text machine description for the markdown, '
                          'e.g. "Ryzen 7 7800X3D"')
     args = ap.parse_args()
+    if (args.games < 1 or args.budget_ms < 1
+            or (args.sims is not None and args.sims < 1)):
+        ap.error("games, budget_ms and sims must be positive")
 
-    policies = _policies(args.budget_ms)
+    policies = _policies(args.budget_ms, args.sims, args.seed)
     search = list(policies)[-1]
     results: Results = {}
 
@@ -129,7 +144,8 @@ def main() -> None:
 
     if args.markdown:
         text = render_markdown(results, args.games, args.budget_ms,
-                               machine=args.machine, elapsed_s=elapsed)
+                               machine=args.machine, elapsed_s=elapsed,
+                               sims=args.sims, seed=args.seed)
         with open(args.markdown, "w", encoding="utf-8") as f:
             f.write(text)
         print(f"markdown table written to {args.markdown}")

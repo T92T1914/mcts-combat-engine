@@ -10,8 +10,7 @@ tree; nothing is aspirational.
 stochastic, so one action sequence fans out into many states. A closed-loop
 tree would need a chance node for every roll. Storing only the action
 sequence and replaying it from the root under fresh randomness makes a
-node's mean automatically an average over the outcome distribution, which
-is what "win probability of this move" means.
+node's mean automatically an average over the outcome distribution, with shaped rewards rather than calibrated win probabilities.
 
 **What lost.** Closed-loop MCTS with explicit chance nodes: exact, but the
 tree explodes and every random event needs bookkeeping. The open-loop cost
@@ -19,20 +18,15 @@ is re-simulating from the root on every descent.
 
 **Where.** `engine/mcts.py` module docstring and `Node`.
 
-## 2. Actions minted in one realization may be stale in another
+## 2. Stable action identity and state-dependent availability
 
-**Why.** Because the tree replays actions rather than states, an action
-chosen when the hand had seven cards may be replayed in a realization where
-the player died earlier or pip regen went differently. The simulator
-degrades a stale or unaffordable action to a pass instead of crashing or
-casting at a discount.
+**Why.** Removing a card changes later list indexes. Reusing that index in another stochastic realization could select a different card, even when the resulting move was legal. Tree edges now identify the original root-hand slot; a per-simulation slot map resolves the current index. Duplicate card copies remain distinct.
 
-**What lost.** Re-validating and re-choosing inside the simulator, which
-would have made a node's statistics describe a different action than its
-label.
+Legal moves are recomputed for each realized state. Newly available edges can expand; currently unavailable edges cannot be selected and do not receive credit for a substituted pass. The simulator separately validates external inputs as defense in depth.
 
-**Where.** `engine/simulator.py`, `advance_round`, the two comments at the
-top of step 1.
+**Cost.** Each visited node recomputes availability and maps actions. Values are conditional on the realizations where an edge is available. This does not implement a full chance tree or an availability-aware UCB variant.
+
+**Where.** `engine/mcts.py`, `_available_actions` and `MCTS.search`; `engine/actions.py`, `is_legal_action`; `tests/test_action_identity.py`.
 
 ## 3. Reward shaping: wins discounted by depth, losses worth more when late
 
@@ -66,9 +60,9 @@ them noise.
 
 ## 5. Ranking by mean, with visit counts shown
 
-**Why.** `search()` returns root actions sorted by estimated win rate, with
-visits as the tie-break, because the caller wants a win-probability table
-to display. The usual "robust child" rule (pick the most-visited action)
+**Why.** `search()` returns root actions sorted by mean shaped reward, with
+visits as the tie-break. The compatibility field is named `win_rate`, but
+its value includes terminal shaping and a horizon heuristic. The usual "robust child" rule (pick the most-visited action)
 is not used, so a lightly visited action with a lucky mean can outrank a
 well-explored one. The visit column exists so a reader can see when that
 is happening.
@@ -82,7 +76,7 @@ on the GIL, and sharing a tree across processes would mean locking or
 shipping it. N independent searches with different seeds need no
 synchronization; the parent sums per-action visits and value sums (raw
 sufficient statistics, not rates, so the merge is exact) and re-derives
-win rates. Independent trees also decorrelate exploration noise, so close
+mean rewards. Independent trees also decorrelate exploration noise, so close
 decisions flip less between polls.
 
 **What lost.** Tree parallelism with virtual loss: more sample-efficient,

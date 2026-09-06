@@ -1,0 +1,74 @@
+{
+  "duel": {
+    "random": {
+      "games": 30,
+      "wins": 27,
+      "win_rate": 0.9,
+      "avg_score": 0.9840962418991265,
+      "avg_rounds_to_win": 19.74074074074074
+    },
+    "greedy": {
+      "games": 30,
+      "wins": 11,
+      "win_rate": 0.36666666666666664,
+      "avg_score": 0.4973432539682541,
+      "avg_rounds_to_win": 16.90909090909091
+    },
+    "search": {
+      "games": 30,
+      "wins": 30,
+      "win_rate": 1.0,
+      "avg_score": 1.0,
+      "avg_rounds_to_win": 16.166666666666668
+    },
+    "elapsed_s": 129.24905250000302
+  },
+  "gauntlet": {
+    "random": {
+      "games": 30,
+      "wins": 17,
+      "win_rate": 0.5666666666666667,
+      "avg_score": 0.6156565317661062,
+      "avg_rounds_to_win": 24.176470588235293
+    },
+    "greedy": {
+      "games": 30,
+      "wins": 11,
+      "win_rate": 0.36666666666666664,
+      "avg_score": 0.36666666666666664,
+      "avg_rounds_to_win": 17.545454545454547
+    },
+    "search": {
+      "games": 30,
+      "wins": 30,
+      "win_rate": 1.0,
+      "avg_score": 1.0,
+      "avg_rounds_to_win": 17.166666666666668
+    },
+    "elapsed_s": 207.8787963000068
+  },
+  "boss": {
+    "random": {
+      "games": 30,
+      "wins": 8,
+      "win_rate": 0.26666666666666666,
+      "avg_score": 0.31622068557919625,
+      "avg_rounds_to_win": 25.0
+    },
+    "greedy": {
+      "games": 30,
+      "wins": 0,
+      "win_rate": 0.0,
+      "avg_score": 0.0,
+      "avg_rounds_to_win": null
+    },
+    "search": {
+      "games": 30,
+      "wins": 15,
+      "win_rate": 0.5,
+      "avg_score": 0.6191078714505152,
+      "avg_rounds_to_win": 22.466666666666665
+    },
+    "elapsed_s": 233.63971670001047
+  }
+}

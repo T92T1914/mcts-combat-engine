@@ -58,6 +58,20 @@ class TestRenderMarkdown(unittest.TestCase):
 
 
 class TestCommandLine(unittest.TestCase):
+    def test_fixed_budget_runs_are_repeatable_and_label_the_budget(self):
+        def run_once():
+            policies = benchmark._policies(1, sims=20, seed=42)
+            return {name: benchmark.play_match(
+                benchmark.SCENARIOS['boss'], policy, games=2)
+                for name, policy in policies.items()}
+
+        result = run_once()
+        self.assertEqual(result, run_once())
+        text = benchmark.render_markdown({'boss': result}, 2, 1,
+                                          sims=20, seed=42)
+        self.assertIn('20 simulations per decision, search seed 42', text)
+        self.assertIn('mcts (20 sims)', text)
+
     def test_tiny_run_prints_table_and_writes_markdown(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "results.md"
