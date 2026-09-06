@@ -148,6 +148,11 @@ class MCTS:
         confirmed) by real simulations — a simple way to close a learning
         loop.
         """
+        self.last_sims = 0
+        if root_state.is_terminal():
+            # No decision remains; priors must not manufacture one or spend
+            # the full simulation budget repeatedly scoring a finished state.
+            return []
         deadline = time.perf_counter() + time_budget_ms / 1000.0
         root = Node(action=None, parent=None)
         if priors:

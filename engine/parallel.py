@@ -87,8 +87,12 @@ class ParallelMCTS:
     """
 
     def __init__(self, horizon_rounds: int = 6, workers: int | None = None):
+        if workers is not None and (
+                not isinstance(workers, int) or isinstance(workers, bool)
+                or workers < 1):
+            raise ValueError("workers must be a positive integer or None")
         cpu = mp.cpu_count() or 8
-        self.workers = workers if workers else max(1, min(10, cpu - 2))
+        self.workers = workers if workers is not None else max(1, min(10, cpu - 2))
         self.horizon = horizon_rounds
         self._pool: Pool | None = None
         self._single = MCTS(horizon_rounds=horizon_rounds)
@@ -118,6 +122,9 @@ class ParallelMCTS:
 
     def search(self, root_state: GameState, time_budget_ms: int = 450,
                priors: dict | None = None) -> list[RankedAction]:
+        self.last_sims = 0
+        if root_state.is_terminal():
+            return []  # avoid even starting a pool for a finished position
         if self.workers <= 1:
             return self._search_single(root_state, time_budget_ms, priors)
         try:
