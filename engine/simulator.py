@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import random
 
-from .actions import Action
+from .actions import Action, is_legal_action
 from .rules import RuleEvent, fire_rules
 from .state import Card, CardType, Charm, Combatant, DoT, Element, GameState
 
@@ -157,25 +157,19 @@ def advance_round(state: GameState, action: Action, rng: random.Random) -> GameS
     """Mutates ``state`` (clone it first!) through one full round."""
     player = state.player
 
-    # 1. player action. Open-loop search replays action sequences under fresh
-    # randomness, so an action minted in one realization can be stale in
-    # another (e.g. the hand didn't shrink because the player died earlier
-    # here). A stale index degrades to a pass rather than crashing.
+    # 1. Invalid or unavailable external actions consume the round as a pass.
+    # In particular, a single-target attack can never resolve against self.
     idx = action.card_idx
-    if idx is not None and player.alive and idx < len(state.hand):
+    if idx is not None and is_legal_action(state, action):
         card = state.hand[idx]
-        # re-check affordability: pip regen is stochastic, so an action minted
-        # as legal in one realization can be unaffordable in this one — it
-        # degrades to a pass instead of casting at a free discount
-        if player.effective_pips(card.element) >= card.pip_cost:
-            if card.hits_all:
-                targets = state.living_enemies
-            elif action.target_idx is not None:
-                targets = [state.enemies[action.target_idx]]
-            else:
-                targets = [player]
-            cast(state, player, card, targets, rng)
-            state.hand = [c for i, c in enumerate(state.hand) if i != idx]
+        if card.hits_all:
+            targets = state.living_enemies
+        elif action.target_idx is not None:
+            targets = [state.enemies[action.target_idx]]
+        else:
+            targets = [player]
+        cast(state, player, card, targets, rng)
+        state.hand = [c for i, c in enumerate(state.hand) if i != idx]
 
     # 2. enemies respond
     for enemy in state.enemies:

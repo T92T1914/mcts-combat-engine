@@ -5,7 +5,7 @@ stochastic, so a single action sequence can lead to many different states.
 Rather than storing states in nodes (which would require explicit chance
 nodes), the tree stores only ACTION sequences; every simulation replays its
 path from the root state with fresh randomness. A node's statistics therefore
-average over the outcome distribution — exactly what "win probability" means.
+average shaped rewards over sampled outcomes, not calibrated win probabilities.
 
 Usage::
 
@@ -17,9 +17,8 @@ Usage::
 One simulation is: select down the tree by UCB1 while replaying each chosen
 action on a fresh clone of the root; expand one untried action; roll out
 with uniform-random play to the horizon; back the shaped reward up the
-path. Pure-Python throughput is on the order of 10,000 simulations per
-second per core. To go faster: compile ``engine/`` with mypyc/Cython, run
-under PyPy, or fan the search across cores with
+path. Throughput depends on legal branching and horizon; measure it with
+the supplied benchmark. Independent workers are available through
 :class:`engine.parallel.ParallelMCTS`.
 """
 from __future__ import annotations
@@ -40,8 +39,9 @@ class Node:
 
     No game state lives here (that is the open-loop choice): each descent
     rebuilds the state by replaying the path's actions from the root under
-    fresh randomness. ``untried`` is None until the node is first used as a
-    parent, then the legal actions not yet expanded from it.
+    fresh randomness. Edge card indices refer to ORIGINAL root hand slots,
+    including distinct copies of identical cards. Available children are
+    recomputed for each realization rather than frozen on the first visit.
     """
     # No explicit __slots__: a compiled (mypyc) build makes native classes
     # implicitly slotted, which is why every attribute is annotated and the
@@ -49,7 +49,6 @@ class Node:
     action: "Action | None"
     parent: "Node | None"
     children: "list[Node]"
-    untried: "list[Action] | None"
     visits: int
     value_sum: float
 
@@ -57,7 +56,6 @@ class Node:
         self.action = action          # edge that led here (None at root)
         self.parent = parent
         self.children = []
-        self.untried = None           # lazily filled with legal actions
         self.visits = 0
         self.value_sum = 0.0
 
@@ -75,11 +73,25 @@ class Node:
         return self.mean + c * math.sqrt(math.log(self.parent.visits) / self.visits)
 
 
+def _available_actions(state: GameState, slots: list[int]) -> dict[Action, Action]:
+    """Map stable root-slot edges to current hand-index actions.
+
+    Names and Card equality cannot identify a physical copy: duplicate cards
+    are legal, including two references to the same immutable Card instance.
+    """
+    return {
+        Action(slots[a.card_idx], a.target_idx) if a.card_idx is not None else a: a
+        for a in legal_actions(state)
+    }
+
+
 @dataclass
 class RankedAction:
-    """One root action after a search: its label, estimated win rate (the
-    mean reward of every simulation that started with it), and how many
-    simulations that was."""
+    """One root action: label, mean shaped reward, and simulation count.
+
+    ``win_rate`` is retained for API compatibility; it is not a calibrated
+    win probability because rewards include terminal shaping and a heuristic.
+    """
     action: Action
     label: str
     win_rate: float
@@ -138,9 +150,8 @@ class MCTS:
         """
         deadline = time.perf_counter() + time_budget_ms / 1000.0
         root = Node(action=None, parent=None)
-        root.untried = list(legal_actions(root_state))
         if priors:
-            for a in list(root.untried):
+            for a in legal_actions(root_state):
                 name = (root_state.hand[a.card_idx].name
                         if a.card_idx is not None
                         and a.card_idx < len(root_state.hand) else None)
@@ -152,37 +163,39 @@ class MCTS:
                     child.visits = v0
                     child.value_sum = float(wr) * v0
                     root.children.append(child)
-                    root.untried.remove(a)
                     root.visits += v0
         sims = 0
 
         while sims < self.max_sims and time.perf_counter() < deadline:
             state = root_state.clone()
+            slots = list(range(len(root_state.hand)))
             node = root
             depth = 0
 
-            # --- selection: descend fully-expanded nodes by UCB1.
-            # Stop if THIS realization already ended — deeper actions were
-            # created under realizations where the duel was still live.
-            while node.untried == [] and node.children and not state.is_terminal():
-                node = max(node.children, key=lambda n: n.ucb1(self.exploration))
-                act = node.action
-                if act is None:           # never true below the root
-                    break
-                advance_round(state, act, self.rng)
-                depth += 1
-
-            # --- expansion: try one untested action
-            if node.untried is None:
-                node.untried = list(legal_actions(state))
-            if node.untried and not state.is_terminal():
-                action = node.untried.pop(self.rng.randrange(len(node.untried)))
-                child = Node(action, node)
-                node.children.append(child)
+            # Skip unavailable edges without rewarding them as a pass. Pips
+            # and living targets vary; newly legal options must be expanded
+            # even at a node visited under a different realization before.
+            while depth < self.horizon_rounds and not state.is_terminal():
+                available = _available_actions(state, slots)
+                tried = {ch.action for ch in node.children}
+                untried = [a for a in available if a not in tried]
+                expanded = bool(untried)
+                if untried:
+                    edge = untried[self.rng.randrange(len(untried))]
+                    child = Node(edge, node)
+                    node.children.append(child)
+                else:
+                    child = max((ch for ch in node.children if ch.action in available),
+                                key=lambda n: n.ucb1(self.exploration))
+                assert child.action is not None
+                action = available[child.action]
                 advance_round(state, action, self.rng)
+                if action.card_idx is not None:
+                    slots.pop(action.card_idx)
                 depth += 1
                 node = child
-                node.untried = None   # filled on first visit as a parent
+                if expanded:
+                    break
 
             # --- rollout: random play to horizon or terminal
             reward = self._rollout(state, depth)
@@ -249,8 +262,7 @@ class MCTS:
         if result >= 1.0:
             return 1.0 - 0.045 * min(6, depth)
         # loss: 0 (died round 1) .. 0.15 (survived the full horizon then died).
-        # depth is clamped because tree paths CAN outgrow the rollout horizon
-        # (selection/expansion don't stop at it) — unclamped, a deep slow loss
-        # would outscore a clean win, inverting the guarantee above.
+        # Clamp defensively so a caller-provided deep loss cannot outscore a
+        # clean win. Selection and rollout both obey the configured horizon.
         h = max(1, self.horizon_rounds)
         return 0.15 * (min(depth, h) / h)
