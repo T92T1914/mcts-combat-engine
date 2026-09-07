@@ -25,6 +25,11 @@ Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `
 
 ### Reading one decision
 
+[![A seeded search ranks Spark, Pass and Weakness Mark by mean shaped reward, with visits shown separately.](docs/mcts-decision-example.png)](docs/visual-example.md)
+
+The search ranks three actions after 10,000 simulations. Its shaped reward describes this decision and is not a win probability. The example and its reproduction command are below.
+[Reproduce and inspect the values](docs/visual-example.md).
+
 The seeded 10,000-simulation boss demo produces:
 
 ```text

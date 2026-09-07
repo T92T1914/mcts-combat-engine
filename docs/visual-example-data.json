@@ -1,0 +1,24 @@
+{
+  "source_commit": "a82e1a6",
+  "source": "demo.py boss --sims 10000 --seed 7 --horizon 6",
+  "conditions": "Fixed initial deal seed 7, search seed 7, horizon 6, single process, 10000 simulations; safety cap not reached",
+  "units": "Mean shaped reward; not a win probability",
+  "actions": [
+    {
+      "name": "Spark",
+      "reward": 0.532,
+      "visits": 5724
+    },
+    {
+      "name": "Pass",
+      "reward": 0.506,
+      "visits": 2445
+    },
+    {
+      "name": "Weakness Mark",
+      "reward": 0.495,
+      "visits": 1831
+    }
+  ],
+  "precision": "Reward rounded to three decimal places as printed by the public demo"
+}
