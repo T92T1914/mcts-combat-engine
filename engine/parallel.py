@@ -25,7 +25,7 @@ from collections.abc import Iterable
 from multiprocessing.pool import Pool
 
 from .actions import Action
-from .mcts import MCTS, RankedAction
+from .mcts import MCTS, RankedAction, _validate_nonnegative_finite
 from .state import GameState
 
 # What a worker ships back: (action, visits, value_sum) per root action, plus
@@ -41,7 +41,7 @@ def _init(horizon: int) -> None:
     _worker.max_sims = 1_000_000          # let the time budget rule
 
 
-def _search(job: tuple[GameState, int, int, dict | None]) -> WorkerResult:
+def _search(job: tuple[GameState, float, int, dict | None]) -> WorkerResult:
     state, budget_ms, seed, priors = job
     assert _worker is not None            # set by _init in every worker
     _worker.rng.seed(seed)
@@ -120,12 +120,13 @@ class ParallelMCTS:
             self._pool.terminate()
             self._pool = None
 
-    def search(self, root_state: GameState, time_budget_ms: int = 450,
+    def search(self, root_state: GameState, time_budget_ms: float = 450,
                priors: dict | None = None) -> list[RankedAction]:
         self.last_sims = 0
+        _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
         if root_state.is_terminal():
             return []  # avoid even starting a pool for a finished position
-        if self.workers <= 1:
+        if self.workers <= 1 or time_budget_ms == 0:
             return self._search_single(root_state, time_budget_ms, priors)
         try:
             pool = self._ensure_pool()
@@ -141,7 +142,7 @@ class ParallelMCTS:
         out, self.last_sims = merge_results(results, root_state)
         return out
 
-    def _search_single(self, root_state: GameState, time_budget_ms: int,
+    def _search_single(self, root_state: GameState, time_budget_ms: float,
                        priors: dict | None) -> list[RankedAction]:
         ranked = self._single.search(root_state, time_budget_ms, priors=priors)
         self.last_sims = self._single.last_sims

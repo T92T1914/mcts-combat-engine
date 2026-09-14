@@ -33,6 +33,18 @@ from .simulator import advance_round
 from .state import GameState
 
 
+def _validate_nonnegative_finite(value: float, name: str) -> None:
+    if (not isinstance(value, (int, float)) or isinstance(value, bool)
+            or value < 0):
+        raise ValueError(f"{name} must be a finite, nonnegative number")
+    try:
+        finite = math.isfinite(value)
+    except OverflowError:
+        finite = False
+    if not finite:
+        raise ValueError(f"{name} must be a finite, nonnegative number")
+
+
 class Node:
     """One edge of the tree: the action that led here, plus the statistics
     of every simulation that has passed through it.
@@ -123,6 +135,11 @@ class MCTS:
         exactly. Parallel workers each carry their own.
     last_sims
         Simulations actually run by the most recent ``search()``.
+
+    Counts must be integers (not booleans): a positive horizon and a
+    nonnegative simulation cap. Exploration and time budgets must be finite
+    and nonnegative. A zero cap or budget runs no simulations; supplied
+    priors can still rank actions using their virtual visits.
     """
     horizon_rounds: int = 4
     exploration: float = 1.2
@@ -130,7 +147,19 @@ class MCTS:
     rng: random.Random = field(default_factory=random.Random)
     last_sims: int = field(init=False, default=0)
 
-    def search(self, root_state: GameState, time_budget_ms: int = 450,
+    def __post_init__(self) -> None:
+        self._validate_configuration()
+
+    def _validate_configuration(self) -> None:
+        if (not isinstance(self.horizon_rounds, int)
+                or isinstance(self.horizon_rounds, bool) or self.horizon_rounds < 1):
+            raise ValueError("horizon_rounds must be a positive integer")
+        if (not isinstance(self.max_sims, int)
+                or isinstance(self.max_sims, bool) or self.max_sims < 0):
+            raise ValueError("max_sims must be a nonnegative integer")
+        _validate_nonnegative_finite(self.exploration, "exploration")
+
+    def search(self, root_state: GameState, time_budget_ms: float = 450,
                priors: "dict[str, tuple[int, float]] | None" = None,
                ) -> list[RankedAction]:
         """Search from ``root_state`` until the budget or ``max_sims`` runs
@@ -149,6 +178,9 @@ class MCTS:
         loop.
         """
         self.last_sims = 0
+        # Configuration is mutable; check again before advancing the RNG.
+        self._validate_configuration()
+        _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
         if root_state.is_terminal():
             # No decision remains; priors must not manufacture one or spend
             # the full simulation budget repeatedly scoring a finished state.

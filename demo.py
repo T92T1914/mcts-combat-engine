@@ -65,7 +65,10 @@ def main() -> None:
     print(f"{'move':32}{'reward':>8}{'visits':>10}")
     for r in ranked[:8]:
         print(f"{r.label:32}{r.win_rate:>8.3f}{r.visits:>10,}")
-    print(f"\nRecommended: {ranked[0].label}")
+    if ranked:
+        print(f"\nRecommended: {ranked[0].label}")
+    else:
+        print("\nNo simulations ran; no recommendation is available.")
 
 
 if __name__ == "__main__":
