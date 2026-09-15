@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcts-combat-engine"
 version = "0.1.0"
-description = "Open-loop, root-parallel Monte Carlo Tree Search for stochastic turn-based combat. Pure Python, zero dependencies."
+description = "Monte Carlo Tree Search with parallel workers, a stochastic combat example and reproducible tests. Pure Python."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

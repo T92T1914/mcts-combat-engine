@@ -3,15 +3,16 @@
 Python's GIL caps a single MCTS at one core. Root parallelization sidesteps
 it with processes: N workers each run a full open-loop search on the same
 root state with different RNG seeds, then the parent sums per-action visit
-counts and value sums. Statistically this behaves like one search with about
-N times the simulations — slightly better, in fact, because independent trees
-decorrelate the exploration noise that makes close moves flip between polls.
+counts and value sums. Workers explore independently, so this is not
+statistically equivalent to one larger search. Each worker builds its own
+tree and repeats some early exploration. Decision quality depends on the
+scenario and the budget; combining workers does not guarantee a better move.
 
 Root parallelism won over tree parallelism (one shared tree, many workers)
 because the search is pure Python: threads would serialize on the GIL, and
 sharing a tree across processes would mean locking or shipping it. Independent
 trees need no synchronization at all; the price is that workers duplicate each
-other's early exploration, which is small next to an N-fold simulation count.
+other's early exploration. The benchmarks need to measure that tradeoff.
 
 The pool is persistent (spawned once) and its workers are daemonic, so they
 die with the main process. Any pool failure degrades to the single-threaded

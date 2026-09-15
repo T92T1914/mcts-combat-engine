@@ -4,27 +4,27 @@ Each entry records a choice the code makes, why, what lost, and where to
 read it. Everything here is backed by a comment, docstring, or test in the
 tree; nothing is aspirational.
 
-## 1. Open-loop tree: nodes hold actions, not states
+## 1. Open loop tree: nodes hold actions, not states
 
 **Why.** Accuracy rolls, pip regeneration, and enemy behaviour are all
-stochastic, so one action sequence fans out into many states. A closed-loop
+stochastic, so one action sequence fans out into many states. A closed loop
 tree would need a chance node for every roll. Storing only the action
 sequence and replaying it from the root under fresh randomness makes a
 node's mean automatically an average over the outcome distribution, with shaped rewards rather than calibrated win probabilities.
 
-**What lost.** Closed-loop MCTS with explicit chance nodes: exact, but the
-tree explodes and every random event needs bookkeeping. The open-loop cost
-is re-simulating from the root on every descent.
+**What lost.** Closed loop MCTS with explicit chance nodes: exact, but the
+tree explodes and every random event needs bookkeeping. The open loop cost
+is re simulating from the root on every descent.
 
 **Where.** `engine/mcts.py` module docstring and `Node`.
 
-## 2. Stable action identity and state-dependent availability
+## 2. Stable action identity and state dependent availability
 
-**Why.** Removing a card changes later list indexes. Reusing that index in another stochastic realization could select a different card, even when the resulting move was legal. Tree edges now identify the original root-hand slot; a per-simulation slot map resolves the current index. Duplicate card copies remain distinct.
+**Why.** Removing a card changes later list indexes. Reusing that index in another stochastic realization could select a different card, even when the resulting move was legal. Tree edges now identify the original root hand slot; a per simulation slot map resolves the current index. Duplicate card copies remain distinct.
 
 Legal moves are recomputed for each realized state. Newly available edges can expand; currently unavailable edges cannot be selected and do not receive credit for a substituted pass. The simulator separately validates external inputs as defense in depth.
 
-**Cost.** Each visited node recomputes availability and maps actions. Values are conditional on the realizations where an edge is available. This does not implement a full chance tree or an availability-aware UCB variant.
+**Cost.** Each visited node recomputes availability and maps actions. Values are conditional on the realizations where an edge is available. This does not implement a full chance tree or an availability aware UCB variant.
 
 **Where.** `engine/mcts.py`, `_available_actions` and `MCTS.search`; `engine/actions.py`, `is_legal_action`; `tests/test_action_identity.py`.
 
@@ -41,13 +41,13 @@ play for time when behind, and the cap keeps any win above any loss.
 worse. Neither constant was swept; both came from watching bad play and
 fixing it, and the README says so.
 
-**Where.** `MCTS._terminal_reward` docstring; README "Why open-loop MCTS"
+**Where.** `MCTS._terminal_reward` docstring; README "Why open loop MCTS"
 and "What these numbers do not prove".
 
 ## 4. Horizon states are scored by an HP heuristic that credits setup
 
 **Why.** Rollouts stop after `horizon_rounds`. Scoring an unfinished fight
-by raw HP would call "trap now, one-shot next round" zero progress and the
+by raw HP would call "trap now, one shot next round" zero progress and the
 search would never recommend it. The heuristic discounts an enemy's HP by
 the traps on it and by the player's blades, and weights enemies by the
 damage they deal, so killing the hard hitter registers as relief.
@@ -61,10 +61,10 @@ them noise.
 ## 5. Ranking by mean, with visit counts shown
 
 **Why.** `search()` returns root actions sorted by mean shaped reward, with
-visits as the tie-break. The compatibility field is named `win_rate`, but
-its value includes terminal shaping and a horizon heuristic. The usual "robust child" rule (pick the most-visited action)
+visits as the tie break. The compatibility field is named `win_rate`, but
+its value includes terminal shaping and a horizon heuristic. The usual "robust child" rule (pick the most visited action)
 is not used, so a lightly visited action with a lucky mean can outrank a
-well-explored one. The visit column exists so a reader can see when that
+well explored one. The visit column exists so a reader can see when that
 is happening.
 
 **Where.** `MCTS.search` docstring; the demo prints both columns.
@@ -74,12 +74,12 @@ is happening.
 **Why.** The search is pure Python, so threads on one tree would serialize
 on the GIL, and sharing a tree across processes would mean locking or
 shipping it. N independent searches with different seeds need no
-synchronization; the parent sums per-action visits and value sums (raw
-sufficient statistics, not rates, so the merge is exact) and re-derives
+synchronization; the parent sums per action visits and value sums (raw
+sufficient statistics, not rates, so the merge is exact) and re derives
 mean rewards. Independent trees also decorrelate exploration noise, so close
 decisions flip less between polls.
 
-**What lost.** Tree parallelism with virtual loss: more sample-efficient,
+**What lost.** Tree parallelism with virtual loss: more sample efficient,
 much more code, and pointless under the GIL. The cost of root parallelism
 is that workers repeat each other's early exploration.
 
@@ -107,7 +107,7 @@ sharing (a rewrite of the simulator).
 is a function of (state, event); the simulator fires events at fixed points
 in a round and each rule mutates the state to model its effect. Rules hold
 no mutable data, so cloning a state shares them, and every simulated line
-still pays the price of a mechanic — the search will not walk into a
+still pays the price of a mechanic, the search will not walk into a
 punisher's counterattack because the counterattack happens inside the
 rollouts.
 
@@ -135,8 +135,8 @@ notes".
 **Why.** The engine never reads a file; it consumes plain `Card` and
 `Combatant` objects. All example content lives in `data/*.json` and goes
 through `game/loader.py`, which rejects unknown elements, malformed cards,
-deck references to missing cards, out-of-range stats, and unknown or
-mistyped boss-rule parameters with a message naming the offending entry.
+deck references to missing cards, out of range stats, and unknown or
+mistyped boss rule parameters with a message naming the offending entry.
 A content error caught at load time is cheap; the same error surfacing as
 odd behaviour thousands of simulations deep is not.
 
@@ -144,8 +144,8 @@ odd behaviour thousands of simulations deep is not.
 
 ## 11. Reproducibility: seed plus a pinned simulation count
 
-**Why.** A seed alone does not reproduce a search, because a wall-clock
-budget stops at a machine-dependent number of simulations. The tests pin
+**Why.** A seed alone does not reproduce a search, because a wall clock
+budget stops at a machine dependent number of simulations. The tests pin
 both, the demo's `--sims` does the same, and a loader test pins the exact
 RNG stream so a content edit cannot silently shift every seeded result.
 
@@ -156,9 +156,9 @@ RNG stream so a content edit cannot silently shift every seeded result.
 ## 12. Error bars come from code
 
 **Why.** Sixty games per cell is a small sample. Every benchmark cell
-carries a Wilson interval and every row a z-score for the search against
+carries a Wilson interval and every row a z score for the search against
 its best baseline, computed by `game/stats.py` and pinned by tests to the
-hand-checked numbers of the first benchmark run (the committed table is a
+hand checked numbers of the first benchmark run (the committed table is a
 later run of the same code). The benchmark's markdown output records the
 interpreter, platform, and machine, so a table never travels without its
 provenance.
@@ -168,11 +168,11 @@ provenance.
 
 ## Not done, on purpose or not yet
 
-- No sensitivity sweep of the exploration constant (1.2) or the two
-  reward-shaping constants.
-- No robust-child selection, RAVE, progressive widening, or transposition
+* No sensitivity sweep of the exploration constant (1.2) or the two
+  reward shaping constants.
+* No robust child selection, RAVE, progressive widening, or transposition
   table.
-- No second game to test the "game-agnostic" claim beyond the one 9-card
+* No second game to test the "game agnostic" claim beyond the one 9 card
   domain shipped here.
-- The benchmark runs the single-process engine; the parallel engine is
+* The benchmark runs the single process engine; the parallel engine is
   covered by tests but its speedup is not measured in this repo.
