@@ -11,6 +11,8 @@ I built this to explore how a search chooses an action when the outcome can chan
 
 [Run it](#run-it) · [Results](#results) · [How it works](#how-it-works) · [Design decisions](docs/design-decisions.md)
 
+[Explore the browser demo](https://t92t1914.github.io/mcts-combat-engine/) · [Open in Codespaces](https://codespaces.new/T92T1914/mcts-combat-engine)
+
 ## Run it
 
 Python 3.11+; no installation is needed to run the example or standard library tests from a checkout.
