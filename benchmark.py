@@ -20,9 +20,11 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import os
 import platform
 import time
+from pathlib import Path
 
 from game.baselines import greedy_decider, mcts_decider, random_decider
 from game.content import SCENARIOS
@@ -72,7 +74,7 @@ def render_markdown(results: Results, games: int, budget_ms: int,
     lines = [
         f"{games} games per policy per scenario, game seeds paired across "
         "policies; " + (f"{sims} simulations per decision, search seed {seed}, "
-                        "horizon 5, 60-second safety cap, single process."
+                        "horizon 5, 60 second safety cap, single process."
                         if sims is not None else
                         f"{budget_ms} ms of search per decision, single process."),
         f"Python {platform.python_version()} on {platform.platform()}, "
@@ -88,7 +90,7 @@ def render_markdown(results: Results, games: int, budget_ms: int,
         top = max(row[p]["wins"] for p in policies)
         cells = []
         for p in policies:
-            cell = _cell(row[p], dash="–", dot="·")
+            cell = _cell(row[p], dash=" to ", dot="·")
             cells.append(f"**{cell}**" if row[p]["wins"] == top else cell)
         best, z = _versus_best_baseline(row, search)
         cells.append(f"z = {z:.2f} vs {best}")
@@ -101,6 +103,39 @@ def render_markdown(results: Results, games: int, budget_ms: int,
     return "\n".join(lines) + "\n"
 
 
+def render_json(results: Results, games: int, budget_ms: int,
+                machine: str = "", elapsed_s: float = 0.0,
+                sims: int | None = None, seed: int = 42) -> str:
+    """Export aggregate results and the settings that produced them.
+
+    Timed search uses unseeded search randomness. The game seeds remain paired,
+    but recording a seed here would falsely suggest a repeatable search run.
+    """
+    report = {
+        "schema_version": 1,
+        "run_date": dt.date.today().isoformat(),
+        "environment": {
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "logical_cpus": os.cpu_count(),
+            "machine": machine,
+        },
+        "settings": {
+            "games_per_policy": games,
+            "game_seeds": list(range(games)),
+            "mode": "fixed_simulations" if sims is not None else "timed",
+            "max_simulations": sims,
+            "search_seed": seed if sims is not None else None,
+            "time_limit_ms": 60000 if sims is not None else budget_ms,
+            "horizon": 5,
+            "processes": 1,
+        },
+        "elapsed_s": elapsed_s,
+        "results": results,
+    }
+    return json.dumps(report, indent=2, allow_nan=False) + "\n"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="Search vs baselines on every scenario, seeds paired.")
@@ -110,6 +145,8 @@ def main() -> None:
                     help="search budget per decision in ms (default 120)")
     ap.add_argument("--markdown", metavar="PATH",
                     help="also write the table as markdown with provenance")
+    ap.add_argument("--json", type=Path, metavar="PATH",
+                    help="also write aggregate results and settings as JSON")
     ap.add_argument("--sims", type=int,
                     help="fixed simulations per decision (60-second safety cap)")
     ap.add_argument("--seed", type=int, default=42,
@@ -121,6 +158,9 @@ def main() -> None:
     if (args.games < 1 or args.budget_ms < 1
             or (args.sims is not None and args.sims < 1)):
         ap.error("games, budget_ms and sims must be positive")
+    if (args.json and args.markdown
+            and args.json.resolve() == Path(args.markdown).resolve()):
+        ap.error("JSON and Markdown output paths must be different")
 
     policies = _policies(args.budget_ms, args.sims, args.seed)
     search = list(policies)[-1]
@@ -149,6 +189,11 @@ def main() -> None:
         with open(args.markdown, "w", encoding="utf-8") as f:
             f.write(text)
         print(f"markdown table written to {args.markdown}")
+    if args.json:
+        args.json.write_text(render_json(
+            results, args.games, args.budget_ms, machine=args.machine,
+            elapsed_s=elapsed, sims=args.sims, seed=args.seed), encoding="utf-8")
+        print(f"JSON results written to {args.json}")
 
 
 if __name__ == "__main__":
