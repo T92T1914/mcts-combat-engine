@@ -95,6 +95,15 @@ Open loop nodes store action sequences rather than full chance trees. Their valu
 
 Terminal wins receive a depth discount; losses have a small survival component. Unfinished rollouts use an HP heuristic that credits setup. Those choices help a shallow search value healing, blades and traps, but were not subjected to a parameter sweep. Selection and rollout both stop at the configured horizon.
 
+An optional opening book supplies `{card_name: (count, mean_reward)}` priors.
+Counts must be nonnegative integers and rewards finite numbers between zero and
+one. JSON list pairs also work. Zero observations add no evidence; positive
+counts contribute three virtual visits per observation, capped at 30 per action.
+The whole book is validated before sampling or starting worker processes, so a
+corrupt entry raises `ValueError` instead of contaminating the rankings. Virtual
+visits are included in action visits but not in `last_sims`. Each parallel worker
+uses its own copy of the prior, just as it builds its own tree.
+
 ## Code tour
 
 | Start here | What to inspect |

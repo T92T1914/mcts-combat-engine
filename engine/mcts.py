@@ -45,6 +45,25 @@ def _validate_nonnegative_finite(value: float, name: str) -> None:
         raise ValueError(f"{name} must be a finite, nonnegative number")
 
 
+def _validate_priors(priors: dict | None) -> None:
+    """Validate the whole book before any tree, random draw or worker job."""
+    if priors is None:
+        return
+    if not isinstance(priors, dict):
+        raise ValueError("priors must be a dictionary or None")
+    for name, entry in priors.items():
+        if not isinstance(name, str):
+            raise ValueError("prior card names must be strings")
+        if not isinstance(entry, (tuple, list)) or len(entry) != 2:
+            raise ValueError("each prior must contain a count and a mean reward")
+        games, reward = entry
+        if (not isinstance(games, int) or isinstance(games, bool) or games < 0):
+            raise ValueError("prior counts must be nonnegative integers")
+        _validate_nonnegative_finite(reward, "prior mean reward")
+        if reward > 1:
+            raise ValueError("prior mean reward must be between 0 and 1")
+
+
 class Node:
     """One edge of the tree: the action that led here, plus the statistics
     of every simulation that has passed through it.
@@ -175,12 +194,16 @@ class MCTS:
         opening book. Book moves enter the root with VIRTUAL visits, so
         learned experience biases early exploration but is washed out (or
         confirmed) by real simulations — a simple way to close a learning
-        loop.
+        loop. Counts must be nonnegative integers and means finite numbers
+        in [0, 1]. JSON list pairs are also accepted. Zero-count entries add
+        no virtual visits. Invalid entries raise ValueError before sampling,
+        including entries for cards absent from the current hand.
         """
         self.last_sims = 0
         # Configuration is mutable; check again before advancing the RNG.
         self._validate_configuration()
         _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
+        _validate_priors(priors)
         if root_state.is_terminal():
             # No decision remains; priors must not manufacture one or spend
             # the full simulation budget repeatedly scoring a finished state.
@@ -195,7 +218,9 @@ class MCTS:
                 pr = priors.get(name) if name else None
                 if pr:
                     games, wr = pr
-                    v0 = max(1, min(30, 3 * int(games)))
+                    if games == 0:
+                        continue
+                    v0 = min(30, 3 * games)
                     child = Node(a, root)
                     child.visits = v0
                     child.value_sum = float(wr) * v0

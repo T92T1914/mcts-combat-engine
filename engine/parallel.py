@@ -26,7 +26,7 @@ from collections.abc import Iterable
 from multiprocessing.pool import Pool
 
 from .actions import Action
-from .mcts import MCTS, RankedAction, _validate_nonnegative_finite
+from .mcts import MCTS, RankedAction, _validate_nonnegative_finite, _validate_priors
 from .state import GameState
 
 # What a worker ships back: (action, visits, value_sum) per root action, plus
@@ -125,6 +125,7 @@ class ParallelMCTS:
                priors: dict | None = None) -> list[RankedAction]:
         self.last_sims = 0
         _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
+        _validate_priors(priors)
         if root_state.is_terminal():
             return []  # avoid even starting a pool for a finished position
         if self.workers <= 1 or time_budget_ms == 0:
