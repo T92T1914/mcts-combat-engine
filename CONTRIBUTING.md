@@ -1,6 +1,6 @@
-# Contributing to MCTS Combat Engine
+# Working on MCTS Combat Engine
 
-I welcome focused fixes, clearer examples and results that challenge an assumption in the project. If something looks wrong, I would rather have a small case I can run than a broad claim that it is broken.
+A useful change here makes the search easier to reason about, catches a wrong decision, or gives it a fairer comparison. I want the small state that explains a failure alongside any larger benchmark.
 
 ## Start locally
 
@@ -28,21 +28,15 @@ Start with [search](engine/mcts.py), [action rules](engine/actions.py) and the [
 
 ## Report a bug or propose a change
 
-Check the existing issues first. Include the revision, Python version, operating system, command, expected behavior and actual output. For a numerical issue, include the smallest input that demonstrates it. Remove credentials and private data from logs before posting.
+Include the smallest failing state, command, revision and expected action. Removing a card changes list indexes, but an edge must still identify the same card. Legal moves can also change between sampled outcomes. A search improvement cannot depend on the simulator silently turning an invalid action into a pass.
 
-Keep a pull request focused on one problem. Explain what changes for someone using the project, why the approach fits and which checks you ran. Add a regression test when it captures a real failure. Documentation changes should be checked against the current code and examples.
+For an algorithm change, explain how the value is backed up and which actions were available. Start with [the action identity regressions](tests/test_action_identity.py). For a benchmark change, save the comparison and its source revision so someone else can inspect the same budget.
 
 ## Evidence and scope
 
 Use the same game seeds, search budget and scenarios when comparing policies. Record the search seed and any safety time cap. Include results that get worse. A mean shaped reward is not a win probability, and a larger simulation count is not evidence of improved decisions by itself.
 
 Useful next work includes a stronger baseline policy, results across several search seeds and a measured comparison of worker counts. Keep action identity and move legality intact when exploring these changes.
-
-## Writing
-
-Use plain language and concrete examples. Avoid em dashes and unnecessary hyphens in authored prose. Preserve the exact spelling of code, commands, paths, package names, links and quoted evidence. Claims about performance should link to measurements and say what was actually tested.
-
-Be respectful when discussing a change. Questions and disagreements are welcome; keep them about the work.
 
 ## Development container and public site
 

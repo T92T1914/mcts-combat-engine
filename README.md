@@ -7,7 +7,7 @@
 
 I built this to explore how a search chooses an action when the outcome can change. It uses Monte Carlo Tree Search in a small combat simulator, with three encounters and random and greedy policies to compare against. The engine is pure Python and has no runtime dependencies.
 
-**Current fixed budget benchmark:** search wins 30/30 duels, 30/30 gauntlets and 15/30 boss encounters at 3,000 simulations per decision. Random wins 27, 17 and 8; greedy wins 11, 11 and 0. These are small samples from one search seed, not a general playing strength guarantee.
+**Recorded fixed budget benchmark (September 6, 2026):** search wins 30/30 duels, 30/30 gauntlets and 15/30 boss encounters at 3,000 simulations per decision. Random wins 27, 17 and 8; greedy wins 11, 11 and 0. These are small samples from one search seed, not a general playing strength guarantee.
 
 [Run it](#run-it) · [Results](#results) · [How it works](#how-it-works) · [Design decisions](docs/design-decisions.md)
 
@@ -110,7 +110,7 @@ Terminal wins receive a depth discount; losses have a small survival component. 
 ## What these numbers do not prove
 
 * Thirty games per cell and one search seed leave substantial sampling uncertainty. Shared starting seeds do not remove it. The z scores in the generated table are descriptive approximations, not a paired significance analysis.
-* Random and greedy are simple baselines. Greedy never heals; random sometimes does. A stronger hand tuned policy, multiple search seeds and parameter sweeps areuseful next comparisons.
+* Random and greedy are simple baselines. Greedy never heals; random sometimes does. A stronger hand tuned policy, multiple search seeds and parameter sweeps are useful next comparisons.
 * The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
 * Parallel merging is tested. Linear process scaling and compilation speedups have not been measured on this revision, so none is claimed.
 * Mean reward ranking can favor a lightly visited lucky action. Visits are shown so the uncertainty is visible.
