@@ -135,3 +135,13 @@ MIT. See [LICENSE](LICENSE).
 ## Questions and contributions
 
 Found a problem or have a useful comparison? [Open an issue](https://github.com/T92T1914/mcts-combat-engine/issues) with a small example I can run. The [contribution guide](CONTRIBUTING.md) covers setup, checks and the evidence to include with a change.
+
+## Engineering skills in this project
+
+I built this to understand how software compares uncertain outcomes under a limited compute budget. The useful part for me is being able to trace a choice back to its samples, its assumptions and the benchmark that tested it.
+
+- **Search algorithms.** Follow selection, expansion and rollout through one implementation. [Inspect the work](engine/mcts.py).
+- **Parallel work.** Read why work is divided between independent search roots and how results are combined. [Inspect the work](docs/design-decisions.md).
+- **Fair comparisons.** Compare recorded search results under stated seeds and budgets, including the weaker result. [Inspect the work](docs/benchmark-results.md).
+
+This demonstrates algorithm and experiment design. Applying it to routing or scheduling would need a new domain model, constraints and validation; the current project does not claim that deployment.
