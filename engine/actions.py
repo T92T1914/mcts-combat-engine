@@ -43,6 +43,11 @@ def is_legal_action(state: GameState, action: Action) -> bool:
     i, target = action.card_idx, action.target_idx
     if i is None:
         return target is None
+    if not isinstance(i, int) or isinstance(i, bool):
+        return False
+    if target is not None and (
+            not isinstance(target, int) or isinstance(target, bool)):
+        return False
     if not state.player.alive or not 0 <= i < len(state.hand):
         return False
     card = state.hand[i]

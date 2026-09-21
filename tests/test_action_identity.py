@@ -3,7 +3,7 @@ import random
 import unittest
 from unittest.mock import patch
 
-from engine.actions import PASS, Action, legal_actions
+from engine.actions import PASS, Action, is_legal_action, legal_actions
 from engine.mcts import MCTS, _available_actions
 from engine.simulator import advance_round
 from engine.state import Card, CardType, Combatant, Element, GameState
@@ -54,6 +54,20 @@ class ActionIdentityTests(unittest.TestCase):
                 advance_round(state, action, random.Random(9))
                 advance_round(expected, PASS, random.Random(9))
                 self.assertEqual(state, expected)
+
+    def test_malformed_external_indices_are_rejected_without_changing_the_round(self):
+        # JSON callers can supply these values despite the Action annotations.
+        # In particular, bool is an int subclass and must not select a card.
+        for bad in [0.0, 2.0, True, False, '0', [], {}, float('nan')]:
+            for action in [Action(bad, 0), Action(bad), Action(2, bad)]:
+                with self.subTest(action=action):
+                    state = position()
+                    state.player.pips = 7
+                    expected = state.clone()
+                    self.assertFalse(is_legal_action(state, action))
+                    advance_round(state, action, random.Random(9))
+                    advance_round(expected, PASS, random.Random(9))
+                    self.assertEqual(state, expected)
 
     def test_every_simulated_action_is_legal_under_stochastic_pips(self):
         calls = 0
