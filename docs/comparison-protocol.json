@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "id": "one-round-comparator-v1",
+  "declared_utc": "2026-09-25T02:35:40.1428889Z",
+  "base_revision": "74d2c813770640aa15bc01dc0bd8570c19138883",
+  "question": "How does the existing search compare with one-round action enumeration across the three example scenarios and several random streams?",
+  "scenarios": [
+    "duel",
+    "gauntlet",
+    "boss"
+  ],
+  "environment_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "replicates": [
+    {
+      "search_seed": 7,
+      "policy_seed": 7
+    },
+    {
+      "search_seed": 42,
+      "policy_seed": 42
+    },
+    {
+      "search_seed": 99,
+      "policy_seed": 99
+    }
+  ],
+  "policies": [
+    "random",
+    "greedy",
+    "one_round",
+    "mcts"
+  ],
+  "one_round": {
+    "samples_per_action": 8,
+    "horizon_rounds": 1,
+    "candidate_sampling": "Use the same eight starting sample seeds for every legal action at a decision. No tree or rollout policy.",
+    "value": "Terminal result, otherwise the existing state heuristic.",
+    "tie_break": "Stable card index, then target index, with pass first."
+  },
+  "mcts": {
+    "simulations_per_decision": 300,
+    "horizon_rounds": 5,
+    "safety_time_limit_ms": 60000,
+    "processes": 1,
+    "search_stream_scope": "Reset per scenario, persistent across its five games."
+  },
+  "metrics": [
+    "clean_wins",
+    "mean_shaped_score",
+    "average_rounds_to_win"
+  ],
+  "work_accounting": "Record one-round successor transitions and actual MCTS simulations separately. A MCTS simulation can advance several rounds, so these are not equal compute units. No efficiency claim.",
+  "limits": [
+    "Protocol fixed before comparator outcomes are evaluated. No result-based tuning.",
+    "All seed/scenario cells remain, including losses.",
+    "Only five distinct environment seeds per scenario. Repeated search/policy seeds do not create independent environment samples.",
+    "The comparator has an independent decision algorithm but shares the simulator and heuristic. Neither is independent ground truth.",
+    "This bounded study does not establish general superiority or calibrated uncertainty."
+  ]
+}

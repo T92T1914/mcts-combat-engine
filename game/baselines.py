@@ -9,7 +9,7 @@ from __future__ import annotations
 import random
 from collections.abc import Callable
 
-from engine import Action, CardType, GameState, legal_actions
+from engine import Action, CardType, GameState, advance_round, legal_actions
 from engine.mcts import MCTS
 from engine.parallel import ParallelMCTS
 from game.runner import Decider
@@ -49,6 +49,48 @@ def greedy_decider(state: GameState, rng: random.Random) -> Action:
                 best_score, best = score, a
     # no affordable attack -> build pips
     return best if best is not None else Action(card_idx=None)
+
+
+def one_round_decider(samples_per_action: int = 8, *,
+                       on_evaluation: Callable[[int], None] | None = None) -> Decider:
+    """Enumerate legal actions and sample their one-round successor values.
+
+    Each candidate uses the same starting sample seeds. Its actual draw path
+    may differ as the action changes the simulated round. Terminal successors
+    use the game result, otherwise the existing state heuristic supplies value.
+    This is independent of the search tree, not independent of the simulator or
+    its evaluation assumptions. ``on_evaluation`` records successor transitions.
+    """
+    if (isinstance(samples_per_action, bool)
+            or not isinstance(samples_per_action, int) or samples_per_action < 1):
+        raise ValueError("samples_per_action must be a positive integer")
+
+    def decide(state: GameState, rng: random.Random) -> Action:
+        if state.is_terminal():
+            if on_evaluation is not None:
+                on_evaluation(0)
+            return Action(card_idx=None)
+        seeds = [rng.getrandbits(64) for _ in range(samples_per_action)]
+        # A stable tie break also makes enumeration order irrelevant.
+        actions = sorted(legal_actions(state), key=lambda action: (
+            -1 if action.card_idx is None else action.card_idx,
+            -1 if action.target_idx is None else action.target_idx))
+        best = actions[0]
+        best_value = -1.0
+        for action in actions:
+            value = 0.0
+            for seed in seeds:
+                successor = state.clone()
+                advance_round(successor, action, random.Random(seed))
+                result = successor.result()
+                value += result if result is not None else successor.heuristic_value()
+            if value > best_value:
+                best, best_value = action, value
+        if on_evaluation is not None:
+            on_evaluation(len(actions) * samples_per_action)
+        return best
+
+    return decide
 
 
 def mcts_decider(budget_ms: int = 300, horizon: int = 5,

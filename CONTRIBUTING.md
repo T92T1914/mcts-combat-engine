@@ -43,7 +43,13 @@ across that scenario's games. A change in scenario order must not change a
 completed fixed-budget result. Historical tables made with the earlier shared
 stream remain historical evidence and should not be overwritten by a new run.
 
-Useful next work includes a stronger baseline policy, results across several search seeds and a measured comparison of worker counts. Keep action identity and move legality intact when exploring these changes.
+The [one-round comparison](docs/comparison-results.md) retains a frozen protocol,
+per-game outcomes and separate work counts across several search seeds. Regenerate
+its tables with `python tools/render_comparison.py`, or check them without writing
+with `python tools/render_comparison.py --check`. Keep historical results intact
+when collecting a new study. Useful next work includes new environment seeds,
+matched transition or elapsed-work budgets, and a measured comparison of worker
+counts. Keep action identity and move legality intact.
 
 ## Development container and public site
 
