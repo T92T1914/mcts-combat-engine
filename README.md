@@ -103,6 +103,25 @@ repaired experiment protocol and should be reported separately.
 
 The [historical wall clock results](docs/benchmark-results-historical.md) describe earlier code and are explicitly archived. For machine budget exploration, `python benchmark.py 60 120` still runs the timed benchmark. Wall clock runs can differ because their simulation counts differ.
 
+The [one-round comparator study](docs/comparison-results.md) uses the repaired
+random-stream protocol with three search and policy seed repeats over five
+environment seeds per scenario. The comparator enumerates legal moves, including
+healing and defense, and samples eight one-round outcomes for each. It won a duel
+condition that MCTS did not finish within the 30-round limit. MCTS won more
+gauntlet and boss games, while random beat
+the comparator in two conditions. All game outcomes and actual work counts are
+retained. The policies use unequal compute budgets, and the repeats do not become
+15 independent trials.
+
+```sh
+python benchmark.py 5 --sims 300 --seed 7 --policy-seed 7 --one-round-samples 8 --json comparison.json
+```
+
+`--one-round-samples` adds the comparator without changing the default policy set.
+JSON exports include per-game seeds, scores, terminal results and round counts,
+alongside their aggregates. A successor transition and a MCTS simulation are
+different work units, so the recorded counts do not establish efficiency.
+
 ## How it works
 
 1. Clone the current state and replay an action sequence under fresh randomness.
@@ -141,7 +160,7 @@ uses its own copy of the prior, just as it builds its own tree.
 ## What these numbers do not prove
 
 * Thirty games per cell and one search seed leave substantial sampling uncertainty. Shared starting seeds do not remove it. The z scores in the generated table are descriptive approximations, not a paired significance analysis.
-* Random and greedy are simple baselines. Greedy never heals; random sometimes does. A stronger hand tuned policy, multiple search seeds and parameter sweeps are useful next comparisons.
+* Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one-round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded multi-seed study does not establish general superiority. New environment seeds and measured compute matching remain useful next comparisons.
 * The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
 * Parallel merging is tested. Linear process scaling and compilation speedups have not been measured on this revision, so none is claimed.
 * The `mcts_decider` wrapper supports `seed` and `max_sims` only in serial mode.

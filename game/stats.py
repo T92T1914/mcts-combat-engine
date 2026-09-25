@@ -35,8 +35,9 @@ def two_proportion_z(wins_a: int, games_a: int,
 
     Positive when A wins more often. The pooled two-sample form treats the
     samples as independent and ignores that the benchmark pairs seeds across
-    policies, which makes it the conservative choice here: the pairing can
-    only add evidence a paired test would count.
+    policies. Ignoring their covariance is not necessarily conservative.
+    Benchmark output is descriptive, not a calibrated paired significance test;
+    selecting the strongest observed baseline adds another inference limitation.
     """
     pooled = (wins_a + wins_b) / (games_a + games_b)
     se = math.sqrt(pooled * (1.0 - pooled) * (1.0 / games_a + 1.0 / games_b))

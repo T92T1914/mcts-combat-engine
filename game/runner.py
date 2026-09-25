@@ -51,7 +51,7 @@ def play_game(state: GameState, deck: list[Card], decider: Decider,
 
 def play_match(scenario, decider: Decider,
                games: int, seed: int = 0, *, policy_seed: int = 0) -> dict:
-    """Play ``games`` independent games of a scenario with one decider.
+    """Play ``games`` seeded games of a scenario with one decider.
 
     Policies start from the same environment seeds. Their random choices
     cannot consume environment draws, although different actions can still
@@ -61,12 +61,21 @@ def play_match(scenario, decider: Decider,
     wins = 0.0
     clean_wins = 0
     rounds_to_win = []
+    game_results = []
     for g in range(games):
         rng = random.Random(seed + g)
         state, deck = scenario(rng)
         policy_rng = random.Random(f"policy-v1:{policy_seed + g}")
         score = play_game(state, deck, decider, rng, policy_rng=policy_rng)
         wins += score
+        game_results.append({
+            "environment_seed": seed + g,
+            "policy_seed": policy_seed + g,
+            "score": score,
+            "clean_win": score >= 1.0,
+            "rounds": state.round_num - 1,
+            "terminal_result": state.result(),
+        })
         if score >= 1.0:
             clean_wins += 1
             # advance_round increments round_num at the END of every round,
@@ -81,4 +90,5 @@ def play_match(scenario, decider: Decider,
         "win_rate": clean_wins / games,
         "avg_score": avg_score,          # counts partial/stalemate credit
         "avg_rounds_to_win": avg_rounds,
+        "game_results": game_results,
     }

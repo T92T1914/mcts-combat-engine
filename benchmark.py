@@ -27,7 +27,12 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from game.baselines import greedy_decider, mcts_decider, random_decider
+from game.baselines import (
+    greedy_decider,
+    mcts_decider,
+    one_round_decider,
+    random_decider,
+)
 from game.content import SCENARIOS
 from game.runner import Decider, play_match
 from game.stats import two_proportion_z, wilson_interval
@@ -42,16 +47,22 @@ def _search_label(budget_ms: int, sims: int | None) -> str:
 
 def _policies(budget_ms: int, sims: int | None = None,
               seed: int = 42, *,
-              on_search: Callable[[int], None] | None = None) -> dict[str, Decider]:
+              on_search: Callable[[int], None] | None = None,
+              one_round_samples: int | None = None,
+              on_one_round: Callable[[int], None] | None = None) -> dict[str, Decider]:
     label = _search_label(budget_ms, sims)
-    return {
+    policies: dict[str, Decider] = {
         "random": random_decider,
         "greedy": greedy_decider,
-        label: mcts_decider(budget_ms=60000 if sims is not None else budget_ms,
-                            horizon=5, max_sims=sims,
-                            seed=seed if sims is not None else None,
-                            on_search=on_search),
     }
+    if one_round_samples is not None:
+        policies[f"one_round ({one_round_samples} samples/action)"] = one_round_decider(
+            one_round_samples, on_evaluation=on_one_round)
+    policies[label] = mcts_decider(
+        budget_ms=60000 if sims is not None else budget_ms,
+        horizon=5, max_sims=sims, seed=seed if sims is not None else None,
+        on_search=on_search)
+    return policies
 
 
 def _cell(r: dict, dash: str = "-", dot: str = "/") -> str:
@@ -111,6 +122,11 @@ def render_markdown(results: Results, games: int, budget_ms: int,
         "",
         "*win % = clean wins (95% Wilson interval) · Nr = average rounds "
         "to win, when it won · bold = best in row*",
+        "The intervals and z statistics use independent-sample formulas. "
+        "Paired seeds, a continuing search stream and selecting the best observed "
+        "baseline are not accounted for. These are descriptive approximations, "
+        "not calibrated uncertainty or a paired significance test. Do not pool "
+        "repeated runs over the same environment seeds as independent trials.",
     ]
     measured = [(name, row[search]["search_work"]) for name, row in results.items()
                 if "search_work" in row[search]]
@@ -128,14 +144,28 @@ def render_markdown(results: Results, games: int, budget_ms: int,
         lines += ["", "A fixed-budget shortfall means the safety time limit "
                   "stopped a nonterminal decision before its requested count. "
                   "Such a run is not a completed fixed-budget comparison."]
+    one_round_work = [(name, row[p]["one_round_work"])
+                      for name, row in results.items() for p in row
+                      if "one_round_work" in row[p]]
+    if one_round_work:
+        lines += ["", "Observed one-round comparator work:", "",
+                  "| scenario | decisions | successor transitions |",
+                  "|---|---|---|"]
+        for name, work in one_round_work:
+            counts = work["decision_transitions"]
+            lines.append(f"| {name} | {len(counts)} | {sum(counts)} |")
+        lines += ["", "Compute is not equalized. Each successor transition advances "
+                  "one round. A MCTS simulation can advance several rounds. "
+                  "The work counts are different units, not an efficiency comparison."]
     return "\n".join(lines) + "\n"
 
 
 def render_json(results: Results, games: int, budget_ms: int,
                 machine: str = "", elapsed_s: float = 0.0,
                 sims: int | None = None, seed: int = 42, *,
-                game_seed: int = 0, policy_seed: int = 0) -> str:
-    """Export aggregate results and the settings that produced them.
+                game_seed: int = 0, policy_seed: int = 0,
+                one_round_samples: int | None = None) -> str:
+    """Export per-game and aggregate results and their effective settings.
 
     Timed search uses unseeded search randomness. The game seeds remain paired,
     but recording a seed here would falsely suggest a repeatable search run.
@@ -161,6 +191,7 @@ def render_json(results: Results, games: int, budget_ms: int,
             "time_limit_ms": 60000 if sims is not None else budget_ms,
             "horizon": 5,
             "processes": 1,
+            "one_round_samples_per_action": one_round_samples,
         },
         "elapsed_s": elapsed_s,
         "results": results,
@@ -187,18 +218,25 @@ def main() -> None:
                     help="first environment seed (default 0)")
     ap.add_argument("--policy-seed", type=int, default=0,
                     help="first policy seed, separate from environment (default 0)")
+    ap.add_argument("--one-round-samples", type=int,
+                    help="include one-round enumeration with this many samples/action")
     ap.add_argument("--machine", default="",
                     help='free-text machine description for the markdown, '
                          'e.g. "Ryzen 7 7800X3D"')
     args = ap.parse_args()
     if (args.games < 1 or args.budget_ms < 1
-            or (args.sims is not None and args.sims < 1)):
-        ap.error("games, budget_ms and sims must be positive")
+            or (args.sims is not None and args.sims < 1)
+            or (args.one_round_samples is not None and args.one_round_samples < 1)):
+        ap.error("games, budget_ms, sims and one-round-samples must be positive")
     if (args.json and args.markdown
             and args.json.resolve() == Path(args.markdown).resolve()):
         ap.error("JSON and Markdown output paths must be different")
 
-    policy_names = ["random", "greedy", _search_label(args.budget_ms, args.sims)]
+    policy_names = ["random", "greedy"]
+    one_round_label = f"one_round ({args.one_round_samples} samples/action)"
+    if args.one_round_samples is not None:
+        policy_names.append(one_round_label)
+    policy_names.append(_search_label(args.budget_ms, args.sims))
     search = policy_names[-1]
     results: Results = {}
 
@@ -209,8 +247,11 @@ def main() -> None:
     t0 = time.perf_counter()
     for sname, scenario in SCENARIOS.items():
         counts: list[int] = []
+        transitions: list[int] = []
         policies = _policies(args.budget_ms, args.sims, args.seed,
-                             on_search=counts.append)
+                             on_search=counts.append,
+                             one_round_samples=args.one_round_samples,
+                             on_one_round=transitions.append)
         row = {pname: play_match(scenario, decider, games=args.games,
                                 seed=args.game_seed, policy_seed=args.policy_seed)
                for pname, decider in policies.items()}
@@ -220,6 +261,12 @@ def main() -> None:
                 sum(count < args.sims for count in counts)
                 if args.sims is not None else None),
         }
+        if args.one_round_samples is not None:
+            row[one_round_label]["one_round_work"] = {
+                "decision_transitions": transitions,
+                "samples_per_action": args.one_round_samples,
+                "horizon_rounds": 1,
+            }
         results[sname] = row
         best, z = _versus_best_baseline(row, search)
         print(f"{sname:12}" + "".join(f"{_cell(row[p]):>24}" for p in policies)
@@ -231,6 +278,8 @@ def main() -> None:
     elapsed = time.perf_counter() - t0
     print("\nwin% = clean wins (95% Wilson interval); Nr = average rounds to "
           f"win when it won; {elapsed / 60:.1f} min")
+    print("Independent-sample intervals/z are descriptive approximations only; "
+          "paired seeds and continuing search streams are not accounted for.")
 
     if args.markdown:
         text = render_markdown(results, args.games, args.budget_ms,
@@ -244,7 +293,8 @@ def main() -> None:
         args.json.write_text(render_json(
             results, args.games, args.budget_ms, machine=args.machine,
             elapsed_s=elapsed, sims=args.sims, seed=args.seed,
-            game_seed=args.game_seed, policy_seed=args.policy_seed), encoding="utf-8")
+            game_seed=args.game_seed, policy_seed=args.policy_seed,
+            one_round_samples=args.one_round_samples), encoding="utf-8")
         print(f"JSON results written to {args.json}")
 
 
