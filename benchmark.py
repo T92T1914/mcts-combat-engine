@@ -1,10 +1,10 @@
 """Measure the search against baseline policies across every scenario.
 
-Each policy plays the same seeded games, so the comparison is paired. The
-point of the exercise: a searching player should clear the "always hit
-hardest" greedy baseline by a wide margin, because it learns to blade before
-it hits, shield and heal to survive, focus-fire a gauntlet, and race a boss
-before the enrage timer.
+Policies start from the same environment seeds, with separate policy and
+search streams. Search is reseeded for each scenario so reordering scenarios
+does not alter a fixed-budget result. Different actions can still lead to
+different random outcomes. These simple baselines are a starting comparison,
+not evidence of general playing strength.
 
     python benchmark.py                      # quick: 60 games/policy, 120 ms search
     python benchmark.py 200 300              # thorough: 200 games, 300 ms search
@@ -24,6 +24,7 @@ import json
 import os
 import platform
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 from game.baselines import greedy_decider, mcts_decider, random_decider
@@ -35,15 +36,21 @@ from game.stats import two_proportion_z, wilson_interval
 Results = dict[str, dict[str, dict]]
 
 
+def _search_label(budget_ms: int, sims: int | None) -> str:
+    return f"mcts ({sims} sims)" if sims is not None else f"mcts ({budget_ms} ms)"
+
+
 def _policies(budget_ms: int, sims: int | None = None,
-              seed: int = 42) -> dict[str, Decider]:
-    label = f"mcts ({sims} sims)" if sims is not None else f"mcts ({budget_ms} ms)"
+              seed: int = 42, *,
+              on_search: Callable[[int], None] | None = None) -> dict[str, Decider]:
+    label = _search_label(budget_ms, sims)
     return {
         "random": random_decider,
         "greedy": greedy_decider,
         label: mcts_decider(budget_ms=60000 if sims is not None else budget_ms,
                             horizon=5, max_sims=sims,
-                            seed=seed if sims is not None else None),
+                            seed=seed if sims is not None else None,
+                            on_search=on_search),
     }
 
 
@@ -67,7 +74,8 @@ def _versus_best_baseline(row: dict[str, dict], search: str) -> tuple[str, float
 
 def render_markdown(results: Results, games: int, budget_ms: int,
                     machine: str = "", elapsed_s: float = 0.0,
-                    sims: int | None = None, seed: int = 42) -> str:
+                    sims: int | None = None, seed: int = 42, *,
+                    game_seed: int = 0, policy_seed: int = 0) -> str:
     """The README results table, with provenance, from one benchmark run."""
     policies = list(next(iter(results.values())))
     search = policies[-1]
@@ -82,6 +90,10 @@ def render_markdown(results: Results, games: int, budget_ms: int,
         + (f"; {machine}" if machine else "") + ".",
         f"Run on {dt.date.today().isoformat()}"
         + (f" in {elapsed_s / 60:.1f} min" if elapsed_s else "") + ".",
+        f"Environment seeds {game_seed} to {game_seed + games - 1}. "
+        f"Policy seeds {policy_seed} to {policy_seed + games - 1}, "
+        "using separate policy-v1 streams. Search starts fresh per scenario "
+        "and continues across that scenario's games.",
         "",
         "| scenario | " + " | ".join(policies) + " | search vs best baseline |",
         "|---|" + "---|" * (len(policies) + 1),
@@ -100,19 +112,36 @@ def render_markdown(results: Results, games: int, budget_ms: int,
         "*win % = clean wins (95% Wilson interval) · Nr = average rounds "
         "to win, when it won · bold = best in row*",
     ]
+    measured = [(name, row[search]["search_work"]) for name, row in results.items()
+                if "search_work" in row[search]]
+    if measured:
+        lines += ["", "Observed search work:", "",
+                  "| scenario | decisions | simulations | per decision min/max | "
+                  "fixed-budget shortfalls |",
+                  "|---|---|---|---|---|"]
+        for name, work in measured:
+            counts = work["decision_simulations"]
+            span = f"{min(counts)}/{max(counts)}" if counts else "not run"
+            shortfalls = work["below_requested_simulations"]
+            lines.append(f"| {name} | {len(counts)} | {sum(counts)} | {span} | "
+                         f"{shortfalls if shortfalls is not None else 'n/a'} |")
+        lines += ["", "A fixed-budget shortfall means the safety time limit "
+                  "stopped a nonterminal decision before its requested count. "
+                  "Such a run is not a completed fixed-budget comparison."]
     return "\n".join(lines) + "\n"
 
 
 def render_json(results: Results, games: int, budget_ms: int,
                 machine: str = "", elapsed_s: float = 0.0,
-                sims: int | None = None, seed: int = 42) -> str:
+                sims: int | None = None, seed: int = 42, *,
+                game_seed: int = 0, policy_seed: int = 0) -> str:
     """Export aggregate results and the settings that produced them.
 
     Timed search uses unseeded search randomness. The game seeds remain paired,
     but recording a seed here would falsely suggest a repeatable search run.
     """
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "run_date": dt.date.today().isoformat(),
         "environment": {
             "python": platform.python_version(),
@@ -122,10 +151,13 @@ def render_json(results: Results, games: int, budget_ms: int,
         },
         "settings": {
             "games_per_policy": games,
-            "game_seeds": list(range(games)),
+            "game_seeds": list(range(game_seed, game_seed + games)),
+            "policy_seeds": list(range(policy_seed, policy_seed + games)),
+            "policy_seed_format": "policy-v1:{seed} (Python Random string seed)",
             "mode": "fixed_simulations" if sims is not None else "timed",
             "max_simulations": sims,
             "search_seed": seed if sims is not None else None,
+            "search_seed_scope": "reset_per_scenario_then_persistent_across_games",
             "time_limit_ms": 60000 if sims is not None else budget_ms,
             "horizon": 5,
             "processes": 1,
@@ -151,6 +183,10 @@ def main() -> None:
                     help="fixed simulations per decision (60-second safety cap)")
     ap.add_argument("--seed", type=int, default=42,
                     help="search seed for --sims mode (default 42)")
+    ap.add_argument("--game-seed", type=int, default=0,
+                    help="first environment seed (default 0)")
+    ap.add_argument("--policy-seed", type=int, default=0,
+                    help="first policy seed, separate from environment (default 0)")
     ap.add_argument("--machine", default="",
                     help='free-text machine description for the markdown, '
                          'e.g. "Ryzen 7 7800X3D"')
@@ -162,22 +198,36 @@ def main() -> None:
             and args.json.resolve() == Path(args.markdown).resolve()):
         ap.error("JSON and Markdown output paths must be different")
 
-    policies = _policies(args.budget_ms, args.sims, args.seed)
-    search = list(policies)[-1]
+    policy_names = ["random", "greedy", _search_label(args.budget_ms, args.sims)]
+    search = policy_names[-1]
     results: Results = {}
 
     print(f"{args.games} games per policy, seeds paired across policies\n")
-    header = f"{'scenario':12}" + "".join(f"{p:>24}" for p in policies)
+    header = f"{'scenario':12}" + "".join(f"{p:>24}" for p in policy_names)
     print(header)
     print("-" * len(header))
     t0 = time.perf_counter()
     for sname, scenario in SCENARIOS.items():
-        row = {pname: play_match(scenario, decider, games=args.games)
+        counts: list[int] = []
+        policies = _policies(args.budget_ms, args.sims, args.seed,
+                             on_search=counts.append)
+        row = {pname: play_match(scenario, decider, games=args.games,
+                                seed=args.game_seed, policy_seed=args.policy_seed)
                for pname, decider in policies.items()}
+        row[search]["search_work"] = {
+            "decision_simulations": counts,
+            "below_requested_simulations": (
+                sum(count < args.sims for count in counts)
+                if args.sims is not None else None),
+        }
         results[sname] = row
         best, z = _versus_best_baseline(row, search)
         print(f"{sname:12}" + "".join(f"{_cell(row[p]):>24}" for p in policies)
               + f"   z = {z:.2f} vs {best}")
+        shortfalls = row[search]["search_work"]["below_requested_simulations"]
+        if shortfalls:
+            print(f"  Incomplete fixed budget: {shortfalls} decisions stopped "
+                  "at the safety time limit.")
     elapsed = time.perf_counter() - t0
     print("\nwin% = clean wins (95% Wilson interval); Nr = average rounds to "
           f"win when it won; {elapsed / 60:.1f} min")
@@ -185,14 +235,16 @@ def main() -> None:
     if args.markdown:
         text = render_markdown(results, args.games, args.budget_ms,
                                machine=args.machine, elapsed_s=elapsed,
-                               sims=args.sims, seed=args.seed)
+                               sims=args.sims, seed=args.seed,
+                               game_seed=args.game_seed, policy_seed=args.policy_seed)
         with open(args.markdown, "w", encoding="utf-8") as f:
             f.write(text)
         print(f"markdown table written to {args.markdown}")
     if args.json:
         args.json.write_text(render_json(
             results, args.games, args.budget_ms, machine=args.machine,
-            elapsed_s=elapsed, sims=args.sims, seed=args.seed), encoding="utf-8")
+            elapsed_s=elapsed, sims=args.sims, seed=args.seed,
+            game_seed=args.game_seed, policy_seed=args.policy_seed), encoding="utf-8")
         print(f"JSON results written to {args.json}")
 
 

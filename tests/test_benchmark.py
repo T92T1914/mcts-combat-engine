@@ -92,13 +92,20 @@ class TestCommandLine(unittest.TestCase):
             self.assertIn("1 games per policy", text)
             self.assertIn("; ci.", text)
             report = json.loads(data.read_text(encoding="utf-8"))
-            self.assertEqual(report["schema_version"], 1)
+            self.assertEqual(report["schema_version"], 2)
             self.assertEqual(report["settings"]["mode"], "timed")
             self.assertIsNone(report["settings"]["search_seed"])
             self.assertIsNone(report["settings"]["max_simulations"])
             self.assertEqual(report["settings"]["time_limit_ms"], 10)
+            self.assertEqual(report["settings"]["policy_seeds"], [0])
+            self.assertEqual(report["settings"]["search_seed_scope"],
+                             "reset_per_scenario_then_persistent_across_games")
             self.assertEqual(report["environment"]["machine"], "ci")
             self.assertEqual(set(report["results"]), set(benchmark.SCENARIOS))
+            for row in report["results"].values():
+                work = row["mcts (10 ms)"]["search_work"]
+                self.assertTrue(work["decision_simulations"])
+                self.assertIsNone(work["below_requested_simulations"])
             # Rebuilding the table from exported aggregates must preserve every
             # result, including cells with no wins and no average winning round.
             reproduced = benchmark.render_markdown(
@@ -129,6 +136,50 @@ class TestCommandLine(unittest.TestCase):
             benchmark.main()
         self.assertEqual(raised.exception.code, 2)
         play.assert_not_called()
+
+    def test_export_records_seed_ranges_and_observed_budget_shortfalls(self):
+        def search_factory(**kwargs):
+            def decide(state, rng):
+                kwargs["on_search"](2)
+                return benchmark.greedy_decider(state, rng)
+            return decide
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "results.json"
+            markdown = Path(tmp) / "results.md"
+            argv = ["benchmark.py", "2", "--sims", "3", "--game-seed", "9",
+                    "--policy-seed", "20", "--json", str(output),
+                    "--markdown", str(markdown)]
+            console = io.StringIO()
+            with (mock.patch.object(sys, "argv", argv),
+                  mock.patch.object(benchmark, "mcts_decider", search_factory),
+                  contextlib.redirect_stdout(console)):
+                benchmark.main()
+            report = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(report["settings"]["game_seeds"], [9, 10])
+            self.assertEqual(report["settings"]["policy_seeds"], [20, 21])
+            for row in report["results"].values():
+                work = row["mcts (3 sims)"]["search_work"]
+                counts = work["decision_simulations"]
+                self.assertTrue(counts)
+                self.assertEqual(set(counts), {2})
+                self.assertEqual(work["below_requested_simulations"], len(counts))
+            self.assertIn("Incomplete fixed budget:", console.getvalue())
+            self.assertIn("Observed search work:", markdown.read_text("utf-8"))
+
+    def test_fixed_budget_export_records_complete_decisions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "results.json"
+            argv = ["benchmark.py", "1", "--sims", "4", "--json", str(output)]
+            with (mock.patch.object(sys, "argv", argv),
+                  contextlib.redirect_stdout(io.StringIO())):
+                benchmark.main()
+            report = json.loads(output.read_text(encoding="utf-8"))
+            for row in report["results"].values():
+                work = row["mcts (4 sims)"]["search_work"]
+                self.assertTrue(work["decision_simulations"])
+                self.assertEqual(set(work["decision_simulations"]), {4})
+                self.assertEqual(work["below_requested_simulations"], 0)
 
 
 if __name__ == "__main__":

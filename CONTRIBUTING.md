@@ -36,6 +36,13 @@ For an algorithm change, explain how the value is backed up and which actions we
 
 Use the same game seeds, search budget and scenarios when comparing policies. Record the search seed and any safety time cap. Include results that get worse. A mean shaped reward is not a win probability, and a larger simulation count is not evidence of improved decisions by itself.
 
+Keep policy randomness separate from environment outcomes. Record both seed
+ranges and inspect the exported decision simulation counts for budget shortfalls.
+The benchmark starts search fresh for each scenario, then retains its stream
+across that scenario's games. A change in scenario order must not change a
+completed fixed-budget result. Historical tables made with the earlier shared
+stream remain historical evidence and should not be overwritten by a new run.
+
 Useful next work includes a stronger baseline policy, results across several search seeds and a measured comparison of worker counts. Keep action identity and move legality intact when exploring these changes.
 
 ## Development container and public site
