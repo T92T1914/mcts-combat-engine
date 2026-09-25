@@ -36,14 +36,28 @@ python benchmark.py 30 --sims 3000 --seed 42 --json results.json --markdown resu
 ```
 
 The JSON file keeps the aggregate results, effective search budget, game seeds,
-search seed and environment details. The Markdown file presents the same run as
+policy seeds, search seed and environment details. The Markdown file presents the same run as
 a table. Both exports come from one set of results, so saving them does not rerun
 the experiment. Output paths must be different and their parent folders must exist.
+
+Policy choices use their own random stream. Extra random draws inside a policy
+cannot change the environment's next outcome when the chosen actions stay the
+same. Search starts fresh for each scenario, then continues across its games.
+Reordering the scenarios therefore leaves fixed-budget results unchanged when
+the safety cap is not reached. Different actions can still consume different
+environment draws, so paired starting seeds do not mean identical later luck.
+
+Use `--game-seed 10 --policy-seed 20` to choose the first environment and policy
+seeds independently. Each game increments those seeds by one. JSON schema 2
+records these ranges, the policy seed format, and the search stream's scope.
+Each search result also contains `search_work.decision_simulations` and
+`below_requested_simulations`. The Markdown export summarizes these observed
+counts. A safety timeout is recorded as a shortfall, not a completed fixed budget.
 
 Timed search uses unseeded search randomness and records `search_seed` as `null`.
 With `--sims`, the recorded time limit is the 60 second safety cap, even if a
 different positional time budget was supplied. The JSON contains aggregate
-results, not individual game traces. Keep the source revision alongside an
+results and decision simulation counts, not individual game traces. Keep the source revision alongside an
 export when comparing changes to the engine.
 
 ### Reading one decision
@@ -71,6 +85,10 @@ The reward is a mean shaped value, **not a calibrated win probability**. The com
 30 games per policy per scenario, game seeds paired across policies; 3000 simulations per decision, search seed 42, horizon 5, 60 second safety cap, single process.
 Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs; AMD Ryzen 7 7800X3D; Windows 11; 64 GB RAM.
 Run on 2026-09-06.
+
+These recorded results predate the separate policy stream and per-scenario
+search reset. They are retained as historical measurements. A new run uses the
+repaired experiment protocol and should be reported separately.
 
 | scenario | random | greedy | mcts (3000 sims) | search vs best baseline |
 |---|---|---|---|---|

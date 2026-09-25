@@ -1,4 +1,4 @@
-# Current fixed budget results
+# Recorded fixed budget results, September 6
 
 30 games per policy per scenario, game seeds paired across policies; 3000 simulations per decision, search seed 42, horizon 5, 60 second safety cap, single process.
 Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs; AMD Ryzen 7 7800X3D; Windows 11; 64 GB RAM.
@@ -12,7 +12,9 @@ Run on 2026-09-06.
 
 *win % = clean wins (95% Wilson interval) · Nr = average rounds to win, when it won · bold = best in row*
 
-Reproduce with `python benchmark.py 30 --sims 3000 --seed 42 --markdown docs/benchmark-results.md`. Game seeds are 0 to 29. Every policy starts from the same seeded scenarios; different decisions consume randomness differently, so this is not identical luck on every later turn. The search uses a persistent RNG seeded once per scenario.
+The original command was `python benchmark.py 30 --sims 3000 --seed 42 --markdown docs/benchmark-results.md`. Game seeds are 0 to 29. These measurements predate the RNG-isolation repair. Keep them separate from new runs rather than overwriting this record with the current command.
+
+The earlier runner shared one random stream between policy choices and environment outcomes. The benchmark also created search once before its scenario loop, contrary to the earlier description here that it was seeded once per scenario. The current runner separates policy randomness, and the current benchmark restarts search for each scenario. The recorded aggregates above have not been rerun under that new protocol. Different actions can still take different stochastic paths even with separate streams.
 
 Matched pre repair / repaired search wins: duel 29/30 → 30/30; gauntlet 30/30 → 30/30; boss 16/30 → 15/30. The fix establishes legal action identity, not an across the board win rate improvement. Boss average shaped score changed from 0.6310 to 0.6191. Thirty games and one search seed are a smoke benchmark, not a tuning study. The displayed two proportion z scores are descriptive independent sample approximations; they do not exploit pairing and are not evidence of a population level advantage.
 

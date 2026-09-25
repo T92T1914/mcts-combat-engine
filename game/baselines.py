@@ -7,6 +7,7 @@ policies are the bar the search has to clear.
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 
 from engine import Action, CardType, GameState, legal_actions
 from engine.mcts import MCTS
@@ -53,13 +54,16 @@ def greedy_decider(state: GameState, rng: random.Random) -> Action:
 def mcts_decider(budget_ms: int = 300, horizon: int = 5,
                  parallel: bool = False, workers: int | None = None,
                  seed: int | None = None,
-                 max_sims: int | None = None) -> Decider:
+                 max_sims: int | None = None, *,
+                 on_search: Callable[[int], None] | None = None) -> Decider:
     """Build an MCTS decider. Single-process by default so it is safe to call
     from anywhere; pass ``parallel=True`` for the root-parallel engine.
 
     For determinism (tests), pass BOTH ``seed`` and ``max_sims``: a seed alone
     is not enough, because a wall-clock budget stops at a machine-dependent
-    simulation count."""
+    simulation count. ``on_search`` receives the actual simulation count
+    after each decision, including a search stopped by its time limit.
+    """
     engine = (ParallelMCTS(horizon_rounds=horizon, workers=workers)
               if parallel else MCTS(horizon_rounds=horizon))
     if isinstance(engine, MCTS):
@@ -69,6 +73,8 @@ def mcts_decider(budget_ms: int = 300, horizon: int = 5,
 
     def decide(state: GameState, rng: random.Random) -> Action:
         ranked = engine.search(state, time_budget_ms=budget_ms)
+        if on_search is not None:
+            on_search(engine.last_sims)
         return ranked[0].action if ranked else Action(card_idx=None)
 
     return decide

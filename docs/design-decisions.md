@@ -153,6 +153,17 @@ RNG stream so a content edit cannot silently shift every seeded result.
 `test_determinism_under_fixed_seed`; `test_rng_stream_parity_with_precomputed_hand`;
 `demo.py`.
 
+The full-game runner gives policy choices a separate random stream from deck
+draws and environment outcomes. A policy that draws randomness and then ignores
+it must not change the encounter. The benchmark resets search at each scenario
+boundary so selecting or reordering scenarios does not shift another scenario's
+search stream. Within one scenario, search state continues across its games.
+Game and policy seeds are recorded independently. Decision simulation counts
+also show whether a safety time limit interrupted a requested fixed budget.
+See `tests/test_experiment_rng.py` for the coupled-stream and scenario-order
+regressions. This separation does not force different actions to experience
+identical later random events.
+
 ## 12. Error bars come from code
 
 **Why.** Sixty games per cell is a small sample. Every benchmark cell

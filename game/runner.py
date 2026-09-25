@@ -24,27 +24,39 @@ def _refill(state: GameState, deck: list[Card], rng: random.Random) -> None:
 
 
 def play_game(state: GameState, deck: list[Card], decider: Decider,
-              rng: random.Random, max_rounds: int = 30) -> float:
+              rng: random.Random, max_rounds: int = 30, *,
+              policy_rng: random.Random | None = None) -> float:
     """Play one game. Returns 1.0 (player win), 0.0 (loss), or a partial
     heuristic score if it hits ``max_rounds`` without a result (a stalemate,
-    which counts as neither a clean win nor loss)."""
+    which counts as neither a clean win nor loss).
+
+    ``rng`` supplies only deck draws and environment outcomes. Policy draws
+    use a separate stream. Direct callers that omit it get a deterministic,
+    domain-separated stream without advancing the environment RNG.
+    """
+    if policy_rng is rng:
+        raise ValueError("policy_rng must be separate from the environment RNG")
+    if policy_rng is None:
+        policy_rng = random.Random(f"policy-state-v1:{rng.getstate()!r}")
     for _ in range(max_rounds):
         result = state.result()
         if result is not None:
             return result
         _refill(state, deck, rng)
-        action = decider(state, rng)
+        action = decider(state, policy_rng)
         advance_round(state, action, rng)
     result = state.result()
     return result if result is not None else state.heuristic_value()
 
 
 def play_match(scenario, decider: Decider,
-               games: int, seed: int = 0) -> dict:
+               games: int, seed: int = 0, *, policy_seed: int = 0) -> dict:
     """Play ``games`` independent games of a scenario with one decider.
 
-    Every decider faces the SAME sequence of seeds, so the comparison is
-    paired: differences come from the policy, not the luck of the draw.
+    Policies start from the same environment seeds. Their random choices
+    cannot consume environment draws, although different actions can still
+    take different stochastic paths. A stateful decider owns any additional
+    search stream, which may continue between games within this match.
     """
     wins = 0.0
     clean_wins = 0
@@ -52,7 +64,8 @@ def play_match(scenario, decider: Decider,
     for g in range(games):
         rng = random.Random(seed + g)
         state, deck = scenario(rng)
-        score = play_game(state, deck, decider, rng)
+        policy_rng = random.Random(f"policy-v1:{policy_seed + g}")
+        score = play_game(state, deck, decider, rng, policy_rng=policy_rng)
         wins += score
         if score >= 1.0:
             clean_wins += 1
