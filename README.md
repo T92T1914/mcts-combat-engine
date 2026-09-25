@@ -48,7 +48,7 @@ the safety cap is not reached. Different actions can still consume different
 environment draws, so paired starting seeds do not mean identical later luck.
 
 Use `--game-seed 10 --policy-seed 20` to choose the first environment and policy
-seeds independently. Each game increments those seeds by one. JSON schema 2
+seeds independently. Each game increments those seeds by one. JSON schema 3
 records these ranges, the policy seed format, and the search stream's scope.
 Each search result also contains `search_work.decision_simulations` and
 `below_requested_simulations`. The Markdown export summarizes these observed
@@ -57,8 +57,33 @@ counts. A safety timeout is recorded as a shortfall, not a completed fixed budge
 Timed search uses unseeded search randomness and records `search_seed` as `null`.
 With `--sims`, the recorded time limit is the 60 second safety cap, even if a
 different positional time budget was supplied. The JSON contains aggregate
-results and decision simulation counts, not individual game traces. Keep the source revision alongside an
-export when comparing changes to the engine.
+results, per-game outcome records and decision work counts. It does not contain
+full state and action traces. Keep the source revision alongside an export when
+comparing changes to the engine.
+
+To give search and one-round enumeration the same allowance of simulated rounds:
+
+```sh
+python benchmark.py 5 --transitions 300 --game-seed 200 --seed 7 --policy-seed 7 --json transitions.json --markdown transitions.md
+```
+
+This serial mode adds the one-round comparator and counts every simulator call
+used to evaluate actions. MCTS counts tree traversal, expansion and rollout.
+It starts a simulation only when the remaining allowance can fund its full
+five-round horizon. The comparator completes whole sweeps over every legal
+action, using the same starting sample seed for each candidate in a sweep.
+Neither method truncates its final work unit just to spend the allowance.
+
+The export records actual transitions, unused allowance, completed simulations
+or sweeps, and stop reasons for every decision. A 60 second safety cap is checked
+between complete work units. A decision stopped early by that cap remains
+incomplete. The same transition allowance is not equal CPU time, and different
+remainders or game lengths can produce different total spending. Random and
+greedy remain contextual controls that do no sampled forward search. This mode
+uses descriptive results without confidence intervals or z statistics.
+
+Choose `--transitions` separately from `--sims` and `--one-round-samples`.
+Existing timed and fixed-simulation commands keep their behavior.
 
 ### Reading one decision
 
@@ -163,8 +188,9 @@ uses its own copy of the prior, just as it builds its own tree.
 * Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one-round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded multi-seed study does not establish general superiority. New environment seeds and measured compute matching remain useful next comparisons.
 * The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
 * Parallel merging is tested. Linear process scaling and compilation speedups have not been measured on this revision, so none is claimed.
-* The `mcts_decider` wrapper supports `seed` and `max_sims` only in serial mode.
-  With `parallel=True` it uses a time budget and rejects either control, including
+* The `mcts_decider` wrapper supports `seed`, `max_sims` and `max_transitions`
+  only in serial mode. With `parallel=True` it uses a time budget and rejects
+  these controls, including
   with `workers=1`. Passing an unsupported control cannot silently become a
   different experiment.
 * Mean reward ranking can favor a lightly visited lucky action. Visits are shown so the uncertainty is visible.
