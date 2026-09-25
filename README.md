@@ -144,6 +144,10 @@ uses its own copy of the prior, just as it builds its own tree.
 * Random and greedy are simple baselines. Greedy never heals; random sometimes does. A stronger hand tuned policy, multiple search seeds and parameter sweeps are useful next comparisons.
 * The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
 * Parallel merging is tested. Linear process scaling and compilation speedups have not been measured on this revision, so none is claimed.
+* The `mcts_decider` wrapper supports `seed` and `max_sims` only in serial mode.
+  With `parallel=True` it uses a time budget and rejects either control, including
+  with `workers=1`. Passing an unsupported control cannot silently become a
+  different experiment.
 * Mean reward ranking can favor a lightly visited lucky action. Visits are shown so the uncertainty is visible.
 
 ## License
