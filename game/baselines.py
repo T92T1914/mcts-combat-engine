@@ -59,11 +59,16 @@ def mcts_decider(budget_ms: int = 300, horizon: int = 5,
     """Build an MCTS decider. Single-process by default so it is safe to call
     from anywhere; pass ``parallel=True`` for the root-parallel engine.
 
-    For determinism (tests), pass BOTH ``seed`` and ``max_sims``: a seed alone
+    For deterministic single-process tests, pass BOTH ``seed`` and ``max_sims``.
+    Parallel mode is timed only and rejects either control, even with one
+    worker. A seed alone
     is not enough, because a wall-clock budget stops at a machine-dependent
     simulation count. ``on_search`` receives the actual simulation count
     after each decision, including a search stopped by its time limit.
     """
+    if parallel and (seed is not None or max_sims is not None):
+        raise ValueError("seed and max_sims require single-process search "
+                         "(parallel=False)")
     engine = (ParallelMCTS(horizon_rounds=horizon, workers=workers)
               if parallel else MCTS(horizon_rounds=horizon))
     if isinstance(engine, MCTS):
