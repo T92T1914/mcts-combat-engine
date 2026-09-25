@@ -47,9 +47,15 @@ The [one-round comparison](docs/comparison-results.md) retains a frozen protocol
 per-game outcomes and separate work counts across several search seeds. Regenerate
 its tables with `python tools/render_comparison.py`, or check them without writing
 with `python tools/render_comparison.py --check`. Keep historical results intact
-when collecting a new study. Useful next work includes new environment seeds,
-matched transition or elapsed-work budgets, and a measured comparison of worker
-counts. Keep action identity and move legality intact.
+when collecting a new study. The separate
+[transition allowance comparison](docs/transition-comparison-results.md)
+records complete simulations and action
+sweeps under a shared allowance. Its protocol was committed before outcomes.
+Check its data and generated report with
+`python tools/render_transition_comparison.py --check`. Keep time shortfalls,
+unused remainders, terminal losses and unfinished games distinct. Equal transition
+allowances do not establish equal elapsed work. A measured comparison of worker
+counts remains separate work. Keep action identity and move legality intact.
 
 ## Development container and public site
 

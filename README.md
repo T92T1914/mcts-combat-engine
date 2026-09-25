@@ -147,6 +147,16 @@ JSON exports include per-game seeds, scores, terminal results and round counts,
 alongside their aggregates. A successor transition and a MCTS simulation are
 different work units, so the recorded counts do not establish efficiency.
 
+The separate [transition allowance study](docs/transition-comparison-results.md)
+gives both methods 300 simulated rounds per decision on five new environment
+seeds, repeated with search and policy bases 7, 42 and 99. MCTS won all five duels
+and gauntlets in each repeat, with 4, 3 and 4 boss wins. The comparator won
+3, 4 and 4 duels, 4, 5 and 4 gauntlets, and no boss games. Random beat it in two
+duel conditions and one boss condition. All 180 game records, unfinished games,
+actual work and unused allowances are retained. No decision hit its safety cap.
+This matches transition allowances, not CPU time or total work across games.
+The small repeated environment set still does not establish general superiority.
+
 ## How it works
 
 1. Clone the current state and replay an action sequence under fresh randomness.
@@ -185,7 +195,7 @@ uses its own copy of the prior, just as it builds its own tree.
 ## What these numbers do not prove
 
 * Thirty games per cell and one search seed leave substantial sampling uncertainty. Shared starting seeds do not remove it. The z scores in the generated table are descriptive approximations, not a paired significance analysis.
-* Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one-round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded multi-seed study does not establish general superiority. New environment seeds and measured compute matching remain useful next comparisons.
+* Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one-round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded studies include new environment seeds and matched transition allowances, but do not establish general superiority or equal CPU cost.
 * The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
 * Parallel merging is tested. Linear process scaling and compilation speedups have not been measured on this revision, so none is claimed.
 * The `mcts_decider` wrapper supports `seed`, `max_sims` and `max_transitions`
