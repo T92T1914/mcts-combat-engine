@@ -92,9 +92,22 @@ class TestOneRound(unittest.TestCase):
             self.assertEqual(policy(tied, random.Random(9)), Action(0, 0))
 
     def test_invalid_sample_counts_fail_before_a_policy_is_created(self):
-        for samples in (0, -1, True, 1.5, "8", None):
+        for samples in (0, -1, True, 1.5, "8"):
             with self.subTest(samples=samples), self.assertRaises(ValueError):
                 one_round_decider(samples)
+
+    def test_none_selects_the_documented_default_eight_samples(self):
+        # None now distinguishes the default from an explicit sample cap when
+        # callers select the alternative transition-allowance mode.
+        state = _state(ATTACK, HEAL)
+        default_rng, explicit_rng = random.Random(4), random.Random(4)
+        counts = []
+        chosen = one_round_decider(None, on_evaluation=counts.append)(
+            state, default_rng)
+        expected = one_round_decider(8)(state, explicit_rng)
+        self.assertEqual(chosen, expected)
+        self.assertEqual(default_rng.getstate(), explicit_rng.getstate())
+        self.assertEqual(counts, [8 * len(legal_actions(state))])
 
     def test_cli_records_comparator_and_separate_work_units(self):
         with tempfile.TemporaryDirectory() as tmp:

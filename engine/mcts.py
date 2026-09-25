@@ -154,6 +154,11 @@ class MCTS:
         exactly. Parallel workers each carry their own.
     last_sims
         Simulations actually run by the most recent ``search()``.
+    max_transitions
+        Optional allowance for simulated rounds, including tree traversal and
+        rollout. A simulation starts only with a full horizon left. It always
+        finishes normally, so a final remainder smaller than the horizon is
+        unused. This counts simulator calls, not elapsed compute time.
 
     Counts must be integers (not booleans): a positive horizon and a
     nonnegative simulation cap. Exploration and time budgets must be finite
@@ -164,7 +169,11 @@ class MCTS:
     exploration: float = 1.2
     max_sims: int = 10_000
     rng: random.Random = field(default_factory=random.Random)
+    max_transitions: int | None = None
     last_sims: int = field(init=False, default=0)
+    last_transitions: int = field(init=False, default=0)
+    last_unused_transitions: int | None = field(init=False, default=None)
+    last_stop_reasons: tuple[str, ...] = field(init=False, default=())
 
     def __post_init__(self) -> None:
         self._validate_configuration()
@@ -177,6 +186,11 @@ class MCTS:
                 or isinstance(self.max_sims, bool) or self.max_sims < 0):
             raise ValueError("max_sims must be a nonnegative integer")
         _validate_nonnegative_finite(self.exploration, "exploration")
+        if self.max_transitions is not None and (
+                not isinstance(self.max_transitions, int)
+                or isinstance(self.max_transitions, bool)
+                or self.max_transitions < 0):
+            raise ValueError("max_transitions must be a nonnegative integer or None")
 
     def search(self, root_state: GameState, time_budget_ms: float = 450,
                priors: "dict[str, tuple[int, float]] | None" = None,
@@ -200,13 +214,18 @@ class MCTS:
         including entries for cards absent from the current hand.
         """
         self.last_sims = 0
+        self.last_transitions = 0
+        self.last_unused_transitions = None
+        self.last_stop_reasons = ()
         # Configuration is mutable; check again before advancing the RNG.
         self._validate_configuration()
         _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
         _validate_priors(priors)
+        self.last_unused_transitions = self.max_transitions
         if root_state.is_terminal():
             # No decision remains; priors must not manufacture one or spend
             # the full simulation budget repeatedly scoring a finished state.
+            self.last_stop_reasons = ("terminal",)
             return []
         deadline = time.perf_counter() + time_budget_ms / 1000.0
         root = Node(action=None, parent=None)
@@ -227,8 +246,16 @@ class MCTS:
                     root.children.append(child)
                     root.visits += v0
         sims = 0
+        time_stopped = False
 
-        while sims < self.max_sims and time.perf_counter() < deadline:
+        while sims < self.max_sims:
+            if (self.max_transitions is not None
+                    and self.max_transitions - self.last_transitions
+                    < self.horizon_rounds):
+                break
+            if time.perf_counter() >= deadline:
+                time_stopped = True
+                break
             state = root_state.clone()
             slots = list(range(len(root_state.hand)))
             node = root
@@ -252,6 +279,7 @@ class MCTS:
                 assert child.action is not None
                 action = available[child.action]
                 advance_round(state, action, self.rng)
+                self.last_transitions += 1
                 if action.card_idx is not None:
                     slots.pop(action.card_idx)
                 depth += 1
@@ -282,6 +310,16 @@ class MCTS:
         ]
         ranked.sort(key=lambda r: (r.win_rate, r.visits), reverse=True)
         self.last_sims = sims
+        reasons = []
+        if self.max_transitions is not None:
+            self.last_unused_transitions = self.max_transitions - self.last_transitions
+            if self.last_unused_transitions < self.horizon_rounds:
+                reasons.append("transition_allowance")
+        if sims >= self.max_sims:
+            reasons.append("simulation_cap")
+        if time_stopped:
+            reasons.append("time_limit")
+        self.last_stop_reasons = tuple(reasons)
         return ranked
 
     def _rollout(self, state: GameState, depth: int) -> float:
@@ -296,6 +334,7 @@ class MCTS:
                 return self._terminal_reward(result, depth)
             acts = legal_actions(state)
             advance_round(state, acts[self.rng.randrange(len(acts))], self.rng)
+            self.last_transitions += 1
             depth += 1
         result = state.result()
         if result is not None:

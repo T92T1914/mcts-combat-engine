@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "id": "transition-allowance-comparator-v1",
+  "declared_utc": "2026-09-25T04:02:29Z",
+  "status": "pre_outcome_controls_and_interface_declared",
+  "base_revision": "a2d55d91b1047c78df8d7c53f0de4a42396dae17",
+  "question": "How do MCTS and one-round action enumeration compare under the same allowance of forward simulator transitions per decision on a predeclared set of environment seeds?",
+  "prior_study": {
+    "protocol": "docs/comparison-protocol.json",
+    "report": "docs/comparison-results.md",
+    "data": "docs/comparison-results.json",
+    "preservation": "Keep all prior files and outcomes unchanged. This is a separate study, not a replacement for the unequal-work comparison."
+  },
+  "scenarios": [
+    "duel",
+    "gauntlet",
+    "boss"
+  ],
+  "environment_seeds": [
+    200,
+    201,
+    202,
+    203,
+    204
+  ],
+  "environment_seed_scope": "These values differ from the published prior study's seeds 0 through 4. They have not been evaluated or inspected in this new study before this declaration. No claim is made that they were never used anywhere else.",
+  "replicates": [
+    {
+      "search_seed": 7,
+      "policy_seed": 7
+    },
+    {
+      "search_seed": 42,
+      "policy_seed": 42
+    },
+    {
+      "search_seed": 99,
+      "policy_seed": 99
+    }
+  ],
+  "policies": [
+    "random",
+    "greedy",
+    "one_round",
+    "mcts"
+  ],
+  "contextual_controls": [
+    "random",
+    "greedy"
+  ],
+  "contextual_control_scope": "Random and damage-only greedy perform no sampled forward successor search. Retain their outcomes as context, not as policies that consume the matched transition allowance.",
+  "games_per_policy_per_scenario_per_replicate": 5,
+  "max_game_rounds": 30,
+  "design_size": {
+    "scenario_seed_base_cells": 9,
+    "policy_game_records": 180,
+    "distinct_environment_seeds_per_scenario": 5
+  },
+  "randomness": {
+    "environment": "Each game begins from random.Random(environment_seed). Scenario creation, deck refill and actual environment outcomes use this stream.",
+    "policy": "Each game uses a separate random.Random('policy-v1:{base + game_index}') stream.",
+    "search": "MCTS starts a fresh search RNG at search_seed for each scenario and retains it across that scenario's five games. No search stream carries across scenarios.",
+    "repeated_conditions": "Reuse the five environment starts across the three policy/search bases. These are repeated conditions, not 15 independent environments.",
+    "trajectory_limit": "Common initial environment seeds do not produce identical random trajectories when actions consume different draws."
+  },
+  "shared_allowance": {
+    "transitions_per_decision": 300,
+    "unit": "One completed advance_round call on a cloned state for policy evaluation, including MCTS tree traversal, expansion and rollout. Actual game progression is excluded.",
+    "rationale": "300 is a transparent bounded engineering choice declared before outcomes. It is not selected by a search over these new environments.",
+    "processes": 1,
+    "execution_order": "Three sequential runs in seed-base order 7,42,99. Each run uses scenario order duel,gauntlet,boss and existing policy order random,greedy,one_round,mcts.",
+    "safety_time_limit_ms": 60000,
+    "timing_semantics": "Check the safety clock only between complete MCTS simulations or complete equal-action comparator sweeps. This is not a hard wall-clock deadline. Preserve any time-cap result and its measured work."
+  },
+  "one_round": {
+    "horizon_rounds": 1,
+    "candidate_order": "Stable original hand index followed by target index, with pass first.",
+    "sweep": "Evaluate every legal candidate once using the same starting sample seed for that sweep. Action-dependent draw paths may differ.",
+    "completed_sweeps_target": "floor(300 / legal_action_count), unless the safety time cap is reached first.",
+    "requested_samples_per_action": "Derived only from the allowance and legal action count. Do not retain the previous independent eight-sample cap.",
+    "evaluation": "Terminal result, otherwise the existing unchanged state heuristic.",
+    "tie_break": "Stable candidate order.",
+    "insufficient_allowance": "If the allowance cannot fund one complete sweep, fail visibly before sampling. Do not return an unevaluated pass or favor a prefix of actions.",
+    "unused_allowance": "A remainder smaller than legal_action_count is expected when only complete sweeps are admitted."
+  },
+  "mcts": {
+    "horizon_rounds": 5,
+    "max_simulations_per_decision": 300,
+    "simulation_cap_rationale": "A complete nonterminal simulation uses at least one transition. This cap cannot end the study's search earlier than the 300-transition allowance.",
+    "admission": "Start a simulation only when remaining allowance is at least the five-round horizon. Complete it, count its actual transitions, then consider another. Do not truncate a simulation to consume the final remainder.",
+    "unused_allowance": "A remainder smaller than the horizon is expected conservative admission, not a safety-time shortfall.",
+    "priors": "None.",
+    "policy_constants": "Keep existing exploration, rollout, terminal shaping, heuristic and ranking choices unchanged.",
+    "no_sample": "A nonterminal decision with no completed simulation is a visible failure, not an automatic pass."
+  },
+  "primary_metric": "Clean wins out of five, for each scenario and seed base.",
+  "secondary_metrics": [
+    "Mean shaped game score, explicitly not a win probability.",
+    "Average game rounds conditional on a clean win.",
+    "Every per-game terminal result, including losses and unfinished 30-round games."
+  ],
+  "work_metrics": [
+    "Per-decision requested, used and unused transition allowance.",
+    "Actual completed MCTS simulations and actual transitions.",
+    "Actual legal candidate count, completed one-round sweeps and transitions.",
+    "Exact stop reason and any safety-cap or no-sample event.",
+    "Per-game decision counts and their reconciliation to game rounds.",
+    "Totals and min/max work by policy, scenario and seed base, retaining unused work.",
+    "Environment, Python version, source revision, normalized source hashes and elapsed run time as context."
+  ],
+  "acceptance": [
+    "Every used transition count is an integer between zero and 300, and unused equals 300 minus used.",
+    "Every comparison decision completes at least one MCTS simulation or one full equal-action sweep.",
+    "Comparator used transitions equal legal_action_count times completed_sweeps. No partial or discarded candidate sweep.",
+    "MCTS transition counts cover traversal, expansion and rollout exactly once.",
+    "Complete simulations and sweeps preserve caller state and legal action identity.",
+    "Stop reasons distinguish ordinary allowance remainders, safety-time shortfalls, terminal roots and failures.",
+    "Per-game outcomes reconcile with aggregates and decision records. Do not call an unfinished game a loss.",
+    "No result-based parameter or seed changes."
+  ],
+  "failure_policy": [
+    "Retain all complete, unfavorable, partial and failed runs with their exact settings, exit state, logs and source identity.",
+    "A safety cap does not become a completed allowance-budget claim. Keep its outcome visible and identify incomplete work.",
+    "Do not silently omit or replace an errored cell. Correct an implementation failure only with a new recorded revision and retained first attempt.",
+    "If semantic ambiguity or a necessary design change appears before outcomes, append a dated amendment or new protocol version. Preserve this file.",
+    "Do not start the outcome run until interface mapping, implementation source identity and synthetic budget acceptance are recorded."
+  ],
+  "reporting_limits": [
+    "Same transition allowance is not equal CPU time, memory, state-cloning cost or action-evaluation overhead.",
+    "Policies can consume different actual transition totals because work units must complete and games can end at different rounds.",
+    "Five environments per scenario reused across three seed bases are not independent 15-game samples.",
+    "No z test, p value, confidence interval or pooled-independent-sample claim.",
+    "The policies share the simulator and heuristic. Neither is independent ground truth.",
+    "Retain every condition and every losing result. Do not infer general superiority from this small fixed study.",
+    "Do not treat old and new environment outcomes as a controlled before/after algorithm effect."
+  ],
+  "controls_raw_sha256": "073bccf5e659451e85ea22968543fd57927cd1ef1f7b22fe42b0898002f43013",
+  "interface": {
+    "command_template": "python benchmark.py 5 --transitions 300 --seed S --policy-seed S --game-seed 200 --json seed-S.json",
+    "benchmark_schema_version": 3,
+    "study_schema_version": 1,
+    "policy_labels": [
+      "random",
+      "greedy",
+      "one_round (300 transitions)",
+      "mcts (300 transitions)"
+    ],
+    "decision_records": "Each simulated policy retains transition_work.decision_records in serial game and decision order.",
+    "game_mapping": "The assembled study adds transition_work.game_decision_ranges with environment_seed, policy_seed, start_index and exclusive stop_index derived cumulatively from game_results rounds. This indexes recorded decisions rather than independently observing them.",
+    "common_fields": [
+      "max_transitions",
+      "transitions",
+      "unused_transitions",
+      "stop_reasons"
+    ],
+    "mcts_fields": [
+      "simulations"
+    ],
+    "one_round_fields": [
+      "actions",
+      "intended_sweeps",
+      "completed_sweeps"
+    ],
+    "incomplete_decisions": "Zero-based indices of decisions stopped by time_limit or without transition_allowance. Ordinary exhaustion is checked before the safety clock.",
+    "source_paths": [
+      "benchmark.py",
+      "game/baselines.py",
+      "game/runner.py",
+      "game/content.py",
+      "game/loader.py",
+      "engine/__init__.py",
+      "engine/actions.py",
+      "engine/mcts.py",
+      "engine/parallel.py",
+      "engine/rules.py",
+      "engine/simulator.py",
+      "engine/state.py",
+      "data/cards.json",
+      "data/scenarios.json"
+    ],
+    "source_identity": "Record the tested committed source revision, this committed protocol hash and normalized source hashes before running outcomes. Retain those identities in the combined study.",
+    "hash_method": "UTF-8 text with LF newlines and no BOM",
+    "report_command": "python tools/render_transition_comparison.py --check"
+  }
+}

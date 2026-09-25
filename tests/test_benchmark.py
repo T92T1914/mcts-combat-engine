@@ -92,7 +92,7 @@ class TestCommandLine(unittest.TestCase):
             self.assertIn("1 games per policy", text)
             self.assertIn("; ci.", text)
             report = json.loads(data.read_text(encoding="utf-8"))
-            self.assertEqual(report["schema_version"], 2)
+            self.assertEqual(report["schema_version"], 3)
             self.assertEqual(report["settings"]["mode"], "timed")
             self.assertIsNone(report["settings"]["search_seed"])
             self.assertIsNone(report["settings"]["max_simulations"])
