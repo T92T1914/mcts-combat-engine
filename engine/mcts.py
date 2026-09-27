@@ -174,6 +174,8 @@ class MCTS:
     last_transitions: int = field(init=False, default=0)
     last_unused_transitions: int | None = field(init=False, default=None)
     last_stop_reasons: tuple[str, ...] = field(init=False, default=())
+    last_root_statistics: list[tuple[Action, int, float]] = field(
+        init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self._validate_configuration()
@@ -192,7 +194,7 @@ class MCTS:
                 or self.max_transitions < 0):
             raise ValueError("max_transitions must be a nonnegative integer or None")
 
-    def search(self, root_state: GameState, time_budget_ms: float = 450,
+    def search(self, root_state: GameState, time_budget_ms: float | None = 450,
                priors: "dict[str, tuple[int, float]] | None" = None,
                ) -> list[RankedAction]:
         """Search from ``root_state`` until the budget or ``max_sims`` runs
@@ -212,14 +214,20 @@ class MCTS:
         in [0, 1]. JSON list pairs are also accepted. Zero-count entries add
         no virtual visits. Invalid entries raise ValueError before sampling,
         including entries for cards absent from the current hand.
+
+        ``time_budget_ms=None`` disables the clock limit. The simulation and
+        optional transition ceilings still apply. Raw root statistics retain
+        value sums directly for parallel aggregation, including virtual priors.
         """
         self.last_sims = 0
         self.last_transitions = 0
         self.last_unused_transitions = None
         self.last_stop_reasons = ()
+        self.last_root_statistics = []
         # Configuration is mutable; check again before advancing the RNG.
         self._validate_configuration()
-        _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
+        if time_budget_ms is not None:
+            _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
         _validate_priors(priors)
         self.last_unused_transitions = self.max_transitions
         if root_state.is_terminal():
@@ -227,7 +235,8 @@ class MCTS:
             # the full simulation budget repeatedly scoring a finished state.
             self.last_stop_reasons = ("terminal",)
             return []
-        deadline = time.perf_counter() + time_budget_ms / 1000.0
+        deadline = (time.perf_counter() + time_budget_ms / 1000.0
+                    if time_budget_ms is not None else None)
         root = Node(action=None, parent=None)
         if priors:
             for a in legal_actions(root_state):
@@ -253,7 +262,7 @@ class MCTS:
                     and self.max_transitions - self.last_transitions
                     < self.horizon_rounds):
                 break
-            if time.perf_counter() >= deadline:
+            if deadline is not None and time.perf_counter() >= deadline:
                 time_stopped = True
                 break
             state = root_state.clone()
@@ -297,6 +306,8 @@ class MCTS:
                 up.value_sum += reward
                 up = up.parent
             sims += 1
+            # Preserve completed work if a later simulation raises an error.
+            self.last_sims = sims
 
         ranked = [
             RankedAction(
@@ -309,6 +320,9 @@ class MCTS:
             if ch.action is not None      # always true below the root
         ]
         ranked.sort(key=lambda r: (r.win_rate, r.visits), reverse=True)
+        self.last_root_statistics = [
+            (ch.action, ch.visits, ch.value_sum) for ch in root.children
+            if ch.action is not None]
         self.last_sims = sims
         reasons = []
         if self.max_transitions is not None:

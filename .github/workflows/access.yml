@@ -31,6 +31,7 @@ jobs:
         with:
           node-version: '24'
       - run: node --test tests/selection-state.test.mjs
+      - run: python tools/render_parallel_scaling.py --check
       - run: python tools/build_site.py
       - run: npm ci --ignore-scripts
       - name: Verify the saved page in sandboxed headless Chrome

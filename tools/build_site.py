@@ -21,6 +21,10 @@ FILES = {
     "site/selection-state.mjs": "selection-state.mjs",
     "docs/visual-example-data.json": "data.json",
     "docs/mcts-decision-example.svg": "example.svg",
+    "site/parallel-scaling.html": "parallel-scaling.html",
+    "docs/parallel-scaling-results.json": "parallel-scaling-results.json",
+    "docs/parallel-scaling-protocol.json": "parallel-scaling-protocol.json",
+    "docs/parallel-scaling-results.md": "parallel-scaling-results.md",
 }
 GENERATED = {"appearance.css", "presentation.json"}
 
@@ -40,6 +44,9 @@ def provenance(data):
         "presentation_revision": revision,
         "presentation_worktree_dirty": dirty,
         "recorded_source_revision": data["source_commit"],
+        "parallel_study_source_revision": json.loads(
+            (ROOT / "docs/parallel-scaling-results.json").read_text()
+        )["source"]["revision"],
         "evaluation_rerun": False,
         "tokens": load_tokens()["source"],
         "files": {

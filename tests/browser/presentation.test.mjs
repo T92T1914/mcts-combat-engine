@@ -243,3 +243,83 @@ test('controlled installed Inter provides all six faces and ordinary content use
     assert.ok(codeFonts.every(f => !f.postScriptName.startsWith('Inter')));
   }
 });
+
+for (const mode of ['obscur','clair']) test(`${mode} process report keeps every saved cell, downloads and narrow layout`, async t => {
+  const page = await fixture(t);
+  await ready(page);
+  await page.getByRole('link', {name:'Read the process scaling report'}).click();
+  await page.locator('#appearance:not([disabled])').waitFor();
+  await page.locator('#appearance').selectOption(mode);
+  const tables = await page.locator('tbody').allTextContents();
+  assert.deepEqual(await page.locator('tbody').evaluateAll(elements => elements.map(e => e.rows.length)), [4,54,54,54]);
+  const raw = JSON.parse(await readFile(path.join(root, 'parallel-scaling-results.json'), 'utf8'));
+  const measured = page.locator('.table-wrap').nth(1).locator('tbody tr');
+  for (const [index, cell] of raw.cells.entries()) {
+    const values = await measured.nth(index).locator('td').allTextContents();
+    assert.deepEqual(values.slice(0,5), [cell.scenario,String(cell.search_seed),String(cell.workers),cell.phase,cell.elapsed_s.toFixed(6)]);
+    assert.ok(values[7].startsWith(cell.ranked[0].label));
+  }
+  for (const name of ['parallel-scaling-results.json','parallel-scaling-results.md','parallel-scaling-protocol.json']) {
+    assert.equal(await page.locator(`a[href="${name}"]`).count(), 1);
+    const response = await page.request.get(base+'/'+name);
+    assert.equal(response.status(), 200);
+    assert.deepEqual(await response.body(), await readFile(path.join(root, name)));
+  }
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('link', {name:'Download raw results'}).click(),
+  ]);
+  assert.equal(download.suggestedFilename(), 'parallel-scaling-results.json');
+  assert.deepEqual(await readFile(await download.path()), await readFile(path.join(root, 'parallel-scaling-results.json')));
+  assert.match(await page.locator('main').textContent(), /No episodes or playing strength comparison ran/);
+  assert.match(await page.locator('main').textContent(), /not pure IPC latency/);
+  if (process.env.MCTS_SCREENSHOT_DIR) {
+    await page.screenshot({path:path.join(process.env.MCTS_SCREENSHOT_DIR, `${mode}-process-wide.png`)});
+    await capture(page, `${mode}-process-summary`, '.table-wrap[aria-label="Paired time ratios"]');
+  }
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await page.evaluate(() => scrollTo(0,0));
+  if (process.env.MCTS_SCREENSHOT_DIR) {
+    await page.screenshot({path:path.join(process.env.MCTS_SCREENSHOT_DIR, `${mode}-process-narrow.png`)});
+  }
+  await page.locator('#appearance').focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Download raw results');
+  await page.locator('.table-wrap').nth(1).focus();
+  assert.equal(await page.locator('.table-wrap').nth(1).evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+  await page.addStyleTag({content:'html{font-size:200% !important}'});
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await page.locator('#appearance').selectOption(mode === 'clair' ? 'obscur' : 'clair');
+  assert.deepEqual(await page.locator('tbody').allTextContents(), tables);
+  await page.reload();
+  assert.equal(await page.locator('#appearance').inputValue(), mode === 'clair' ? 'obscur' : 'clair');
+  if (process.env.MCTS_REQUIRE_INTER === '1') {
+    for (const [selector, expected] of [['h1','Inter-Bold'],['main p:not(.eyebrow)','Inter-Regular'],['label[for="appearance"]','Inter-SemiBold']]) {
+      const providers = await fonts(page, selector);
+      assert.ok(providers.some(f => f.postScriptName === expected && f.glyphCount > 0));
+      console.log('Report content glyphs:', JSON.stringify({mode:await page.locator('#appearance').inputValue(),selector,providers}));
+    }
+  }
+  await page.getByRole('link', {name:'Decision explorer', exact:true}).click();
+  assert.equal(await page.locator('#parallel-study').count(), 1);
+  await page.goBack();
+  assert.equal(await page.locator('h1').textContent(), 'Fixed work process scaling');
+});
+
+test('process report needs no script and handles unavailable storage and print separately', async t => {
+  const noScript = await fixture(t, {javaScriptEnabled:false, colorScheme:'dark'});
+  await noScript.goto(base+'/parallel-scaling.html');
+  assert.equal(await background(noScript), 'rgb(9, 9, 9)');
+  assert.equal(await noScript.locator('tbody tr').count(), 166);
+  const page = await fixture(t, {colorScheme:'light'}, true);
+  await ready(page, '/parallel-scaling.html');
+  await page.locator('#appearance').selectOption('obscur');
+  assert.equal(await background(page), 'rgb(9, 9, 9)');
+  await page.emulateMedia({media:'print'});
+  assert.equal(await background(page), 'rgb(248, 247, 243)');
+  await page.emulateMedia({media:'screen'});
+  assert.equal(await background(page), 'rgb(9, 9, 9)');
+  await page.reload();
+  assert.equal(await background(page), 'rgb(248, 247, 243)');
+});

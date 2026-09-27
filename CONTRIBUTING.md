@@ -57,6 +57,19 @@ unused remainders, terminal losses and unfinished games distinct. Equal transiti
 allowances do not establish equal elapsed work. A measured comparison of worker
 counts remains separate work. Keep action identity and move legality intact.
 
+The new [parallel fixed work contract](docs/parallel-fixed-work.md) divides total
+allowances and preserves unknown work on a lost worker. Its bounded scaling
+protocol is separate from the earlier complete game studies. Commit the tested
+implementation and `docs/parallel-scaling-protocol.json` before executing
+`tools/run_parallel_scaling.py`. Run correctness tests and rendering outside the
+measurement window. Retain the first attempt and any failure. Pool reuse is not
+tree reuse, and faster computation does not establish stronger play. The first
+54 conditions are retained in `docs/parallel-scaling-results.json`. Check the
+accounting and both generated reports with
+`python tools/render_parallel_scaling.py --check`. Drop `--check` only to render
+the saved measurements. Neither operation runs the experiment. Keep the measured
+source revision separate from the later site build revision.
+
 ## Development container and public site
 
 Open this repository in Codespaces or use VS Code Dev Containers. The container uses Python 3.11 and installs the project into `.venv` during setup. Its image is pinned by digest. The `Project access` workflow builds that same environment and runs `.devcontainer/smoke.sh`. Runtime dependencies still follow the project configuration. Codespaces uses the creating account's compute and storage allowance.
@@ -75,6 +88,7 @@ Use these extra checks for presentation changes:
 ```sh
 node --test tests/selection-state.test.mjs
 npm ci --ignore-scripts
+python tools/render_parallel_scaling.py --check
 python tools/build_site.py
 npm run test:browser
 ```
