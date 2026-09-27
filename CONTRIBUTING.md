@@ -62,3 +62,34 @@ counts remains separate work. Keep action identity and move legality intact.
 Open this repository in Codespaces or use VS Code Dev Containers. The container uses Python 3.11 and installs the project into `.venv` during setup. Its image is pinned by digest. The `Project access` workflow builds that same environment and runs `.devcontainer/smoke.sh`. Runtime dependencies still follow the project configuration. Codespaces uses the creating account's compute and storage allowance.
 
 Run `python tools/build_site.py` to assemble the public page in `_site`, then `python -m http.server 8080 --directory _site` to preview it. The builder copies only the listed example files. The page reads saved evidence; it does not silently rerun the experiment or claim current results. Pages deploys from `main` after the site and development environment checks pass.
+
+The page uses the Clair/Obscur roles pinned in `presentation/tokens.json`.
+`tools/presentation.py` generates the small CSS adapter. Keep action values,
+visit counts, units and selection history independent of appearance. The
+historical SVG retains its original colors and bytes. The build records hashes,
+the rendering revision and the saved decision's original source revision in
+`_site/presentation.json`. A dirty local build is labeled as such.
+
+Use these extra checks for presentation changes:
+
+```sh
+node --test tests/selection-state.test.mjs
+npm ci --ignore-scripts
+python tools/build_site.py
+npm run test:browser
+```
+
+Playwright is a development dependency only. Set `MCTS_BROWSER_CHANNEL=chrome`
+to use an installed Chrome in isolated headless processes. CI uses its installed
+Chrome with the sandbox enabled. Otherwise install Playwright's matching browser
+with `npx playwright install chromium`. Tests never attach to an existing browser
+or profile. `MCTS_SCREENSHOT_DIR` optionally saves isolated page captures outside
+the checkout.
+
+The browser suite checks both appearances, Auto, failed storage, no JavaScript,
+selection/history, keyboard navigation, narrow screens, enlarged text, print and
+forced colors. Set `MCTS_REQUIRE_INTER=1` only in an environment with the six
+documented local Inter faces installed. That strict check requires actual glyph
+providers for 400, 600, 700 and genuine italics, separately from the missing-font
+fallback control. These headless page checks do not establish native client or
+physical display acceptance. No font files are bundled or fetched by the page.
