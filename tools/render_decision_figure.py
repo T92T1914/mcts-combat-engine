@@ -89,7 +89,7 @@ def semantic_record(data):
     }
 
 
-def draw(data, tokens, mode, files, output):
+def draw(data, tokens, mode, files, output, wide=False):
     import matplotlib
 
     matplotlib.use("Agg")
@@ -102,7 +102,9 @@ def draw(data, tokens, mode, files, output):
     roles = tokens["themes"][mode]
     fonts = {name: FontProperties(fname=str(path)) for name, path in files.items()}
     with rc_context({"svg.fonttype": "path", "svg.hashsalt": "mcts-decision-v1"}):
-        fig = Figure(figsize=(4.8, 9.8), dpi=200, facecolor=roles["canvas"])
+        fig = Figure(
+            figsize=(9, 5.8) if wide else (4.8, 9.8), dpi=200, facecolor=roles["canvas"]
+        )
         labels = []
 
         def label(x, y, text, size=13, face="Regular", color=None, **kwargs):
@@ -120,56 +122,114 @@ def draw(data, tokens, mode, files, output):
             labels.append(item)
             return item
 
-        label(0.075, 0.96, "MCTS COMBAT ENGINE", 12, "SemiBold", roles["accent"])
-        label(0.075, 0.915, "One decision.\nThree choices.", 27, "Bold")
-        label(0.075, 0.80, "10,000 simulations. Seed 7.", 14)
-        label(0.075, 0.752, "Mean shaped reward", 14, "SemiBold")
-        for index, row in enumerate(data["actions"]):
-            top = 0.699 - index * 0.108
-            color = roles[ACTIONS[row["name"]]]
-            label(0.075, top, row["name"], 14, "SemiBold", color)
-            label(0.925, top, f"{row['reward']:.3f}", 14, "Bold", ha="right")
-            bar = Rectangle(
-                (0.075, top - 0.049),
-                0.85 * row["reward"] / 0.6,
-                0.021,
-                transform=fig.transFigure,
-                facecolor=color,
-                gid=f"reward-{index}",
+        if wide:
+            label(0.055, 0.96, "MCTS COMBAT ENGINE", 12, "SemiBold", roles["accent"])
+            label(0.055, 0.90, "One decision. Three choices.", 27, "Bold")
+            label(0.055, 0.80, "10,000 simulations. Seed 7.", 14)
+            label(0.055, 0.715, "Mean shaped reward", 14, "SemiBold")
+            for index, row in enumerate(data["actions"]):
+                top = 0.645 - index * 0.112
+                color = roles[ACTIONS[row["name"]]]
+                label(0.055, top, row["name"], 14, "SemiBold", color)
+                label(0.59, top, f"{row['reward']:.3f}", 14, "Bold", ha="right")
+                fig.add_artist(
+                    Rectangle(
+                        (0.055, top - 0.080),
+                        0.535 * row["reward"] / 0.6,
+                        0.022,
+                        transform=fig.transFigure,
+                        facecolor=color,
+                        gid=f"reward-{index}",
+                    )
+                )
+            for value in [0, 0.2, 0.4, 0.6]:
+                label(
+                    0.055 + 0.535 * value / 0.6,
+                    0.321,
+                    f"{value:.1f}",
+                    12,
+                    color=roles["muted"],
+                    ha="center",
+                )
+            label(0.67, 0.715, "Visits, separate counts", 13, "SemiBold")
+            for index, row in enumerate(data["actions"]):
+                top = 0.645 - index * 0.112
+                label(0.67, top, row["name"], 13)
+                label(0.945, top - 0.042, f"{row['visits']:,}", 17, "Bold", ha="right")
+            label(0.67, 0.30, "Chosen: Spark", 17, "Bold", roles["warning"])
+            label(
+                0.055,
+                0.235,
+                "Trap retaliation puts Weakness Mark below passing in this state.",
+                13,
             )
-            fig.add_artist(bar)
-        for value in [0, 0.2, 0.4, 0.6]:
-            x = 0.075 + 0.85 * value / 0.6
-            label(x, 0.415, f"{value:.1f}", 12, color=roles["muted"], ha="center")
-        label(0.075, 0.367, "Visits, shown separately", 14, "SemiBold")
-        for index, row in enumerate(data["actions"]):
-            y = 0.33 - index * 0.032
-            label(0.075, y, row["name"], 13)
-            label(0.925, y, f"{row['visits']:,}", 13, "SemiBold", ha="right")
-        label(0.075, 0.217, "Chosen action: Spark.", 16, "Bold")
-        label(
-            0.075,
-            0.18,
-            "Trap retaliation puts Weakness Mark\nbelow passing in this state.",
-            12.5,
-        )
-        label(
-            0.075,
-            0.124,
-            "One process. Horizon 6. Safety cap not reached.\n"
-            "Recorded source: a82e1a6.",
-            11.8,
-            color=roles["muted"],
-        )
-        label(
-            0.075,
-            0.065,
-            "Not a win probability or a universal ranking.\n"
-            "Rewards rounded to three decimals.",
-            11.8,
-            "Italic",
-            roles["muted"],
-        )
+            label(
+                0.055,
+                0.165,
+                "One process. Horizon 6. Safety cap not reached. Source: a82e1a6.",
+                12.5,
+                color=roles["muted"],
+            )
+            label(
+                0.055,
+                0.095,
+                "Not a win probability or a universal ranking. "
+                "Rewards rounded to three decimals.",
+                12.5,
+                "Italic",
+                roles["muted"],
+            )
+        else:
+            label(0.075, 0.96, "MCTS COMBAT ENGINE", 12, "SemiBold", roles["accent"])
+            label(0.075, 0.915, "One decision.\nThree choices.", 27, "Bold")
+            label(0.075, 0.80, "10,000 simulations. Seed 7.", 14)
+            label(0.075, 0.752, "Mean shaped reward", 14, "SemiBold")
+            for index, row in enumerate(data["actions"]):
+                top = 0.699 - index * 0.108
+                color = roles[ACTIONS[row["name"]]]
+                label(0.075, top, row["name"], 14, "SemiBold", color)
+                label(0.925, top, f"{row['reward']:.3f}", 14, "Bold", ha="right")
+                bar = Rectangle(
+                    (0.075, top - 0.049),
+                    0.85 * row["reward"] / 0.6,
+                    0.021,
+                    transform=fig.transFigure,
+                    facecolor=color,
+                    gid=f"reward-{index}",
+                )
+                fig.add_artist(bar)
+            for value in [0, 0.2, 0.4, 0.6]:
+                x = 0.075 + 0.85 * value / 0.6
+                label(x, 0.415, f"{value:.1f}", 12, color=roles["muted"], ha="center")
+            label(0.075, 0.367, "Visits, shown separately", 14, "SemiBold")
+            for index, row in enumerate(data["actions"]):
+                y = 0.33 - index * 0.032
+                label(0.075, y, row["name"], 13)
+                label(0.925, y, f"{row['visits']:,}", 13, "SemiBold", ha="right")
+            label(0.075, 0.217, "Chosen action: Spark.", 16, "Bold")
+            label(
+                0.075,
+                0.18,
+                "Trap retaliation puts Weakness Mark\nbelow passing in this state.",
+                12.5,
+            )
+            label(
+                0.075,
+                0.124,
+                "One process. Horizon 6. Safety cap not reached.\n"
+                "Recorded source: a82e1a6.",
+                11.8,
+                color=roles["muted"],
+            )
+            label(
+                0.075,
+                0.065,
+                "Not a win probability or a universal ranking.\n"
+                "Rewards rounded to three decimals.",
+                11.8,
+                "Italic",
+                roles["muted"],
+            )
         canvas = FigureCanvasAgg(fig)
         canvas.draw()
         bounds = [item.get_window_extent(canvas.get_renderer()) for item in labels]
@@ -190,7 +250,8 @@ def draw(data, tokens, mode, files, output):
             }
             if ext == "svg":
                 metadata["Date"] = None
-            path = output / f"mcts-decision-{mode}.{ext}"
+            suffix = "-wide" if wide else ""
+            path = output / f"mcts-decision-{mode}{suffix}.{ext}"
             fig.savefig(path, metadata=metadata)
             if ext == "svg":
                 path.write_text(
@@ -214,8 +275,9 @@ def check_outputs():
         if record["inputs_sha256_lf"][name] != digest(ROOT / name, text=True):
             raise ValueError(f"Figure input changed: {name}")
     expected = {
-        f"docs/mcts-decision-{mode}.{ext}"
+        f"docs/mcts-decision-{mode}{suffix}.{ext}"
         for mode in ("clair", "obscur")
+        for suffix in ("", "-wide")
         for ext in ("png", "svg")
     }
     if set(record["outputs_sha256"]) != expected:
@@ -252,13 +314,18 @@ def main():
             mode: draw(data, tokens, mode, files, output)
             for mode in ("clair", "obscur")
         }
+        wide_layouts = {
+            mode: draw(data, tokens, mode, files, output, wide=True)
+            for mode in ("clair", "obscur")
+        }
         import matplotlib
 
         record = {
-            "schema_version": 1,
+            "schema_version": 2,
             "evidence": semantic_record(data),
             "renderer": {"matplotlib": matplotlib.__version__, "backend": "Agg"},
             "layout": layouts,
+            "wide_layout": wide_layouts,
             "typography": {
                 "files": font_evidence,
                 "painted_faces": ["Regular", "SemiBold", "Bold", "Italic"],

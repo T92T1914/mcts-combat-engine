@@ -2,9 +2,11 @@
 
 <a href="visual-example-data.json">
   <picture>
+    <source media="(min-width: 768px) and (prefers-color-scheme: dark)" srcset="mcts-decision-obscur-wide.png">
+    <source media="(min-width: 768px) and (prefers-color-scheme: light)" srcset="mcts-decision-clair-wide.png">
     <source media="(prefers-color-scheme: dark)" srcset="mcts-decision-obscur.png">
     <source media="(prefers-color-scheme: light)" srcset="mcts-decision-clair.png">
-    <img src="mcts-decision-clair.png" alt="One recorded decision after 10,000 simulations. Spark has mean shaped reward 0.532, Pass 0.506 and Weakness Mark 0.495. Exact visits are 5,724, 2,445 and 1,831 respectively. Reward is not a win probability." width="480">
+    <img src="mcts-decision-clair.png" alt="One recorded decision after 10,000 simulations. Spark has mean shaped reward 0.532, Pass 0.506 and Weakness Mark 0.495. Exact visits are 5,724, 2,445 and 1,831 respectively. Reward is not a win probability." width="900">
   </picture>
 </a>
 
@@ -70,3 +72,15 @@ Site builds verify the committed outputs without fonts or a silent rebuild.
 Source `a82e1a6` belongs to this old decision, not the later
 [parallel scaling study](parallel-scaling-results.md). The retained values and
 original images are unchanged.
+
+## Wide and narrow columns
+
+The same renderer also makes a wide composition from the same retained values.
+The website chooses its layout from the figure container at 560 pixels and keeps
+its existing Auto, Clair and Obscur appearance setting. The README uses a 1024
+pixel viewport breakpoint, while these notes use 768 pixels to account for their
+wider reading column. These choices follow measurements of the actual GitHub
+columns, not an assumption that viewport width equals image width. Signed-out
+system appearance is covered. Signed-in appearance overrides remain unverified.
+
+Wide [Clair SVG](mcts-decision-clair-wide.svg) and [Obscur SVG](mcts-decision-obscur-wide.svg) preserve the original units, qualifications and Inter outlines. Narrow editions remain available above.

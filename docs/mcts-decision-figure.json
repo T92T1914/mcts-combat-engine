@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "evidence": {
     "retained_decision": {
       "source_commit": "a82e1a6",
@@ -57,6 +57,20 @@
       "minimum_font_points": 11.8
     }
   },
+  "wide_layout": {
+    "clair": {
+      "width": 1800,
+      "height": 1160,
+      "labels_within_canvas": 25,
+      "minimum_font_points": 12.0
+    },
+    "obscur": {
+      "width": 1800,
+      "height": 1160,
+      "labels_within_canvas": 25,
+      "minimum_font_points": 12.0
+    }
+  },
   "typography": {
     "files": {
       "Regular": {
@@ -108,11 +122,15 @@
   "inputs_sha256_lf": {
     "docs/visual-example-data.json": "cd9b5a8cf2f6fe21a46ff8cc9f53b67e99edb494dbd4cc1991a035050d54ed77",
     "presentation/tokens.json": "96a3b9d2e35e074069b7a70213327b1f79ca898454c6e64906899e5d59ae0feb",
-    "tools/render_decision_figure.py": "49d965c4dfd7a0b0a4b447dc3331ba448cb93d57d843adfecdbe51ee5e58b0dd"
+    "tools/render_decision_figure.py": "94eaf72b4a3c17552cfdef6a32a41121ff1847f36a148878b12d7aeaa7a4b635"
   },
   "outputs_sha256": {
+    "docs/mcts-decision-clair-wide.png": "f1bf8a73a4a581ef014f750e308fb08e6d84b4e310c83bb450d1db2e861b5c44",
+    "docs/mcts-decision-clair-wide.svg": "2f9a9011e9e343367adeb28125e4f2cc2fc6a758d4cc7c4a2129cd61dac197ed",
     "docs/mcts-decision-clair.png": "93d487cc82555f2d62bdb23c3d23d1f6fdaeb943c44dbf8fb2e01dea37f7bbf3",
     "docs/mcts-decision-clair.svg": "95d0961da5aebfbcbe5224b9982b74450240af4d2b684e356af39e86d3c1848e",
+    "docs/mcts-decision-obscur-wide.png": "92d8d1b625ef19955a971eef9a3279c6d1b6d61ccdec4e2fca3a6f0ba517a79b",
+    "docs/mcts-decision-obscur-wide.svg": "5d58c87608a8b4415d39698cdf81e2b18f57318db47b73cf13ae62c0d62fbda3",
     "docs/mcts-decision-obscur.png": "9c1ecb602abb369d48c4823b86c275764ba46fe59e96ed81778d08b3d829f732",
     "docs/mcts-decision-obscur.svg": "903d528061098e1223502a56eb0509152ac435f195f7af8666f30c5f247f00c4"
   }
