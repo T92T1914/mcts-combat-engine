@@ -106,9 +106,11 @@ computational comparison and was committed before its outcomes were collected.
 
 <a href="docs/visual-example.md">
   <picture>
+    <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="docs/mcts-decision-obscur-wide.png">
+    <source media="(min-width: 1024px) and (prefers-color-scheme: light)" srcset="docs/mcts-decision-clair-wide.png">
     <source media="(prefers-color-scheme: dark)" srcset="docs/mcts-decision-obscur.png">
     <source media="(prefers-color-scheme: light)" srcset="docs/mcts-decision-clair.png">
-    <img src="docs/mcts-decision-clair.png" alt="One recorded decision after 10,000 simulations. Spark has mean shaped reward 0.532, Pass 0.506 and Weakness Mark 0.495. Exact visits are 5,724, 2,445 and 1,831 respectively. Reward is not a win probability." width="480">
+    <img src="docs/mcts-decision-clair.png" alt="One recorded decision after 10,000 simulations. Spark has mean shaped reward 0.532, Pass 0.506 and Weakness Mark 0.495. Exact visits are 5,724, 2,445 and 1,831 respectively. Reward is not a win probability." width="900">
   </picture>
 </a>
 

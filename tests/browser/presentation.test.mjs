@@ -441,10 +441,34 @@ test('decision editions follow effective appearance, preserve scale and download
   assert.equal(await visible.getAttribute('src'), 'decision-clair.png');
   await page.emulateMedia({colorScheme:'dark'});
   assert.equal(await visible.getAttribute('src'), 'decision-obscur.png');
-  const noScript = await fixture(t, {javaScriptEnabled:false,colorScheme:'dark'});
+  const noScript = await fixture(t, {javaScriptEnabled:false,colorScheme:'dark',viewport:{width:390,height:844}});
   await noScript.goto(base);
   const noScriptImage = noScript.locator('#decision-figure img:visible');
   assert.equal(await noScriptImage.getAttribute('src'), 'decision-obscur.png');
   await noScript.emulateMedia({colorScheme:'light'});
   assert.equal(await noScriptImage.getAttribute('src'), 'decision-clair.png');
+});
+
+
+test('wide figure follows its container and preserves every delivered file', async t => {
+  const page = await fixture(t, {viewport:{width:1280,height:900},colorScheme:'dark'});
+  await page.goto(base+'/'); await page.locator('#appearance:not([disabled])').waitFor();
+  for (const mode of ['clair','obscur']) {
+    await page.locator('#appearance').selectOption(mode);
+    const visible=page.locator('#decision-figure img:visible');
+    assert.equal(await visible.count(),1);
+    assert.equal(await visible.getAttribute('src'),`decision-${mode}-wide.png`);
+    await visible.scrollIntoViewIfNeeded(); await visible.evaluate(e=>e.decode());
+    assert.deepEqual(await visible.evaluate(e=>[e.naturalWidth,e.naturalHeight]),[1800,1160]);
+    const destination=process.env.MCTS_SCREENSHOT_DIR;
+    if(destination){await mkdir(destination,{recursive:true});await visible.screenshot({path:path.join(destination,`decision-${mode}-wide.png`)});}
+    await page.locator('#decision-figure').evaluate(e=>e.style.width='400px');
+    assert.equal(await visible.getAttribute('src'),`decision-${mode}.png`);
+    await page.locator('#decision-figure').evaluate(e=>e.style.removeProperty('width'));
+    for(const suffix of ['','-wide'])for(const ext of ['png','svg']){
+      const file=`decision-${mode}${suffix}.${ext}`;
+      const response=await page.request.get(base+'/'+file);assert.equal(response.status(),200);
+      assert.deepEqual(await response.body(),await readFile(path.join(root,file)));
+    }
+  }
 });

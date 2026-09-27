@@ -24,7 +24,7 @@ figure{border:1px solid var(--divider);padding:12px;border-radius:6px}
 @media print{.wrap{max-width:none;padding:0}.appearance-control,nav,.skip{display:none}.panel{break-inside:avoid}a{color:var(--text)}pre,.table-wrap{overflow:visible}img{max-width:100%}}
 @media(forced-colors:active){a:focus-visible,select:focus-visible,summary:focus-visible,.table-wrap:focus-visible{outline-color:Highlight}select:disabled{color:GrayText}}
 
-#decision-figure{max-width:480px;margin-inline:auto;padding:0;border:0}
+#decision-figure{max-width:960px;container-type:inline-size;margin-inline:auto;padding:0;border:0}
 .decision-obscur{display:none}
 :root[data-appearance="obscur"] .decision-clair{display:none}
 :root[data-appearance="obscur"] .decision-obscur{display:block}
@@ -37,3 +37,7 @@ figure{border:1px solid var(--divider);padding:12px;border-radius:6px}
 /* Keep short labels intact while the execution tables scroll locally. */
 .execution-report .table-wrap th,.execution-report .table-wrap td{white-space:nowrap;overflow-wrap:normal}
 @media print{.execution-report .table-wrap th,.execution-report .table-wrap td{white-space:normal;padding:4px;font-size:.75rem}}
+
+#decision-figure img{width:100%}
+.figure-wide{display:none}
+@container(min-width:560px){.figure-narrow{display:none}.figure-wide{display:block}}

@@ -88,6 +88,37 @@ class DecisionFigureTests(unittest.TestCase):
             metadata = json.loads(root.find(".//dc:description", NS).text)
             self.assertEqual(metadata, figure.semantic_record(figure.load_data()))
 
+    def test_wide_geometry_keeps_rewards_counts_and_real_inter(self):
+        data = figure.load_data()
+        paths = []
+        for mode in ("clair", "obscur"):
+            raw = (figure.ROOT / f"docs/mcts-decision-{mode}-wide.svg").read_text()
+            root = ET.fromstring(raw)
+            width = float(root.get("viewBox").split()[2])
+            series = []
+            for index, row in enumerate(data["actions"]):
+                path = root.find(f".//s:g[@id='reward-{index}']/s:path", NS).get("d")
+                series.append(path)
+                coords = [float(n) for n in re.findall(r"-?\d+(?:\.\d+)?", path)]
+                self.assertAlmostEqual(coords[0], width * 0.055, places=5)
+                self.assertAlmostEqual(
+                    (coords[2] - coords[0]) / (width * 0.535) * 0.6,
+                    row["reward"],
+                    places=6,
+                )
+                self.assertIn(f"<!-- {row['visits']:,} -->", raw)
+            paths.append(series)
+            self.assertEqual(
+                json.loads(root.find(".//dc:description", NS).text),
+                figure.semantic_record(data),
+            )
+            for face in ("Regular", "SemiBold", "Bold", "Italic"):
+                self.assertIn(f'xlink:href="#Inter-{face}-', raw)
+            self.assertNotIn("<text", raw)
+            png = (figure.ROOT / f"docs/mcts-decision-{mode}-wide.png").read_bytes()
+            self.assertEqual(struct.unpack(">II", png[16:24]), (1800, 1160))
+        self.assertEqual(paths[0], paths[1])
+
     def test_raster_dimensions_and_metadata_match_the_vector_evidence(self):
         for mode in ("clair", "obscur"):
             raw = (figure.ROOT / f"docs/mcts-decision-{mode}.png").read_bytes()
