@@ -100,7 +100,7 @@ their seeds and actual work, and raises on incomplete worker results without
 retrying the allowance. Time mode remains available. The episode benchmark and
 its existing studies are unchanged. The separate
 [process scaling protocol](docs/parallel-scaling-protocol.json) defines the new
-computational comparison before its outcomes are collected.
+computational comparison and was committed before its outcomes were collected.
 
 ### Reading one decision
 
@@ -174,6 +174,20 @@ actual work and unused allowances are retained. No decision hit its safety cap.
 This matches transition allowances, not CPU time or total work across games.
 The small repeated environment set still does not establish general superiority.
 
+The new [fixed work process study](docs/parallel-scaling-results.md) measures
+three initial states with three search seeds, 1, 2 and 4 workers, and both fresh
+and reused process pools. All 54 searches spent exactly 12,000 simulations and
+60,000 transitions. Every repeated pool pair preserved the worker seeds, root
+statistics and rankings. Median paired wall time ratios versus one worker were
+1.71 and 2.86 for two and four fresh workers, then 2.09 and 3.88 with reused pools.
+These are observations on a shared machine, not a linear scaling guarantee.
+Some selected targets changed when the number of independent trees changed.
+No complete games or playing strength outcomes were measured in this study.
+
+[Open the Clair and Obscur report](https://t92t1914.github.io/mcts-combat-engine/parallel-scaling.html)
+to inspect every cell, startup and serialization controls, raw results and the
+declared protocol. Its theme changes only the presentation of saved measurements.
+
 ## How it works
 
 1. Clone the current state and replay an action sequence under fresh randomness.
@@ -214,7 +228,9 @@ uses its own copy of the prior, just as it builds its own tree.
 * Thirty games per cell and one search seed leave substantial sampling uncertainty. Shared starting seeds do not remove it. The z scores in the generated table are descriptive approximations, not a paired significance analysis.
 * Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one-round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded studies include new environment seeds and matched transition allowances, but do not establish general superiority or equal CPU cost.
 * The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
-* Parallel merging is tested. Linear process scaling and compilation speedups have not been measured on this revision, so none is claimed.
+* Parallel merging is tested, and a separate bounded study now measures process
+  scaling on three initial states. It does not establish linear scaling, full
+  game throughput or playing strength. Compilation speedups remain unmeasured.
 * The `mcts_decider` wrapper supports `seed`, `max_sims` and `max_transitions`
   only in serial mode. With `parallel=True` it uses a time budget and rejects
   these controls, including

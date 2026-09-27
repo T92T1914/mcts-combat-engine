@@ -63,7 +63,12 @@ protocol is separate from the earlier complete game studies. Commit the tested
 implementation and `docs/parallel-scaling-protocol.json` before executing
 `tools/run_parallel_scaling.py`. Run correctness tests and rendering outside the
 measurement window. Retain the first attempt and any failure. Pool reuse is not
-tree reuse, and faster computation does not establish stronger play.
+tree reuse, and faster computation does not establish stronger play. The first
+54 conditions are retained in `docs/parallel-scaling-results.json`. Check the
+accounting and both generated reports with
+`python tools/render_parallel_scaling.py --check`. Drop `--check` only to render
+the saved measurements. Neither operation runs the experiment. Keep the measured
+source revision separate from the later site build revision.
 
 ## Development container and public site
 
@@ -83,6 +88,7 @@ Use these extra checks for presentation changes:
 ```sh
 node --test tests/selection-state.test.mjs
 npm ci --ignore-scripts
+python tools/render_parallel_scaling.py --check
 python tools/build_site.py
 npm run test:browser
 ```

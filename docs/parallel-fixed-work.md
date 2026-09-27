@@ -118,3 +118,19 @@ because a larger worker count is slower. The cold versus warm comparison include
 the cost of separate process startup. Serialization is a separate in process
 payload probe. Neither it nor wall time minus worker compute is a direct measure
 of transport latency.
+
+The [retained first study](parallel-scaling-results.md) completed the 54 declared
+searches on the committed implementation. Its report and raw data preserve every
+cell, the source revision and the shared machine conditions. Validate or render
+those saved data without running another experiment:
+
+```sh
+python tools/render_parallel_scaling.py --check
+python tools/render_parallel_scaling.py
+python tools/build_site.py
+```
+
+Both report formats use the same validated data. The public HTML uses the
+project's Auto, Clair and Obscur controls, local Inter faces and readable system
+fallback. Public visitors do not automatically receive Inter. The site manifest
+records the presentation revision separately from the measured source revision.

@@ -1,0 +1,221 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fixed work process scaling | MCTS Combat Engine</title>
+<script src="appearance.js"></script><link rel="stylesheet" href="appearance.css">
+<link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to the report</a><div class="wrap">
+<nav aria-label="Project navigation"><a href="index.html">Decision explorer</a>
+<a href="https://github.com/T92T1914/mcts-combat-engine">Source on GitHub</a></nav>
+<div class="appearance-control"><label for="appearance">Appearance</label>
+<select id="appearance" disabled><option value="auto">Auto</option>
+<option value="clair">Clair</option><option value="obscur">Obscur</option></select>
+<noscript>Auto follows your system appearance.</noscript></div><main id="main">
+<p class="eyebrow">A separate computational study</p>
+<h1>Fixed work process scaling</h1><div class="actions">
+<a class="button" href="parallel-scaling-results.json" download>Download raw results</a>
+<a class="button" href="parallel-scaling-protocol.json">Read the declared protocol</a>
+<a class="button" href="parallel-scaling-results.md" download>Download Markdown report</a>
+</div>
+<p>I added a fixed total work mode to make parallel search easier to compare. This first computational study ran 54 searches over three initial states. Every search completed 12,000 simulations and 60,000 simulator transitions. The 27 cold and warm pairs returned identical worker seeds, work counts, raw root statistics and rankings. Only their timings differ.</p>
+<p>The two and four worker runs were faster in 36 of 36 paired comparisons with one worker. This is a bounded shared machine result, not a general scaling guarantee. Each condition was measured once. Ratios above the worker count do not establish superlinear scaling because ordinary machine activity was uncontrolled. No episodes or playing strength comparison ran.</p>
+<h2>Paired wall time ratios</h2>
+<p>Each ratio divides the one worker wall time by the matching worker count&#x27;s time for the same state, seed and cold or warm condition. Values above one are faster in this observation. The median, minimum and maximum describe nine pairs over three states. These are not nine independent scenario samples, confidence intervals or a significance test.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Paired time ratios"><table><caption>Paired time ratios</caption>
+<thead><tr><th scope="col">Pool</th><th scope="col">Workers</th><th scope="col">Median ratio</th><th scope="col">Minimum ratio</th><th scope="col">Maximum ratio</th><th scope="col">Pairs</th></tr></thead><tbody>
+<tr><td>cold</td><td>2</td><td>1.713</td><td>1.389</td><td>2.304</td><td>9</td></tr>
+<tr><td>cold</td><td>4</td><td>2.858</td><td>2.084</td><td>2.972</td><td>9</td></tr>
+<tr><td>warm</td><td>2</td><td>2.090</td><td>1.911</td><td>2.839</td><td>9</td></tr>
+<tr><td>warm</td><td>4</td><td>3.884</td><td>2.812</td><td>4.592</td><td>9</td></tr>
+</tbody></table></div>
+<h2>What the work contract measures</h2>
+<p>The protocol uses environment seed 300, search seeds 7, 42 and 99, a five round horizon and no priors. Each initial state has seven pips and otherwise keeps its scenario defaults. Worker counts rotate between seeds. One total allowance is split across independent roots, so two workers get 6,000 simulations each and four get 3,000 each. Changing the worker count changes the trees, not just the scheduling of one tree.</p>
+<p>Warm means a second search on the same process pool with fresh trees and the same derived seeds. It does not reuse a search tree. One worker runs locally without process startup. The multiworker cold condition includes waiting for every spawned process to announce readiness.</p>
+<p>Gauntlet searches selected different targets across configurations. Those differences are retained below. Mean shaped reward is not a calibrated win probability, and no outcome here says which selected action would play better. Slot and target indexes distinguish actions with the same name. A value of -1 means no slot or target.</p>
+<h2>Every measured condition</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="All 54 measured searches"><table><caption>All 54 measured searches</caption>
+<thead><tr><th scope="col">Scenario</th><th scope="col">Seed</th><th scope="col">Workers</th><th scope="col">Pool</th><th scope="col">Wall seconds</th><th scope="col">Simulations / second</th><th scope="col">Time ratio</th><th scope="col">Selected action</th></tr></thead><tbody>
+<tr><td>duel</td><td>7</td><td>1</td><td>cold</td><td>1.260795</td><td>9518</td><td>1.000</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>7</td><td>1</td><td>warm</td><td>1.219400</td><td>9841</td><td>1.000</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>7</td><td>2</td><td>cold</td><td>0.758656</td><td>15817</td><td>1.662</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>7</td><td>2</td><td>warm</td><td>0.638250</td><td>18801</td><td>1.911</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>7</td><td>4</td><td>cold</td><td>0.541184</td><td>22174</td><td>2.330</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>7</td><td>4</td><td>warm</td><td>0.381361</td><td>31466</td><td>3.197</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>42</td><td>2</td><td>cold</td><td>0.754850</td><td>15897</td><td>1.713</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>42</td><td>2</td><td>warm</td><td>0.599749</td><td>20008</td><td>2.090</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>42</td><td>4</td><td>cold</td><td>0.487546</td><td>24613</td><td>2.653</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>42</td><td>4</td><td>warm</td><td>0.317240</td><td>37826</td><td>3.952</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>42</td><td>1</td><td>cold</td><td>1.293305</td><td>9279</td><td>1.000</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>42</td><td>1</td><td>warm</td><td>1.253711</td><td>9572</td><td>1.000</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>99</td><td>4</td><td>cold</td><td>0.606181</td><td>19796</td><td>2.084</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>99</td><td>4</td><td>warm</td><td>0.423151</td><td>28359</td><td>2.812</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>99</td><td>1</td><td>cold</td><td>1.263309</td><td>9499</td><td>1.000</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>99</td><td>1</td><td>warm</td><td>1.189708</td><td>10087</td><td>1.000</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>99</td><td>2</td><td>cold</td><td>0.747588</td><td>16052</td><td>1.690</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>duel</td><td>99</td><td>2</td><td>warm</td><td>0.579214</td><td>20718</td><td>2.054</td><td>Spark -&gt; Frost Warden (slot 2, target 0)</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>1</td><td>cold</td><td>1.800268</td><td>6666</td><td>1.000</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>1</td><td>warm</td><td>1.829196</td><td>6560</td><td>1.000</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>2</td><td>cold</td><td>1.016032</td><td>11811</td><td>1.772</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>2</td><td>warm</td><td>0.915974</td><td>13101</td><td>1.997</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>4</td><td>cold</td><td>0.628968</td><td>19079</td><td>2.862</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>4</td><td>warm</td><td>0.479175</td><td>25043</td><td>3.817</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>2</td><td>cold</td><td>0.976371</td><td>12290</td><td>1.819</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>2</td><td>warm</td><td>0.868682</td><td>13814</td><td>2.218</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>4</td><td>cold</td><td>0.597398</td><td>20087</td><td>2.972</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>4</td><td>warm</td><td>0.419590</td><td>28599</td><td>4.592</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>1</td><td>cold</td><td>1.775682</td><td>6758</td><td>1.000</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>1</td><td>warm</td><td>1.926555</td><td>6229</td><td>1.000</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>4</td><td>cold</td><td>0.762268</td><td>15742</td><td>2.732</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>4</td><td>warm</td><td>0.556601</td><td>21559</td><td>3.884</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>1</td><td>cold</td><td>2.082573</td><td>5762</td><td>1.000</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>1</td><td>warm</td><td>2.162047</td><td>5550</td><td>1.000</td><td>Spark -&gt; Acolyte (slot 2, target 1)</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>2</td><td>cold</td><td>0.903748</td><td>13278</td><td>2.304</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>2</td><td>warm</td><td>0.761436</td><td>15760</td><td>2.839</td><td>Spark -&gt; Adept (slot 2, target 2)</td></tr>
+<tr><td>boss</td><td>7</td><td>1</td><td>cold</td><td>1.516430</td><td>7913</td><td>1.000</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>7</td><td>1</td><td>warm</td><td>1.590354</td><td>7545</td><td>1.000</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>7</td><td>2</td><td>cold</td><td>0.793772</td><td>15118</td><td>1.910</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>7</td><td>2</td><td>warm</td><td>0.596056</td><td>20132</td><td>2.668</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>7</td><td>4</td><td>cold</td><td>0.526255</td><td>22803</td><td>2.882</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>7</td><td>4</td><td>warm</td><td>0.445666</td><td>26926</td><td>3.568</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>42</td><td>2</td><td>cold</td><td>0.895159</td><td>13405</td><td>1.637</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>42</td><td>2</td><td>warm</td><td>0.651527</td><td>18418</td><td>2.381</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>42</td><td>4</td><td>cold</td><td>0.507003</td><td>23668</td><td>2.891</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>42</td><td>4</td><td>warm</td><td>0.363109</td><td>33048</td><td>4.272</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>42</td><td>1</td><td>cold</td><td>1.465553</td><td>8188</td><td>1.000</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>42</td><td>1</td><td>warm</td><td>1.551316</td><td>7735</td><td>1.000</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>99</td><td>4</td><td>cold</td><td>0.512744</td><td>23403</td><td>2.858</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>99</td><td>4</td><td>warm</td><td>0.345815</td><td>34701</td><td>4.387</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>99</td><td>1</td><td>cold</td><td>1.465216</td><td>8190</td><td>1.000</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>99</td><td>1</td><td>warm</td><td>1.517011</td><td>7910</td><td>1.000</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>99</td><td>2</td><td>cold</td><td>1.054738</td><td>11377</td><td>1.389</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+<tr><td>boss</td><td>99</td><td>2</td><td>warm</td><td>0.784463</td><td>15297</td><td>1.934</td><td>Spark -&gt; Frost Tyrant (slot 2, target 0)</td></tr>
+</tbody></table></div>
+<h2>Actual work and stopping</h2>
+<p>No worker failed, timed out or left unknown work in this attempt. All workers stopped at both the simulation cap and transition allowance. The retained JSON includes every assigned allowance, derived seed, worker duration, stopping reason, root visit count and raw value sum. The report validator reconstructs merged means from those sums and checks all 54 conditions. It does not rerun search or replace an incomplete result.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Work accounting"><table><caption>Work accounting</caption>
+<thead><tr><th scope="col">Scenario</th><th scope="col">Seed</th><th scope="col">Workers</th><th scope="col">Pool</th><th scope="col">Simulations</th><th scope="col">Transitions</th><th scope="col">Unused simulations</th><th scope="col">Unused transitions</th></tr></thead><tbody>
+<tr><td>duel</td><td>7</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>7</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>7</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>7</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>7</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>7</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>42</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>42</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>42</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>42</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>42</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>42</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>99</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>99</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>99</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>99</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>99</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>99</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>7</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>7</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>7</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>7</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>7</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>7</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>42</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>42</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>42</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>42</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>42</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>42</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>99</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>99</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>99</td><td>1</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>99</td><td>1</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>99</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>99</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h2>Startup and transport controls</h2>
+<p>Startup is the measured process creation and readiness component inside cold wall time. Longest worker is the largest reported compute duration. Wall time less that duration is composite orchestration overhead, including startup when applicable. It is not pure IPC latency. The payload encode and decode probe runs in the parent before each search and is excluded from search wall time. Its bytes and timings describe serialization, not actual transport through a process queue.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Timing components and separate serialization probe"><table><caption>Timing components and separate serialization probe</caption>
+<thead><tr><th scope="col">Scenario</th><th scope="col">Seed</th><th scope="col">Workers</th><th scope="col">Pool</th><th scope="col">Startup seconds</th><th scope="col">Longest worker seconds</th><th scope="col">Composite overhead seconds</th><th scope="col">Payload bytes</th><th scope="col">Encode ms</th><th scope="col">Decode ms</th></tr></thead><tbody>
+<tr><td>duel</td><td>7</td><td>1</td><td>cold</td><td>0.000000</td><td>1.260680</td><td>0.000115</td><td>1203</td><td>0.043200</td><td>0.060900</td></tr>
+<tr><td>duel</td><td>7</td><td>1</td><td>warm</td><td>0.000000</td><td>1.219330</td><td>0.000069</td><td>1203</td><td>0.049500</td><td>0.041400</td></tr>
+<tr><td>duel</td><td>7</td><td>2</td><td>cold</td><td>0.149118</td><td>0.606926</td><td>0.151730</td><td>2407</td><td>0.065700</td><td>0.059800</td></tr>
+<tr><td>duel</td><td>7</td><td>2</td><td>warm</td><td>0.000000</td><td>0.637463</td><td>0.000787</td><td>2407</td><td>0.097700</td><td>0.081100</td></tr>
+<tr><td>duel</td><td>7</td><td>4</td><td>cold</td><td>0.174496</td><td>0.365609</td><td>0.175575</td><td>4814</td><td>0.104300</td><td>0.097000</td></tr>
+<tr><td>duel</td><td>7</td><td>4</td><td>warm</td><td>0.000000</td><td>0.380766</td><td>0.000595</td><td>4814</td><td>0.115500</td><td>0.108600</td></tr>
+<tr><td>duel</td><td>42</td><td>2</td><td>cold</td><td>0.160207</td><td>0.593925</td><td>0.160925</td><td>2407</td><td>0.075100</td><td>0.068500</td></tr>
+<tr><td>duel</td><td>42</td><td>2</td><td>warm</td><td>0.000000</td><td>0.599272</td><td>0.000477</td><td>2407</td><td>0.072700</td><td>0.064800</td></tr>
+<tr><td>duel</td><td>42</td><td>4</td><td>cold</td><td>0.171314</td><td>0.315100</td><td>0.172446</td><td>4813</td><td>0.102600</td><td>0.091600</td></tr>
+<tr><td>duel</td><td>42</td><td>4</td><td>warm</td><td>0.000000</td><td>0.316624</td><td>0.000616</td><td>4813</td><td>0.203600</td><td>0.199100</td></tr>
+<tr><td>duel</td><td>42</td><td>1</td><td>cold</td><td>0.000000</td><td>1.293199</td><td>0.000106</td><td>1203</td><td>0.047500</td><td>0.044300</td></tr>
+<tr><td>duel</td><td>42</td><td>1</td><td>warm</td><td>0.000000</td><td>1.253651</td><td>0.000060</td><td>1203</td><td>0.050300</td><td>0.043100</td></tr>
+<tr><td>duel</td><td>99</td><td>4</td><td>cold</td><td>0.176513</td><td>0.428355</td><td>0.177826</td><td>4814</td><td>0.144000</td><td>0.129800</td></tr>
+<tr><td>duel</td><td>99</td><td>4</td><td>warm</td><td>0.000000</td><td>0.422454</td><td>0.000696</td><td>4814</td><td>0.119500</td><td>0.111000</td></tr>
+<tr><td>duel</td><td>99</td><td>1</td><td>cold</td><td>0.000000</td><td>1.263202</td><td>0.000108</td><td>1204</td><td>0.068200</td><td>0.056600</td></tr>
+<tr><td>duel</td><td>99</td><td>1</td><td>warm</td><td>0.000000</td><td>1.189648</td><td>0.000060</td><td>1204</td><td>0.057000</td><td>0.041500</td></tr>
+<tr><td>duel</td><td>99</td><td>2</td><td>cold</td><td>0.157116</td><td>0.589640</td><td>0.157948</td><td>2407</td><td>0.114200</td><td>0.064900</td></tr>
+<tr><td>duel</td><td>99</td><td>2</td><td>warm</td><td>0.000000</td><td>0.578666</td><td>0.000547</td><td>2407</td><td>0.082100</td><td>0.070900</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>1</td><td>cold</td><td>0.000000</td><td>1.800182</td><td>0.000086</td><td>1618</td><td>0.026800</td><td>0.048800</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>1</td><td>warm</td><td>0.000000</td><td>1.829097</td><td>0.000098</td><td>1618</td><td>0.051900</td><td>0.049600</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>2</td><td>cold</td><td>0.154269</td><td>0.860930</td><td>0.155102</td><td>3237</td><td>0.088500</td><td>0.074700</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>2</td><td>warm</td><td>0.000000</td><td>0.915308</td><td>0.000666</td><td>3237</td><td>0.123000</td><td>0.075000</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>4</td><td>cold</td><td>0.166849</td><td>0.461347</td><td>0.167621</td><td>6474</td><td>0.119600</td><td>0.117000</td></tr>
+<tr><td>gauntlet</td><td>7</td><td>4</td><td>warm</td><td>0.000000</td><td>0.478514</td><td>0.000661</td><td>6474</td><td>0.132700</td><td>0.118700</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>2</td><td>cold</td><td>0.150709</td><td>0.824865</td><td>0.151506</td><td>3237</td><td>0.077500</td><td>0.071800</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>2</td><td>warm</td><td>0.000000</td><td>0.867889</td><td>0.000793</td><td>3237</td><td>0.088600</td><td>0.086900</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>4</td><td>cold</td><td>0.179989</td><td>0.416346</td><td>0.181052</td><td>6473</td><td>0.287900</td><td>0.168100</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>4</td><td>warm</td><td>0.000000</td><td>0.418759</td><td>0.000831</td><td>6473</td><td>0.172100</td><td>0.132300</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>1</td><td>cold</td><td>0.000000</td><td>1.775562</td><td>0.000120</td><td>1618</td><td>0.070700</td><td>0.062500</td></tr>
+<tr><td>gauntlet</td><td>42</td><td>1</td><td>warm</td><td>0.000000</td><td>1.926456</td><td>0.000099</td><td>1618</td><td>0.071900</td><td>0.060700</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>4</td><td>cold</td><td>0.210952</td><td>0.550232</td><td>0.212037</td><td>6474</td><td>0.163100</td><td>0.153300</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>4</td><td>warm</td><td>0.000000</td><td>0.555553</td><td>0.001047</td><td>6474</td><td>0.196200</td><td>0.182100</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>1</td><td>cold</td><td>0.000000</td><td>2.082467</td><td>0.000106</td><td>1619</td><td>0.083600</td><td>0.068400</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>1</td><td>warm</td><td>0.000000</td><td>2.161972</td><td>0.000075</td><td>1619</td><td>0.058100</td><td>0.051500</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>2</td><td>cold</td><td>0.144777</td><td>0.757991</td><td>0.145758</td><td>3237</td><td>0.108800</td><td>0.082800</td></tr>
+<tr><td>gauntlet</td><td>99</td><td>2</td><td>warm</td><td>0.000000</td><td>0.760844</td><td>0.000592</td><td>3237</td><td>0.084700</td><td>0.086400</td></tr>
+<tr><td>boss</td><td>7</td><td>1</td><td>cold</td><td>0.000000</td><td>1.516342</td><td>0.000088</td><td>1504</td><td>0.027000</td><td>0.047500</td></tr>
+<tr><td>boss</td><td>7</td><td>1</td><td>warm</td><td>0.000000</td><td>1.590285</td><td>0.000068</td><td>1504</td><td>0.086800</td><td>0.071200</td></tr>
+<tr><td>boss</td><td>7</td><td>2</td><td>cold</td><td>0.150887</td><td>0.642074</td><td>0.151698</td><td>3009</td><td>0.109700</td><td>0.106500</td></tr>
+<tr><td>boss</td><td>7</td><td>2</td><td>warm</td><td>0.000000</td><td>0.595509</td><td>0.000546</td><td>3009</td><td>0.126000</td><td>0.104100</td></tr>
+<tr><td>boss</td><td>7</td><td>4</td><td>cold</td><td>0.159080</td><td>0.366232</td><td>0.160023</td><td>6018</td><td>0.124000</td><td>0.126100</td></tr>
+<tr><td>boss</td><td>7</td><td>4</td><td>warm</td><td>0.000000</td><td>0.444629</td><td>0.001037</td><td>6018</td><td>0.170200</td><td>0.152300</td></tr>
+<tr><td>boss</td><td>42</td><td>2</td><td>cold</td><td>0.203074</td><td>0.691277</td><td>0.203882</td><td>3009</td><td>0.113600</td><td>0.097600</td></tr>
+<tr><td>boss</td><td>42</td><td>2</td><td>warm</td><td>0.000000</td><td>0.650983</td><td>0.000544</td><td>3009</td><td>0.085600</td><td>0.069000</td></tr>
+<tr><td>boss</td><td>42</td><td>4</td><td>cold</td><td>0.174041</td><td>0.332113</td><td>0.174890</td><td>6017</td><td>0.174400</td><td>0.154500</td></tr>
+<tr><td>boss</td><td>42</td><td>4</td><td>warm</td><td>0.000000</td><td>0.362434</td><td>0.000675</td><td>6017</td><td>0.133300</td><td>0.201900</td></tr>
+<tr><td>boss</td><td>42</td><td>1</td><td>cold</td><td>0.000000</td><td>1.465423</td><td>0.000130</td><td>1504</td><td>0.070100</td><td>0.055100</td></tr>
+<tr><td>boss</td><td>42</td><td>1</td><td>warm</td><td>0.000000</td><td>1.551246</td><td>0.000070</td><td>1504</td><td>0.075700</td><td>0.053900</td></tr>
+<tr><td>boss</td><td>99</td><td>4</td><td>cold</td><td>0.169872</td><td>0.341722</td><td>0.171022</td><td>6018</td><td>0.161300</td><td>0.141000</td></tr>
+<tr><td>boss</td><td>99</td><td>4</td><td>warm</td><td>0.000000</td><td>0.344973</td><td>0.000841</td><td>6018</td><td>0.169300</td><td>0.122700</td></tr>
+<tr><td>boss</td><td>99</td><td>1</td><td>cold</td><td>0.000000</td><td>1.465097</td><td>0.000119</td><td>1505</td><td>0.085700</td><td>0.072100</td></tr>
+<tr><td>boss</td><td>99</td><td>1</td><td>warm</td><td>0.000000</td><td>1.516945</td><td>0.000066</td><td>1505</td><td>0.064900</td><td>0.051400</td></tr>
+<tr><td>boss</td><td>99</td><td>2</td><td>cold</td><td>0.164589</td><td>0.889299</td><td>0.165439</td><td>3009</td><td>0.086300</td><td>0.072800</td></tr>
+<tr><td>boss</td><td>99</td><td>2</td><td>warm</td><td>0.000000</td><td>0.783607</td><td>0.000855</td><td>3009</td><td>0.115300</td><td>0.107400</td></tr>
+</tbody></table></div>
+<h2>Environment and evidence</h2>
+<p>Windows on an AMD Ryzen 7 7800X3D with 8 cores and 16 logical CPUs. Competing agent tests and rendering were paused. Ordinary applications remained active and untouched. Before the coordinated window aggregate CPU samples ranged from 33.7 to 41.7 percent. This is a shared machine measurement, not an isolated scaling result.</p>
+<p>Measured source: 7dac590cfd27386b848fadef31a8afa46206aab1. Protocol and implementation were committed before this first attempt. Source identity stayed unchanged during measurement. The source hash map and all original timestamps remain in the retained JSON. This report is a later presentation of those saved data, not another experiment.</p>
+<p>Python: 3.11.8 (tags/v3.11.8:db85d51, Feb  6 2024, 22:03:32) [MSC v.1937 64 bit (AMD64)]. Platform: Windows-10-10.0.26200-SP0. Started: 2026-09-27T08:28:55.475712+00:00. Ended: 2026-09-27T08:29:47.602722+00:00.</p>
+<p>The root states are public synthetic examples. This study covers one work allowance, one horizon, three initial states and three seeds on one machine. It does not measure full game throughput, deployment latency, cross platform reproducibility or compilation. Earlier benchmark and baseline studies remain separate and unchanged.</p>
+<p>Inter is selected from installed local faces. Other visitors use a system
+fallback. This page makes no font download request. Print uses Clair while
+retaining the saved screen appearance.</p>
+<p><a href="presentation.json">Site revision and file provenance</a>.
+The measured source revision above is separate from the site build.</p>
+</main><footer>Retained measurements and declared limits.
+<a href="index.html">Return to the decision explorer</a>.</footer></div></body></html>
