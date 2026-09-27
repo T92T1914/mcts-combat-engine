@@ -14,18 +14,22 @@ sharing a tree across processes would mean locking or shipping it. Independent
 trees need no synchronization at all; the price is that workers duplicate each
 other's early exploration. The benchmarks need to measure that tradeoff.
 
-The pool is persistent (spawned once) and its workers are daemonic, so they
-die with the main process. Any pool failure degrades to the single-threaded
-search, so a decision is always returned.
+The pool persists until close(). Time mode retains its serial fallback.
+Fixed mode never retries work after an error. It raises with an accounting
+record because a lost worker may already have spent its allowance.
 """
 from __future__ import annotations
 
+import hashlib
+import math
 import multiprocessing as mp
 import random
+import time
 from collections.abc import Iterable
+from dataclasses import dataclass
 from multiprocessing.pool import Pool
 
-from .actions import Action
+from .actions import Action, legal_actions
 from .mcts import MCTS, RankedAction, _validate_nonnegative_finite, _validate_priors
 from .state import GameState
 
@@ -33,22 +37,135 @@ from .state import GameState
 # its simulation count. Raw sufficient statistics, not win rates, so they add.
 WorkerResult = tuple[list[tuple[Action, int, float]], int]
 
+
+def _integer(value: int, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f"{name} must be a nonnegative integer")
+
+
+def allocate(total: int, workers: int) -> tuple[int, ...]:
+    """Give the first remainder worker IDs one extra unit, with no lost units."""
+    _integer(total, "total")
+    if isinstance(workers, bool) or not isinstance(workers, int) or workers < 1:
+        raise ValueError("workers must be a positive integer")
+    quotient, remainder = divmod(total, workers)
+    return tuple(quotient + (i < remainder) for i in range(workers))
+
+
+def worker_seed(seed: int, worker_id: int) -> int:
+    """Versioned seeds depend only on the explicit seed and stable worker ID."""
+    _integer(seed, "seed")
+    _integer(worker_id, "worker_id")
+    payload = f"mcts-root-v1:{seed}:{worker_id}".encode("ascii")
+    return int.from_bytes(hashlib.sha256(payload).digest()[:8], "big")
+
+
+@dataclass(frozen=True)
+class WorkerJob:
+    worker_id: int
+    state: GameState
+    horizon: int
+    seed: int
+    max_sims: int
+    max_transitions: int | None
+    priors: dict | None
+
+
+@dataclass(frozen=True)
+class WorkerReceipt:
+    worker_id: int
+    seed: int
+    assigned_simulations: int
+    assigned_transitions: int | None
+    status: str
+    simulations: int | None
+    transitions: int | None
+    unused_simulations: int | None
+    unused_transitions: int | None
+    virtual_visits: int | None
+    stop_reasons: tuple[str, ...]
+    statistics: tuple[tuple[Action, int, float], ...] = ()
+    elapsed_s: float | None = None
+    error: str | None = None
+
+
+@dataclass(frozen=True)
+class FixedWorkReport:
+    seed: int
+    max_simulations: int
+    max_transitions: int | None
+    workers: tuple[WorkerReceipt, ...]
+    complete: bool
+    simulations: int | None
+    transitions: int | None
+    known_simulations: int
+    known_transitions: int
+    unused_simulations: int | None
+    unused_transitions: int | None
+    elapsed_s: float
+    pool_startup_s: float
+
+
+class ParallelSearchError(RuntimeError):
+    """A fixed search failed without retrying or hiding its partial work."""
+
+    def __init__(self, report: FixedWorkReport):
+        self.report = report
+        super().__init__("Fixed search incomplete. Inspect last_report for known "
+                         "and unreported work. No allowance was retried.")
+
+
+def _unreported(job: WorkerJob, status: str, error: str) -> WorkerReceipt:
+    known = status == "not_started"
+    return WorkerReceipt(
+        job.worker_id, job.seed, job.max_sims, job.max_transitions, status,
+        0 if known else None, 0 if known else None,
+        job.max_sims if known else None, job.max_transitions if known else None,
+        0 if known else None, (status,), error=error)
+
+
+def _fixed_search(job: WorkerJob) -> WorkerReceipt:
+    """Run one independent tree with no clock based stopping rule."""
+    start = time.perf_counter()
+    engine = MCTS(horizon_rounds=job.horizon, max_sims=job.max_sims,
+                  max_transitions=job.max_transitions, rng=random.Random(job.seed))
+    error = None
+    try:
+        engine.search(job.state, time_budget_ms=None, priors=job.priors)
+        status = "completed"
+        reasons = engine.last_stop_reasons
+        statistics = tuple(engine.last_root_statistics)
+        virtual = sum(v for _, v, _ in statistics) - engine.last_sims
+    except Exception as exc:
+        # Simulator calls that returned and fully backed up simulations remain
+        # known. Partial tree statistics are not accepted as a recommendation.
+        status, reasons, statistics, virtual = "failed", ("worker_error",), (), None
+        error = type(exc).__name__
+    return WorkerReceipt(
+        job.worker_id, job.seed, job.max_sims, job.max_transitions, status,
+        engine.last_sims, engine.last_transitions,
+        job.max_sims - engine.last_sims,
+        (job.max_transitions - engine.last_transitions
+         if job.max_transitions is not None else None),
+        virtual, reasons, statistics, time.perf_counter() - start, error)
+
 _worker: MCTS | None = None
 
 
-def _init(horizon: int) -> None:
+def _init(horizon: int, ready=None) -> None:
     global _worker
     _worker = MCTS(horizon_rounds=horizon)
     _worker.max_sims = 1_000_000          # let the time budget rule
+    if ready is not None:
+        ready.put(None)
 
 
 def _search(job: tuple[GameState, float, int, dict | None]) -> WorkerResult:
     state, budget_ms, seed, priors = job
     assert _worker is not None            # set by _init in every worker
     _worker.rng.seed(seed)
-    ranked = _worker.search(state, time_budget_ms=budget_ms, priors=priors)
-    return ([(r.action, r.visits, r.win_rate * r.visits) for r in ranked],
-            _worker.last_sims)
+    _worker.search(state, time_budget_ms=budget_ms, priors=priors)
+    return (_worker.last_root_statistics, _worker.last_sims)
 
 
 def merge_results(results: Iterable[WorkerResult],
@@ -64,17 +181,20 @@ def merge_results(results: Iterable[WorkerResult],
 
     Returns the ranked actions and the total simulation count.
     """
-    merged: dict[Action, tuple[int, float]] = {}
+    merged: dict[Action, tuple[int, list[float]]] = {}
     total = 0
     for ranked, sims in results:
         total += sims
         for action, visits, value_sum in ranked:
-            v, s = merged.get(action, (0, 0.0))
-            merged[action] = (v + visits, s + value_sum)
+            v, sums = merged.get(action, (0, []))
+            sums.append(value_sum)
+            merged[action] = (v + visits, sums)
     out = [RankedAction(action=a, label=a.describe(root_state),
-                        win_rate=(s / v if v else 0.0), visits=v)
-           for a, (v, s) in merged.items()]
-    out.sort(key=lambda r: (r.win_rate, r.visits), reverse=True)
+                        win_rate=(math.fsum(sums) / v if v else 0.0), visits=v)
+           for a, (v, sums) in merged.items()]
+    out.sort(key=lambda r: (-r.win_rate, -r.visits,
+                           -1 if r.action.card_idx is None else r.action.card_idx,
+                           -1 if r.action.target_idx is None else r.action.target_idx))
     return out, total
 
 
@@ -100,32 +220,85 @@ class ParallelMCTS:
         self._single.max_sims = 1_000_000
         self._rng = random.Random()
         self.last_sims = 0
+        self.last_report: FixedWorkReport | None = None
+        self.last_pool_startup_s = 0.0
 
-    def warmup(self) -> None:
-        """Spawn the pool up front so the first real decision isn't slow."""
+    def warmup(self) -> bool:
+        """Report startup success without changing the requested worker count.
+
+        Time mode still handles a startup failure with its serial fallback.
+        A later fixed search retains its configured allocation and error policy.
+        """
         if self.workers > 1:
             try:
                 self._ensure_pool()
             except Exception:
-                self.workers = 1
+                return False
+        return True
 
     def _ensure_pool(self) -> Pool:
         if self._pool is None:
             ctx = mp.get_context("spawn")
-            self._pool = ctx.Pool(self.workers, initializer=_init,
-                                  initargs=(self.horizon,))
+            ready = ctx.Queue()
+            start = time.perf_counter()
+            try:
+                self._pool = ctx.Pool(self.workers, initializer=_init,
+                                      initargs=(self.horizon, ready))
+                deadline = start + 30
+                for _ in range(self.workers):
+                    ready.get(timeout=max(0, deadline - time.perf_counter()))
+            except Exception:
+                self.close()
+                raise
+            finally:
+                self.last_pool_startup_s = time.perf_counter() - start
+                ready.close()
+                ready.join_thread()
         return self._pool
 
     def close(self) -> None:
         if self._pool is not None:
             self._pool.terminate()
+            self._pool.join()
             self._pool = None
 
-    def search(self, root_state: GameState, time_budget_ms: float = 450,
-               priors: dict | None = None) -> list[RankedAction]:
+    def search(self, root_state: GameState, time_budget_ms: float | None = None,
+               priors: dict | None = None, *, mode: str = "time",
+               max_sims: int | None = None, max_transitions: int | None = None,
+               seed: int | None = None,
+               worker_timeout_s: float = 60) -> list[RankedAction]:
+        """Use a time budget or explicitly divide fixed total work.
+
+        Time mode defaults to 450 ms and preserves the serial fallback. Fixed
+        mode requires ``max_sims`` and ``seed``, forbids a time budget, and
+        optionally partitions a total transition ceiling. It never reallocates
+        unused work. The worker timeout aborts an operation, not a successful
+        timed substitute. ``last_report`` retains that distinction.
+        """
         self.last_sims = 0
-        _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
+        self.last_report = None
+        self.last_pool_startup_s = 0.0
         _validate_priors(priors)
+        if mode not in ("time", "fixed"):
+            raise ValueError("mode must be 'time' or 'fixed'")
+        if mode == "fixed":
+            if time_budget_ms is not None:
+                raise ValueError("fixed mode cannot use time_budget_ms")
+            if max_sims is None or seed is None:
+                raise ValueError("fixed mode requires max_sims and seed")
+            _integer(max_sims, "max_sims")
+            _integer(seed, "seed")
+            if max_transitions is not None:
+                _integer(max_transitions, "max_transitions")
+            _validate_nonnegative_finite(worker_timeout_s, "worker_timeout_s")
+            if worker_timeout_s == 0:
+                raise ValueError("worker_timeout_s must be positive")
+            return self._search_fixed(root_state, max_sims, max_transitions,
+                                      seed, priors, worker_timeout_s)
+        if max_sims is not None or max_transitions is not None or seed is not None:
+            raise ValueError("fixed work controls require mode='fixed'")
+        time_budget_ms = 450 if time_budget_ms is None else time_budget_ms
+        _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
         if root_state.is_terminal():
             return []  # avoid even starting a pool for a finished position
         if self.workers <= 1 or time_budget_ms == 0:
@@ -143,6 +316,140 @@ class ParallelMCTS:
             return self._search_single(root_state, time_budget_ms, priors)
         out, self.last_sims = merge_results(results, root_state)
         return out
+
+    def _search_fixed(self, state: GameState, max_sims: int,
+                      max_transitions: int | None, seed: int, priors: dict | None,
+                      timeout: float) -> list[RankedAction]:
+        start = time.perf_counter()
+        sims = allocate(max_sims, self.workers)
+        transitions = (allocate(max_transitions, self.workers)
+                       if max_transitions is not None else (None,) * self.workers)
+        jobs = [WorkerJob(i, state, self.horizon, worker_seed(seed, i),
+                          sims[i], transitions[i], priors)
+                for i in range(self.workers)]
+        receipts: dict[int, WorkerReceipt] = {}
+        pending = {}
+        failure = None
+        try:
+            for job in jobs:
+                # Zero work and terminal roots need no process. Applying the
+                # priors still follows the same independent tree contract.
+                if (self.workers == 1 or state.is_terminal() or job.max_sims == 0
+                        or (job.max_transitions is not None
+                            and job.max_transitions < self.horizon)):
+                    receipts[job.worker_id] = _fixed_search(job)
+                else:
+                    pending[job.worker_id] = self._ensure_pool().apply_async(
+                        _fixed_search, (job,))
+            deadline = start + timeout
+            for worker_id, result in pending.items():
+                receipts[worker_id] = result.get(
+                    timeout=max(0, deadline - time.perf_counter()))
+        except Exception as exc:
+            failure = type(exc).__name__
+            # Retain ready results without waiting again or replaying jobs.
+            for worker_id, result in pending.items():
+                if worker_id not in receipts and result.ready():
+                    try:
+                        receipts[worker_id] = result.get(timeout=0)
+                    except Exception:
+                        pass
+            self.close()
+        legal = set(legal_actions(state)) if not state.is_terminal() else set()
+        for job in jobs:
+            record = receipts.get(job.worker_id)
+            if record is None:
+                status = "unreported" if job.worker_id in pending else "not_started"
+                receipts[job.worker_id] = _unreported(job, status, failure or status)
+            else:
+                try:
+                    valid = self._valid_receipt(record, job, legal)
+                except (TypeError, ValueError, AttributeError):
+                    valid = False
+                if not valid:
+                    receipts[job.worker_id] = _unreported(
+                        job, "unreported", "InvalidWorkerReceipt")
+        ordered = tuple(receipts[i] for i in range(self.workers))
+        known_sims = sum(r.simulations or 0 for r in ordered)
+        known_transitions = sum(r.transitions or 0 for r in ordered)
+        known = all(r.simulations is not None and r.transitions is not None
+                    for r in ordered)
+        complete = all(r.status == "completed" for r in ordered)
+        self.last_sims = known_sims
+        self.last_report = FixedWorkReport(
+            seed, max_sims, max_transitions, ordered, complete,
+            known_sims if known else None, known_transitions if known else None,
+            known_sims, known_transitions, max_sims - known_sims if known else None,
+            (max_transitions - known_transitions
+             if known and max_transitions is not None else None),
+            time.perf_counter() - start, self.last_pool_startup_s)
+        if not complete:
+            self.close()
+            raise ParallelSearchError(self.last_report)
+        out, _ = merge_results(
+            [(list(r.statistics), r.simulations or 0) for r in ordered], state)
+        return out
+
+    @staticmethod
+    def _valid_receipt(record: WorkerReceipt, job: WorkerJob,
+                       legal: set[Action]) -> bool:
+        """Do not accept malformed worker output as completed fixed work."""
+        if not isinstance(record, WorkerReceipt):
+            return False
+        if (record.worker_id != job.worker_id or record.seed != job.seed
+                or record.assigned_simulations != job.max_sims
+                or record.assigned_transitions != job.max_transitions
+                or record.status not in ("completed", "failed")):
+            return False
+        sims, transitions = record.simulations, record.transitions
+        if (not isinstance(sims, int) or isinstance(sims, bool)
+                or not 0 <= sims <= job.max_sims
+                or not isinstance(transitions, int) or isinstance(transitions, bool)
+                or not sims <= transitions <= job.max_sims * job.horizon
+                or record.unused_simulations != job.max_sims - sims):
+            return False
+        if (job.max_transitions is not None
+                and (transitions > job.max_transitions
+                     or record.unused_transitions
+                     != job.max_transitions - transitions)):
+            return False
+        if record.status == "failed":
+            return (not record.statistics and record.error is not None
+                    and record.stop_reasons == ("worker_error",))
+        reasons = []
+        if not legal:
+            reasons.append("terminal")
+            if sims or transitions or record.statistics:
+                return False
+        else:
+            if (job.max_transitions is not None
+                    and job.max_transitions - transitions < job.horizon):
+                reasons.append("transition_allowance")
+            if sims == job.max_sims:
+                reasons.append("simulation_cap")
+        expected_virtual = 0
+        if job.priors:
+            for action in legal:
+                if action.card_idx is not None:
+                    prior = job.priors.get(job.state.hand[action.card_idx].name)
+                    if prior:
+                        expected_virtual += min(30, 3 * prior[0])
+        if (record.stop_reasons != tuple(reasons) or not reasons
+                or not isinstance(record.virtual_visits, int)
+                or isinstance(record.virtual_visits, bool)
+                or record.virtual_visits != expected_virtual
+                or sum(v for _, v, _ in record.statistics)
+                != sims + record.virtual_visits):
+            return False
+        actions = set()
+        for action, visits, value_sum in record.statistics:
+            if (action not in legal or action in actions
+                    or not isinstance(visits, int) or isinstance(visits, bool)
+                    or visits < 0 or not math.isfinite(value_sum)
+                    or not 0 <= value_sum <= visits):
+                return False
+            actions.add(action)
+        return True
 
     def _search_single(self, root_state: GameState, time_budget_ms: float,
                        priors: dict | None) -> list[RankedAction]:

@@ -93,6 +93,15 @@ uses descriptive results without confidence intervals or z statistics.
 Choose `--transitions` separately from `--sims` and `--one-round-samples`.
 Existing timed and fixed-simulation commands keep their behavior.
 
+For reproducible parallel decisions, use
+[`ParallelMCTS` with `mode="fixed"`](docs/parallel-fixed-work.md). It divides a
+single simulation and optional transition allowance across workers, records
+their seeds and actual work, and raises on incomplete worker results without
+retrying the allowance. Time mode remains available. The episode benchmark and
+its existing studies are unchanged. The separate
+[process scaling protocol](docs/parallel-scaling-protocol.json) defines the new
+computational comparison before its outcomes are collected.
+
 ### Reading one decision
 
 [![A seeded search ranks Spark, Pass and Weakness Mark by mean shaped reward, with visits shown separately.](docs/mcts-decision-example.png)](docs/visual-example.md)
