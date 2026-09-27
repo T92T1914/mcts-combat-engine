@@ -83,6 +83,12 @@ historical SVG retains its original colors and bytes. The build records hashes,
 the rendering revision and the saved decision's original source revision in
 `_site/presentation.json`. A dirty local build is labeled as such.
 
+The [decision figure](docs/visual-example.md#rebuild-the-figure-without-another-search)
+has a separate maintained renderer and optional authoring dependencies. Supply
+explicit Inter files to rebuild its two editions from retained values. Ordinary
+site builds verify the committed figures without rerunning a search or fetching
+fonts. Preserve the original diagram, decision source and later study results.
+
 Use these extra checks for presentation changes:
 
 ```sh

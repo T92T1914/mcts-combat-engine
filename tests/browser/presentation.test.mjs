@@ -10,7 +10,7 @@ import {chromium} from 'playwright';
 // visible fallback, desktop input or connection to an existing browser.
 const root = fileURLToPath(new URL('../../_site/', import.meta.url));
 const mime = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript',
-  '.mjs':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml'};
+  '.mjs':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png'};
 let browser, server, base;
 before(async () => {
   server = createServer(async (request, response) => {
@@ -134,14 +134,15 @@ test('blocked storage keeps an in-memory override and no-script Auto preserves e
   await noScript.goto(base);
   assert.equal(await background(noScript), 'rgb(9, 9, 9)');
   assert.equal(await noScript.locator('#appearance').isDisabled(), true);
-  assert.equal(await noScript.locator('figure img').evaluate(e => e.complete && e.naturalWidth > 0), true);
+  await noScript.locator('figure img:visible').scrollIntoViewIfNeeded();
+  assert.equal(await noScript.locator('figure img:visible').evaluate(async e => { await e.decode(); return e.naturalWidth > 0; }), true);
   assert.equal(await noScript.locator('figure a[href="data.json"]').count(), 1);
   assert.equal(await noScript.locator('figure a[href="example.svg"]').count(), 1);
   await noScript.emulateMedia({colorScheme:'light'});
   assert.equal(await background(noScript), 'rgb(248, 247, 243)');
 });
 
-for (const mode of ['clair','obscur']) test(`${mode} preserves every action, original image and keyboard/narrow layouts`, async t => {
+for (const mode of ['clair','obscur']) test(`${mode} preserves every action, figure and keyboard/narrow layouts`, async t => {
   const page = await fixture(t);
   await ready(page);
   await page.locator('#interactive:visible').waitFor();
@@ -156,7 +157,7 @@ for (const mode of ['clair','obscur']) test(`${mode} preserves every action, ori
   assert.equal(await page.locator('#table tbody tr').count(), data.actions.length);
   assert.match(await page.locator('#context').textContent(), /safety cap not reached/);
   assert.match(await page.locator('main').textContent(), /not a probability of winning/);
-  assert.equal(await page.locator('figure img').evaluate(e => getComputedStyle(e).filter), 'none');
+  assert.equal(await page.locator('figure img:visible').evaluate(e => getComputedStyle(e).filter), 'none');
   await capture(page, `${mode}-wide`);
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
@@ -322,4 +323,49 @@ test('process report needs no script and handles unavailable storage and print s
   assert.equal(await background(page), 'rgb(9, 9, 9)');
   await page.reload();
   assert.equal(await background(page), 'rgb(248, 247, 243)');
+});
+
+
+test('decision editions follow effective appearance, preserve scale and download exact SVGs', async t => {
+  const page = await fixture(t, {colorScheme:'dark',viewport:{width:390,height:844}});
+  await ready(page);
+  const visible = page.locator('#decision-figure img:visible');
+  assert.equal(await visible.getAttribute('src'), 'decision-obscur.png');
+  const data = await (await page.request.get(base+'/data.json')).json();
+  const receipt = await (await page.request.get(base+'/decision-figure.json')).json();
+  assert.deepEqual(receipt.evidence.retained_decision, data);
+  for (const mode of ['clair','obscur']) {
+    await page.locator('#appearance').selectOption(mode);
+    await page.emulateMedia({colorScheme:mode === 'clair' ? 'dark' : 'light'});
+    assert.equal(await visible.count(), 1);
+    assert.equal(await visible.getAttribute('src'), `decision-${mode}.png`);
+    await visible.scrollIntoViewIfNeeded();
+    await visible.evaluate(e => e.decode());
+    assert.deepEqual(await visible.evaluate(e => [e.naturalWidth,e.naturalHeight]), [960,1960]);
+    assert.equal(Math.round((await visible.boundingBox()).width), 350);
+    assert.equal(await visible.evaluate(e => getComputedStyle(e).filter), 'none');
+    await capture(page, `decision-${mode}-mobile`, '#decision-figure img:visible');
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.locator(`#decision-figure a[href="decision-${mode}.svg"]`).click(),
+    ]);
+    assert.equal(download.suggestedFilename(), `decision-${mode}.svg`);
+    assert.deepEqual(await readFile(await download.path()), await readFile(path.join(root, `decision-${mode}.svg`)));
+    await page.reload();
+    assert.equal(await visible.getAttribute('src'), `decision-${mode}.png`);
+  }
+  await page.emulateMedia({media:'print'});
+  assert.equal(await visible.getAttribute('src'), 'decision-clair.png');
+  assert.equal(await page.locator('#appearance').inputValue(), 'obscur');
+  await page.emulateMedia({media:'screen',colorScheme:'light'});
+  await page.locator('#appearance').selectOption('auto');
+  assert.equal(await visible.getAttribute('src'), 'decision-clair.png');
+  await page.emulateMedia({colorScheme:'dark'});
+  assert.equal(await visible.getAttribute('src'), 'decision-obscur.png');
+  const noScript = await fixture(t, {javaScriptEnabled:false,colorScheme:'dark'});
+  await noScript.goto(base);
+  const noScriptImage = noScript.locator('#decision-figure img:visible');
+  assert.equal(await noScriptImage.getAttribute('src'), 'decision-obscur.png');
+  await noScript.emulateMedia({colorScheme:'light'});
+  assert.equal(await noScriptImage.getAttribute('src'), 'decision-clair.png');
 });

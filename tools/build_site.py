@@ -8,7 +8,10 @@ from pathlib import Path
 
 try:
     from .presentation import appearance_css, load_tokens
+    from .render_decision_figure import check_outputs
 except ImportError:
+    from render_decision_figure import check_outputs
+
     from presentation import appearance_css, load_tokens
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +24,11 @@ FILES = {
     "site/selection-state.mjs": "selection-state.mjs",
     "docs/visual-example-data.json": "data.json",
     "docs/mcts-decision-example.svg": "example.svg",
+    "docs/mcts-decision-clair.png": "decision-clair.png",
+    "docs/mcts-decision-obscur.png": "decision-obscur.png",
+    "docs/mcts-decision-clair.svg": "decision-clair.svg",
+    "docs/mcts-decision-obscur.svg": "decision-obscur.svg",
+    "docs/mcts-decision-figure.json": "decision-figure.json",
     "site/parallel-scaling.html": "parallel-scaling.html",
     "docs/parallel-scaling-results.json": "parallel-scaling-results.json",
     "docs/parallel-scaling-protocol.json": "parallel-scaling-protocol.json",
@@ -60,6 +68,7 @@ def main():
     data = json.loads((ROOT / "docs/visual-example-data.json").read_text())
     if not data.get("source_commit"):
         raise ValueError("Example data must retain its source revision.")
+    check_outputs()
     OUT.mkdir(exist_ok=True)
     unexpected = {p.name for p in OUT.iterdir()} - set(FILES.values()) - GENERATED
     if unexpected:

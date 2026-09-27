@@ -1,0 +1,3 @@
+# Rendering receipts identify SVG bytes across operating systems.
+docs/mcts-decision-clair.svg text eol=lf
+docs/mcts-decision-obscur.svg text eol=lf

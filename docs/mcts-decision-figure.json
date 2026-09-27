@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "evidence": {
+    "retained_decision": {
+      "source_commit": "a82e1a6",
+      "source": "demo.py boss --sims 10000 --seed 7 --horizon 6",
+      "conditions": "Fixed initial deal seed 7, search seed 7, horizon 6, single process, 10000 simulations; safety cap not reached",
+      "units": "Mean shaped reward; not a win probability",
+      "actions": [
+        {
+          "name": "Spark",
+          "reward": 0.532,
+          "visits": 5724
+        },
+        {
+          "name": "Pass",
+          "reward": 0.506,
+          "visits": 2445
+        },
+        {
+          "name": "Weakness Mark",
+          "reward": 0.495,
+          "visits": 1831
+        }
+      ],
+      "precision": "Reward rounded to three decimal places as printed by the public demo"
+    },
+    "search_rerun": false,
+    "reward_axis": [
+      0,
+      0.6
+    ],
+    "chosen_action": "Spark",
+    "series_roles": {
+      "Spark": "warning",
+      "Pass": "accent",
+      "Weakness Mark": "muted"
+    },
+    "visits": "Exact search visits, not confidence intervals",
+    "parallel_scaling_study": "Separate evidence, not this historical decision"
+  },
+  "renderer": {
+    "matplotlib": "3.11.1",
+    "backend": "Agg"
+  },
+  "layout": {
+    "clair": {
+      "width": 960,
+      "height": 1960,
+      "labels_within_canvas": 25,
+      "minimum_font_points": 11.8
+    },
+    "obscur": {
+      "width": 960,
+      "height": 1960,
+      "labels_within_canvas": 25,
+      "minimum_font_points": 11.8
+    }
+  },
+  "typography": {
+    "files": {
+      "Regular": {
+        "sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+        "postscript": "Inter-Regular",
+        "weight": 400,
+        "italic": false
+      },
+      "SemiBold": {
+        "sha256": "78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3",
+        "postscript": "Inter-SemiBold",
+        "weight": 600,
+        "italic": false
+      },
+      "Bold": {
+        "sha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f",
+        "postscript": "Inter-Bold",
+        "weight": 700,
+        "italic": false
+      },
+      "Italic": {
+        "sha256": "bbc051dd204b5019a1aa0bc0ae2aa8a05ab13e7a3f979fa357631dc7feb6833a",
+        "postscript": "Inter-Italic",
+        "weight": 400,
+        "italic": true
+      },
+      "SemiBoldItalic": {
+        "sha256": "eff2930c3d3b35d3fcf5f76252b6baef4c3e907d9d2fde1d16cf5d417f8deef4",
+        "postscript": "Inter-SemiBoldItalic",
+        "weight": 600,
+        "italic": true
+      },
+      "BoldItalic": {
+        "sha256": "948405a16cdc62701da5f4005ed068ca5f4d27061d98f7974ccfc37831d9581d",
+        "postscript": "Inter-BoldItalic",
+        "weight": 700,
+        "italic": true
+      }
+    },
+    "painted_faces": [
+      "Regular",
+      "SemiBold",
+      "Bold",
+      "Italic"
+    ],
+    "png": "Glyphs rasterized from explicit Inter files",
+    "svg": "Labels outlined from the same Inter files. Selectable text and source data accompany the figure"
+  },
+  "inputs_sha256_lf": {
+    "docs/visual-example-data.json": "cd9b5a8cf2f6fe21a46ff8cc9f53b67e99edb494dbd4cc1991a035050d54ed77",
+    "presentation/tokens.json": "96a3b9d2e35e074069b7a70213327b1f79ca898454c6e64906899e5d59ae0feb",
+    "tools/render_decision_figure.py": "49d965c4dfd7a0b0a4b447dc3331ba448cb93d57d843adfecdbe51ee5e58b0dd"
+  },
+  "outputs_sha256": {
+    "docs/mcts-decision-clair.png": "93d487cc82555f2d62bdb23c3d23d1f6fdaeb943c44dbf8fb2e01dea37f7bbf3",
+    "docs/mcts-decision-clair.svg": "95d0961da5aebfbcbe5224b9982b74450240af4d2b684e356af39e86d3c1848e",
+    "docs/mcts-decision-obscur.png": "9c1ecb602abb369d48c4823b86c275764ba46fe59e96ed81778d08b3d829f732",
+    "docs/mcts-decision-obscur.svg": "903d528061098e1223502a56eb0509152ac435f195f7af8666f30c5f247f00c4"
+  }
+}
