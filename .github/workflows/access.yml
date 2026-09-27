@@ -32,6 +32,11 @@ jobs:
           node-version: '24'
       - run: node --test tests/selection-state.test.mjs
       - run: python tools/build_site.py
+      - run: npm ci --ignore-scripts
+      - name: Verify the saved page in sandboxed headless Chrome
+        run: npm run test:browser
+        env:
+          MCTS_BROWSER_CHANNEL: chrome
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:
           path: _site
