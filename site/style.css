@@ -19,7 +19,17 @@ select:disabled{color:var(--disabled)}
 .metric strong,h1,h2,h3{font-weight:700}
 .wrap,footer,.metric strong,.metric span{overflow-wrap:anywhere}
 .table-wrap td:nth-child(n+2){white-space:nowrap}
-/* Historical evidence is an unchanged image, never a CSS recoloring target. */
+/* Both authored editions use the same retained data. No image filter is applied. */
 figure{border:1px solid var(--divider);padding:12px;border-radius:6px}
 @media print{.wrap{max-width:none;padding:0}.appearance-control,nav,.skip{display:none}.panel{break-inside:avoid}a{color:var(--text)}pre,.table-wrap{overflow:visible}img{max-width:100%}}
 @media(forced-colors:active){a:focus-visible,select:focus-visible,summary:focus-visible,.table-wrap:focus-visible{outline-color:Highlight}select:disabled{color:GrayText}}
+
+#decision-figure{max-width:480px;margin-inline:auto;padding:0;border:0}
+.decision-obscur{display:none}
+:root[data-appearance="obscur"] .decision-clair{display:none}
+:root[data-appearance="obscur"] .decision-obscur{display:block}
+@media(prefers-color-scheme:dark){
+:root:not([data-appearance="clair"]):not([data-appearance="obscur"]) .decision-clair{display:none}
+:root:not([data-appearance="clair"]):not([data-appearance="obscur"]) .decision-obscur{display:block}
+}
+@media print{#decision-figure .decision-clair{display:block}#decision-figure .decision-obscur{display:none}}

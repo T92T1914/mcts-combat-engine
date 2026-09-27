@@ -104,7 +104,13 @@ computational comparison and was committed before its outcomes were collected.
 
 ### Reading one decision
 
-[![A seeded search ranks Spark, Pass and Weakness Mark by mean shaped reward, with visits shown separately.](docs/mcts-decision-example.png)](docs/visual-example.md)
+<a href="docs/visual-example.md">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/mcts-decision-obscur.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/mcts-decision-clair.png">
+    <img src="docs/mcts-decision-clair.png" alt="One recorded decision after 10,000 simulations. Spark has mean shaped reward 0.532, Pass 0.506 and Weakness Mark 0.495. Exact visits are 5,724, 2,445 and 1,831 respectively. Reward is not a win probability." width="480">
+  </picture>
+</a>
 
 The search ranks three actions after 10,000 simulations. Its shaped reward describes this decision and is not a win probability. The example and its reproduction command are below.
 [Reproduce and inspect the values](docs/visual-example.md).
