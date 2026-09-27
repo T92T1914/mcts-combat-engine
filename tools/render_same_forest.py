@@ -528,7 +528,7 @@ def webpage(record):
         'and declared limits. <a href="index.html">Return to the decision explorer',
         "</a>.</footer></div></body></html>",
     ]
-    return "\n".join(parts) + "\n"
+    return "\n".join(part.rstrip() for part in parts) + "\n"
 
 
 def check_outputs(write=False):

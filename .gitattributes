@@ -3,4 +3,4 @@ docs/mcts-decision-clair.svg text eol=lf
 docs/mcts-decision-obscur.svg text eol=lf
 
 # Preserve the first attempt's exact bytes, including recorded line endings.
-docs/same-forest-results.json -text
+docs/same-forest-results.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
