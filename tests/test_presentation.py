@@ -59,6 +59,8 @@ class PresentationTests(unittest.TestCase):
             manifest = json.loads((out / "presentation.json").read_text())
             self.assertFalse(manifest["evaluation_rerun"])
             self.assertEqual(manifest["recorded_source_revision"], "a82e1a6")
+            self.assertEqual(manifest["same_forest_source_revision"],
+                             "3adf64e618c277721d7ea36629cc934d0145a3ac")
             self.assertRegex(manifest["presentation_revision"], r"^[a-f0-9]{40}$")
             self.assertEqual(
                 set(manifest["files"]),

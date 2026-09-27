@@ -1,0 +1,98 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Same forest execution | MCTS Combat Engine</title>
+<script src="appearance.js"></script>
+<link rel="stylesheet" href="appearance.css">
+<link rel="stylesheet" href="style.css"></head><body class="execution-report">
+<a class="skip" href="#main">Skip to the report</a><div class="wrap">
+<nav aria-label="Project navigation"><a href="index.html">Decision explorer</a>
+<a href="parallel-scaling.html">Earlier process study</a></nav>
+<div class="appearance-control"><label for="appearance">Appearance</label>
+<select id="appearance" disabled><option value="auto">Auto</option>
+<option value="clair">Clair</option><option value="obscur">Obscur</option>
+</select><noscript>Auto follows your system appearance.</noscript></div>
+<main id="main"><p class="eyebrow">A separate execution control</p>
+<h1>Same forest, different execution</h1><div class="actions">
+<a class="button" href="same-forest-results.json" download>Download raw results</a>
+<a class="button" href="same-forest-protocol.json">Read the declared protocol</a>
+<a class="button" href="same-forest-results.md" download>
+Download Markdown report</a></div>
+<p>All 18 executions completed. In each of the six conditions, sequential execution and both process modes returned exactly the same worker seeds, work accounting, stopping reasons, raw root statistics and ranked actions. Each execution spent 12,000 simulations and 60,000 simulator transitions, with no unused allowance.</p>
+<p>This control holds the forest fixed while changing how its roots execute. It separates execution timing from the change in search structure caused by dividing work among a different number of trees. Two roots and four roots remain different forests. This is not a playing strength study.</p>
+<h2>Timing of identical forests</h2>
+<p>On narrow screens, scroll each table sideways for the remaining columns. Tab to a table and use the arrow keys when browsing by keyboard.</p>
+<p>Each row is one condition with one observation per execution mode. A ratio divides sequential wall time by process wall time for that same forest. Ratios above one mean the process execution was faster in this observation. They are not confidence intervals or a general scaling claim. Some warm ratios exceed the root count. Uncontrolled ordinary machine activity and one observation cannot establish superlinear scaling.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Observed wall seconds and ratios"><table><caption>Observed wall seconds and ratios</caption>
+<thead><tr><th scope="col">Scenario</th><th scope="col">Roots</th><th scope="col">Sequential s</th><th scope="col">Cold s</th><th scope="col">Warm s</th><th scope="col">Sequential / cold</th><th scope="col">Sequential / warm</th></tr></thead><tbody>
+<tr><td>duel</td><td>2</td><td>1.109563</td><td>0.809045</td><td>0.577712</td><td>1.371</td><td>1.921</td></tr>
+<tr><td>duel</td><td>4</td><td>1.316565</td><td>0.512314</td><td>0.305295</td><td>2.570</td><td>4.312</td></tr>
+<tr><td>gauntlet</td><td>2</td><td>1.831624</td><td>1.054769</td><td>0.807727</td><td>1.737</td><td>2.268</td></tr>
+<tr><td>gauntlet</td><td>4</td><td>1.789601</td><td>0.633350</td><td>0.442468</td><td>2.826</td><td>4.045</td></tr>
+<tr><td>boss</td><td>2</td><td>1.192384</td><td>0.759412</td><td>0.794376</td><td>1.570</td><td>1.501</td></tr>
+<tr><td>boss</td><td>4</td><td>1.133148</td><td>0.539349</td><td>0.310930</td><td>2.101</td><td>3.644</td></tr>
+</tbody></table></div>
+<p>With two Boss roots, warm execution took 0.794376 seconds while cold execution took 0.759412 seconds. That slower warm observation is retained. The control does not explain its cause or justify assuming warm execution is always faster.</p>
+<h2>What warm includes</h2>
+<p>Sequential and cold wall time include engine construction and the search call. Warm initializes a fresh engine and process pool before starting the search timer. No unrecorded search warms that pool. This differs from the earlier process study, where warm meant a second search on a reused pool. Every execution here builds fresh trees. Cleanup occurs outside the search timer.</p>
+<p>Warm preparation and its contained pool startup are listed separately. Do not add both values as independent costs. Cold startup is already inside cold wall time. Longest root reports a component of computation, not an additional cost. These observations include scheduling and orchestration effects and do not isolate pure IPC latency.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Preparation and timing components in seconds"><table><caption>Preparation and timing components in seconds</caption>
+<thead><tr><th scope="col">Scenario</th><th scope="col">Roots</th><th scope="col">Mode</th><th scope="col">Preparation s</th><th scope="col">Prepared startup s</th><th scope="col">Startup in search s</th><th scope="col">Longest root s</th></tr></thead><tbody>
+<tr><td>duel</td><td>2</td><td>sequential</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.558335</td></tr>
+<tr><td>duel</td><td>2</td><td>cold</td><td>0.000000</td><td>0.000000</td><td>0.185209</td><td>0.620584</td></tr>
+<tr><td>duel</td><td>2</td><td>warm</td><td>0.159176</td><td>0.159013</td><td>0.000000</td><td>0.576915</td></tr>
+<tr><td>duel</td><td>4</td><td>cold</td><td>0.000000</td><td>0.000000</td><td>0.191731</td><td>0.319596</td></tr>
+<tr><td>duel</td><td>4</td><td>warm</td><td>0.187320</td><td>0.187164</td><td>0.000000</td><td>0.304601</td></tr>
+<tr><td>duel</td><td>4</td><td>sequential</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.349398</td></tr>
+<tr><td>gauntlet</td><td>2</td><td>warm</td><td>0.181824</td><td>0.181665</td><td>0.000000</td><td>0.807000</td></tr>
+<tr><td>gauntlet</td><td>2</td><td>sequential</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.963577</td></tr>
+<tr><td>gauntlet</td><td>2</td><td>cold</td><td>0.000000</td><td>0.000000</td><td>0.184117</td><td>0.869519</td></tr>
+<tr><td>gauntlet</td><td>4</td><td>sequential</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.459809</td></tr>
+<tr><td>gauntlet</td><td>4</td><td>warm</td><td>0.191744</td><td>0.191553</td><td>0.000000</td><td>0.441631</td></tr>
+<tr><td>gauntlet</td><td>4</td><td>cold</td><td>0.000000</td><td>0.000000</td><td>0.194706</td><td>0.437892</td></tr>
+<tr><td>boss</td><td>2</td><td>warm</td><td>0.169218</td><td>0.169062</td><td>0.000000</td><td>0.793769</td></tr>
+<tr><td>boss</td><td>2</td><td>cold</td><td>0.000000</td><td>0.000000</td><td>0.160949</td><td>0.597706</td></tr>
+<tr><td>boss</td><td>2</td><td>sequential</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.597263</td></tr>
+<tr><td>boss</td><td>4</td><td>cold</td><td>0.000000</td><td>0.000000</td><td>0.211925</td><td>0.326565</td></tr>
+<tr><td>boss</td><td>4</td><td>sequential</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.318758</td></tr>
+<tr><td>boss</td><td>4</td><td>warm</td><td>0.183892</td><td>0.183729</td><td>0.000000</td><td>0.310210</td></tr>
+</tbody></table></div>
+<h2>Identity and work accounting</h2>
+<p>The same WorkerJob allocation, seed derivation, fixed search, receipt validation and raw statistic merge serve every mode. Sequential execution uses the configured number of independent roots locally. It does not substitute one larger tree. Root seeds derive from search seed 42 and stable worker IDs. Raw visits and value sums merge in worker ID order.</p>
+<p>All six comparisons match after removing only report and worker durations and pool startup. Every worker stopped at both the simulation cap and transition allowance. No execution failed or left unknown work. The retained JSON contains all receipts, action identities and means. Its compatibility field win_rate is mean shaped reward, not a calibrated win probability. The report validator reconstructs that mean from raw sums.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="All 18 execution receipts"><table><caption>All 18 execution receipts</caption>
+<thead><tr><th scope="col">Scenario</th><th scope="col">Roots</th><th scope="col">Mode</th><th scope="col">Simulations</th><th scope="col">Transitions</th><th scope="col">Unused simulations</th><th scope="col">Unused transitions</th></tr></thead><tbody>
+<tr><td>duel</td><td>2</td><td>sequential</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>duel</td><td>4</td><td>sequential</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>2</td><td>sequential</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>4</td><td>sequential</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>gauntlet</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>2</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>2</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>2</td><td>sequential</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>4</td><td>cold</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>4</td><td>sequential</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+<tr><td>boss</td><td>4</td><td>warm</td><td>12000</td><td>60000</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h2>Protocol, chronology and limits</h2>
+<p>This follow up was designed after the completed 54 cell process study. The literature review below informed this new execution control, not that earlier protocol. Its six execution orders were fixed before measurement, with each mode twice in each ordinal position. It uses environment seed 300, search seed 42, horizon five and no priors. Each ordinary scenario starts with seven player pips and otherwise retains its defaults.</p>
+<p>Measured source: 3adf64e618c277721d7ea36629cc934d0145a3ac. Implementation and protocol were committed and reviewed before this first attempt. Source identity remained unchanged during collection. The report and website are later presentations of retained measurements, not new experiments.</p>
+<p>Shared Windows workstation. Only competing owned agent tests, rendering and measurements paused after coordination. Ordinary user applications and system settings left untouched. No exclusive machine access claimed.</p>
+<p>Python: 3.11.8 (tags/v3.11.8:db85d51, Feb  6 2024, 22:03:32) [MSC v.1937 64 bit (AMD64)]. Platform: Windows-10-10.0.26200-SP0. Started: 2026-09-27T09:41:05.048271+00:00. Ended: 2026-09-27T09:41:22.344743+00:00.</p>
+<p>One search seed, three initial states, two forest sizes and one observation per mode on one machine do not establish general speedup, cross platform performance or statistical significance. No episodes, quality comparison or parameter tuning followed the outcomes. Earlier studies and their unfavorable results remain unchanged.</p>
+<h2>Subsequent method context</h2>
+<p><a href="https://eecs.oregonstate.edu/~afern/papers/icaps11_uct.pdf">Fern and Lewis, Ensemble Monte Carlo Planning</a>. Sections 3.2, 3.3 and 5 distinguish ensemble size, trajectories per tree and sequential versus parallel comparisons. Their results do not establish stronger play or faster execution in this implementation.</p>
+<p><a href="https://www-users.cse.umn.edu/~gini/publications/papers/Steinmetz2020TG.pdf">Steinmetz and Gini, author manuscript on parallel search</a>. Sections II.C, III and V compare independent root trees with other parallel search arrangements in Go. Separate machines, time allowances and majority voting differ from this control&#x27;s fixed total work and pooled raw statistics.</p>
+<p>Inter uses installed local faces, with a system fallback for other 
+visitors and no remote font request. Print uses Clair without changing 
+the saved screen appearance.</p><p><a href="presentation.json">
+Site revision and file provenance</a>. The evaluated source above is 
+separate from the site build.</p></main><footer>Retained measurements 
+and declared limits. <a href="index.html">Return to the decision explorer
+</a>.</footer></div></body></html>

@@ -157,8 +157,9 @@ Its warm phase starts an initialized pool before the timer, without an extra
 search. That differs from the second search on a reused pool in the original
 scaling study. The runner retains preparation time separately and saves a
 running cell before starting work. It stops on a failure or identity mismatch
-and preserves the first attempt. No result from this control has been collected
-yet. The earlier measurements, protocol and reports remain unchanged.
+and preserves the first attempt. The [retained result](same-forest-results.md)
+completed all 18 executions with identical computational receipts in all six
+conditions. The earlier measurements, protocol and reports remain unchanged.
 
 ```sh
 python tools/run_same_forest.py --output same-forest-study.json --conditions "Describe the observed measurement conditions"

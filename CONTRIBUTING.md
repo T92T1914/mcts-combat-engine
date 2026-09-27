@@ -76,6 +76,12 @@ results with `tools/run_same_forest.py`. Tiny correctness fixtures may run first
 Sequential and process paths must agree on every computational receipt field,
 including failures and unused work. Do not reuse or replace the earlier study's
 result files. Research for this follow up came after that completed evaluation.
+The retained first attempt is `docs/same-forest-results.json`, measured at
+`3adf64e618c277721d7ea36629cc934d0145a3ac`. Check all receipts and regenerate its
+Markdown and HTML presentations with `python tools/render_same_forest.py`.
+Add `--check` to validate without writing. Neither operation executes search.
+The site builder also checks this report before copying it. Preserve the exact
+first attempt bytes and keep evaluated source distinct from report source.
 
 ## Development container and public site
 

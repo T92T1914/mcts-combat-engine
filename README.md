@@ -194,6 +194,20 @@ No complete games or playing strength outcomes were measured in this study.
 to inspect every cell, startup and serialization controls, raw results and the
 declared protocol. Its theme changes only the presentation of saved measurements.
 
+The later [same forest execution control](docs/same-forest-results.md) runs the
+same independent roots sequentially and in cold or initialized process pools.
+All 18 executions spent their full allowances, and every computational receipt
+and ranking matched within each of the six conditions. This holds the forest
+fixed while comparing execution time. It does not compare decision quality or
+treat different tree counts as the same search. Each mode was measured once.
+The two root Boss warm execution took 0.794 seconds compared with 0.759 seconds
+cold, and that unfavorable observation remains in the report. Warm preparation
+is separate from its search timer.
+
+[Read the Clair and Obscur execution report](https://t92t1914.github.io/mcts-combat-engine/same-forest.html)
+for every timing, raw receipt, the declared protocol and the research that
+informed this separate control after the earlier study was complete.
+
 ## How it works
 
 1. Clone the current state and replay an action sequence under fresh randomness.

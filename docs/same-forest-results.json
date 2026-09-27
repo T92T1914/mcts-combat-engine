@@ -1,0 +1,7306 @@
+{
+  "schema_version": 1,
+  "protocol": "same-forest-execution-v1",
+  "protocol_sha256": "7261776708d2de2cf3fdbb1bb9f3ecae2962e6e5a267c2d7916b6de0166ca32e",
+  "source": {
+    "revision": "3adf64e618c277721d7ea36629cc934d0145a3ac",
+    "worktree_clean": true,
+    "hash_method": "UTF-8 text normalized to LF without BOM",
+    "sha256": {
+      "docs/same-forest-protocol.json": "7261776708d2de2cf3fdbb1bb9f3ecae2962e6e5a267c2d7916b6de0166ca32e",
+      "tools/run_same_forest.py": "56d9ffac483b83a48bec312a368c2a8b3d15def25380771081663972ab65eb25",
+      "tools/run_parallel_scaling.py": "b5d2a34c9370d174e6b70f9d7b83b8e6d9ec95eff562bc4eb4070215d2806039",
+      "tools/render_parallel_scaling.py": "45d618402686bfb22fb513e224eb53d90255cdb8051707c4900bcd248e784beb",
+      "engine/__init__.py": "f241ae0f309145d2594c91fdaedecf6183d05a18da41b4a968bc8b890baa3c01",
+      "engine/actions.py": "468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618",
+      "engine/mcts.py": "86902c63ed6a2f5bb8acb26413167947dbf2687bf4e7dfb911743851be35c04d",
+      "engine/parallel.py": "35884134e6915fd1ded5635cc5ffbb1be58f9e3f7b0f38117371b303d1735716",
+      "engine/rules.py": "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b",
+      "engine/simulator.py": "f08d7f20ce46a33b724dfd54068285bf15d3bec68dbb2707707fff4c5abbd1b7",
+      "engine/state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
+      "game/__init__.py": "735978f2d5b6b3d98ccd18a95cb4d7507b1b698d6daa16c1732f1a6e878bc22f",
+      "game/baselines.py": "2ebae9fee93f61a0f03cd031ef2a43b8202ccd162765262580b5f015080d86ee",
+      "game/content.py": "46969faf37663cbcf9ceadb0aa0cb0f84a2dfdd9e369fffdbb96d80537a4aabc",
+      "game/loader.py": "787ada9c715e0d6745b41470810ef3dfab18f3f40b51335ca82b3bab210c1266",
+      "game/runner.py": "192227008dcfd44259e74db54b6ec0528ac3d02dddb039da72f25db782bc5de6",
+      "game/stats.py": "cdc86beb41a03d27025faa10bdf6b5ff65e8fbf9cd10136d0c6dab1cf402d2b3",
+      "data/cards.json": "38ced8d0b83104610f421fb340679c9f0facfde46d95def33430ec1155656e20",
+      "data/scenarios.json": "7b1b7b7d882c94ade7f1448bc71703758aa367230ae361ec77b985b7c2f9a378"
+    }
+  },
+  "started_utc": "2026-09-27T09:41:05.048271+00:00",
+  "environment": {
+    "python": "3.11.8 (tags/v3.11.8:db85d51, Feb  6 2024, 22:03:32) [MSC v.1937 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "logical_cpus": 16,
+    "start_method": "spawn",
+    "conditions": "Shared Windows workstation. Only competing owned agent tests, rendering and measurements paused after coordination. Ordinary user applications and system settings left untouched. No exclusive machine access claimed."
+  },
+  "status": "complete",
+  "cells": [
+    {
+      "scenario": "duel",
+      "roots": 2,
+      "phase": "sequential",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "23659f243253035bc167eb6a673172abf0bca6d3fef9a558565be0ca8f771fba",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                596,
+                356.9958261576155
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                643,
+                388.57933218888985
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                581,
+                346.73883810765227
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                839,
+                521.6567105956645
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1377,
+                893.1592887710955
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                644,
+                389.187765363179
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                647,
+                391.29700575144125
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                673,
+                408.8070080507413
+              ]
+            ],
+            "elapsed_s": 0.5583350000088103,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                853,
+                531.0658422502914
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                553,
+                328.06442057206596
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                675,
+                409.9407490327481
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                682,
+                414.7329115041184
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1363,
+                883.1844578613328
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                659,
+                399.3167466229645
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                647,
+                391.0796034131631
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                568,
+                338.115703844277
+              ]
+            ],
+            "elapsed_s": 0.5510695000120904,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 1.1094885999918915,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Warden",
+          "win_rate": 0.6483006374570907,
+          "visits": 2740
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.6221764496725508,
+          "visits": 1692
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6073796417533305,
+          "visits": 1348
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6064935419530171,
+          "visits": 1329
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Warden",
+          "win_rate": 0.6051454428136174,
+          "visits": 1303
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6043867717845371,
+          "visits": 1290
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5962230171711762,
+          "visits": 1149
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5960439877736547,
+          "visits": 1149
+        }
+      ],
+      "elapsed_s": 1.109563000005437,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "duel",
+      "roots": 2,
+      "phase": "cold",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "23659f243253035bc167eb6a673172abf0bca6d3fef9a558565be0ca8f771fba",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                596,
+                356.9958261576155
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                643,
+                388.57933218888985
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                581,
+                346.73883810765227
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                839,
+                521.6567105956645
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1377,
+                893.1592887710955
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                644,
+                389.187765363179
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                647,
+                391.29700575144125
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                673,
+                408.8070080507413
+              ]
+            ],
+            "elapsed_s": 0.6102779000066221,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                853,
+                531.0658422502914
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                553,
+                328.06442057206596
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                675,
+                409.9407490327481
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                682,
+                414.7329115041184
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1363,
+                883.1844578613328
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                659,
+                399.3167466229645
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                647,
+                391.0796034131631
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                568,
+                338.115703844277
+              ]
+            ],
+            "elapsed_s": 0.6205835999862757,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.8089655000076164,
+        "pool_startup_s": 0.1852093000197783
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Warden",
+          "win_rate": 0.6483006374570907,
+          "visits": 2740
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.6221764496725508,
+          "visits": 1692
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6073796417533305,
+          "visits": 1348
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6064935419530171,
+          "visits": 1329
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Warden",
+          "win_rate": 0.6051454428136174,
+          "visits": 1303
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6043867717845371,
+          "visits": 1290
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5962230171711762,
+          "visits": 1149
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5960439877736547,
+          "visits": 1149
+        }
+      ],
+      "elapsed_s": 0.8090453000040725,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "duel",
+      "roots": 2,
+      "phase": "warm",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "23659f243253035bc167eb6a673172abf0bca6d3fef9a558565be0ca8f771fba",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                596,
+                356.9958261576155
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                643,
+                388.57933218888985
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                581,
+                346.73883810765227
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                839,
+                521.6567105956645
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1377,
+                893.1592887710955
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                644,
+                389.187765363179
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                647,
+                391.29700575144125
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                673,
+                408.8070080507413
+              ]
+            ],
+            "elapsed_s": 0.5769151999847963,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                853,
+                531.0658422502914
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                553,
+                328.06442057206596
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                675,
+                409.9407490327481
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                682,
+                414.7329115041184
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1363,
+                883.1844578613328
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                659,
+                399.3167466229645
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                647,
+                391.0796034131631
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                568,
+                338.115703844277
+              ]
+            ],
+            "elapsed_s": 0.5730546999839135,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.5776682999858167,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Warden",
+          "win_rate": 0.6483006374570907,
+          "visits": 2740
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.6221764496725508,
+          "visits": 1692
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6073796417533305,
+          "visits": 1348
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6064935419530171,
+          "visits": 1329
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Warden",
+          "win_rate": 0.6051454428136174,
+          "visits": 1303
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6043867717845371,
+          "visits": 1290
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5962230171711762,
+          "visits": 1149
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5960439877736547,
+          "visits": 1149
+        }
+      ],
+      "elapsed_s": 0.5777116999961436,
+      "preparation_s": 0.15917569998418912,
+      "prepared_pool_startup_s": 0.1590126000228338
+    },
+    {
+      "scenario": "duel",
+      "roots": 4,
+      "phase": "cold",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "23659f243253035bc167eb6a673172abf0bca6d3fef9a558565be0ca8f771fba",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                339,
+                204.89598452471537
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                353,
+                214.59338453705584
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                293,
+                172.9311039767676
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                413,
+                256.7899562811033
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                547,
+                352.07160371486594
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                354,
+                215.2736848227474
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                341,
+                206.2385138293092
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                360,
+                219.41331344355913
+              ]
+            ],
+            "elapsed_s": 0.31959629998891614,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                419,
+                260.888462180183
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                285,
+                167.3381498175704
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                363,
+                221.52163069305948
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                367,
+                224.25587079067077
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                557,
+                359.0449488279644
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                372,
+                227.7374545786294
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                351,
+                213.01056131666527
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                286,
+                168.1030934075503
+              ]
+            ],
+            "elapsed_s": 0.29438560002017766,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                383,
+                235.5663083872908
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                294,
+                173.52611388592146
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                346,
+                209.65328724036223
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                391,
+                241.1399689472872
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                348,
+                210.97955202280298
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                322,
+                192.97342900711214
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                562,
+                362.6784924414058
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                354,
+                215.2977054592359
+              ]
+            ],
+            "elapsed_s": 0.3005797999794595,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                565,
+                363.91134469984036
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                342,
+                206.40229269165258
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                352,
+                213.38119415156896
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                429,
+                267.19702684644426
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                312,
+                185.48351046612535
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                285,
+                167.01053663040693
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                363,
+                220.8829034745277
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                352,
+                213.35305354462804
+              ]
+            ],
+            "elapsed_s": 0.3184291000070516,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.5122176000149921,
+        "pool_startup_s": 0.19173140000202693
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Warden",
+          "win_rate": 0.6444224068507738,
+          "visits": 2231
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.6210747059655071,
+          "visits": 1652
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Warden",
+          "win_rate": 0.6110464342820621,
+          "visits": 1472
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6085274339681473,
+          "visits": 1429
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.606812458709468,
+          "visits": 1404
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6064111493925464,
+          "visits": 1396
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5967337629694144,
+          "visits": 1258
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.588575861744945,
+          "visits": 1158
+        }
+      ],
+      "elapsed_s": 0.5123137000191491,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "duel",
+      "roots": 4,
+      "phase": "warm",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "23659f243253035bc167eb6a673172abf0bca6d3fef9a558565be0ca8f771fba",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                339,
+                204.89598452471537
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                353,
+                214.59338453705584
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                293,
+                172.9311039767676
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                413,
+                256.7899562811033
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                547,
+                352.07160371486594
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                354,
+                215.2736848227474
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                341,
+                206.2385138293092
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                360,
+                219.41331344355913
+              ]
+            ],
+            "elapsed_s": 0.27587149999453686,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                419,
+                260.888462180183
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                285,
+                167.3381498175704
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                363,
+                221.52163069305948
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                367,
+                224.25587079067077
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                557,
+                359.0449488279644
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                372,
+                227.7374545786294
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                351,
+                213.01056131666527
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                286,
+                168.1030934075503
+              ]
+            ],
+            "elapsed_s": 0.28742479998618364,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                383,
+                235.5663083872908
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                294,
+                173.52611388592146
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                346,
+                209.65328724036223
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                391,
+                241.1399689472872
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                348,
+                210.97955202280298
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                322,
+                192.97342900711214
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                562,
+                362.6784924414058
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                354,
+                215.2977054592359
+              ]
+            ],
+            "elapsed_s": 0.30145669999183156,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                565,
+                363.91134469984036
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                342,
+                206.40229269165258
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                352,
+                213.38119415156896
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                429,
+                267.19702684644426
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                312,
+                185.48351046612535
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                285,
+                167.01053663040693
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                363,
+                220.8829034745277
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                352,
+                213.35305354462804
+              ]
+            ],
+            "elapsed_s": 0.3046009999816306,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.3052341000002343,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Warden",
+          "win_rate": 0.6444224068507738,
+          "visits": 2231
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.6210747059655071,
+          "visits": 1652
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Warden",
+          "win_rate": 0.6110464342820621,
+          "visits": 1472
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6085274339681473,
+          "visits": 1429
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.606812458709468,
+          "visits": 1404
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6064111493925464,
+          "visits": 1396
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5967337629694144,
+          "visits": 1258
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.588575861744945,
+          "visits": 1158
+        }
+      ],
+      "elapsed_s": 0.3052949999982957,
+      "preparation_s": 0.18731999999727122,
+      "prepared_pool_startup_s": 0.18716410000342876
+    },
+    {
+      "scenario": "duel",
+      "roots": 4,
+      "phase": "sequential",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "23659f243253035bc167eb6a673172abf0bca6d3fef9a558565be0ca8f771fba",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                339,
+                204.89598452471537
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                353,
+                214.59338453705584
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                293,
+                172.9311039767676
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                413,
+                256.7899562811033
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                547,
+                352.07160371486594
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                354,
+                215.2736848227474
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                341,
+                206.2385138293092
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                360,
+                219.41331344355913
+              ]
+            ],
+            "elapsed_s": 0.3220106999797281,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                419,
+                260.888462180183
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                285,
+                167.3381498175704
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                363,
+                221.52163069305948
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                367,
+                224.25587079067077
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                557,
+                359.0449488279644
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                372,
+                227.7374545786294
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                351,
+                213.01056131666527
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                286,
+                168.1030934075503
+              ]
+            ],
+            "elapsed_s": 0.33558360001188703,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                383,
+                235.5663083872908
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                294,
+                173.52611388592146
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                346,
+                209.65328724036223
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                391,
+                241.1399689472872
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                348,
+                210.97955202280298
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                322,
+                192.97342900711214
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                562,
+                362.6784924414058
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                354,
+                215.2977054592359
+              ]
+            ],
+            "elapsed_s": 0.3093559999833815,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                565,
+                363.91134469984036
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                342,
+                206.40229269165258
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                352,
+                213.38119415156896
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                429,
+                267.19702684644426
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                312,
+                185.48351046612535
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                285,
+                167.01053663040693
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                363,
+                220.8829034745277
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                352,
+                213.35305354462804
+              ]
+            ],
+            "elapsed_s": 0.34939839999424294,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 1.3164779999933671,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Warden",
+          "win_rate": 0.6444224068507738,
+          "visits": 2231
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.6210747059655071,
+          "visits": 1652
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Warden",
+          "win_rate": 0.6110464342820621,
+          "visits": 1472
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6085274339681473,
+          "visits": 1429
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.606812458709468,
+          "visits": 1404
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.6064111493925464,
+          "visits": 1396
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5967337629694144,
+          "visits": 1258
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.588575861744945,
+          "visits": 1158
+        }
+      ],
+      "elapsed_s": 1.3165645000117365,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 2,
+      "phase": "warm",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "657355fee4c8dad87ae8713d7d0fa690e86646497d80c3a522c213d7e939593e",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                459,
+                232.53209018445125
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                346,
+                166.58091057039732
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                709,
+                382.11602284583483
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                398,
+                196.7649312094097
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                766,
+                416.6933992379714
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                479,
+                244.30751123880225
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                383,
+                188.0093605789142
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                441,
+                221.85854727508595
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                356,
+                172.36294569324505
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                516,
+                266.179409249564
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                759,
+                412.4149728364013
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                388,
+                190.915518317148
+              ]
+            ],
+            "elapsed_s": 0.7843537999724504,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                744,
+                403.4350468481225
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                480,
+                244.99232401113147
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                453,
+                229.04928152906675
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                392,
+                193.30939025037858
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                516,
+                266.27401938324454
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                713,
+                384.57740747381433
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                384,
+                188.59146854275025
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                378,
+                185.14371571058714
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                335,
+                160.28128507659184
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                466,
+                236.69286668983924
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                749,
+                406.37476663150267
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                390,
+                192.14182381260238
+              ]
+            ],
+            "elapsed_s": 0.8070002000022214,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.8076730000029784,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 1
+          },
+          "label": "Spark -> Acolyte",
+          "win_rate": 0.5431314212490688,
+          "visits": 1510
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Warden",
+          "win_rate": 0.5429640182147905,
+          "visits": 1508
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 2
+          },
+          "label": "Spark -> Adept",
+          "win_rate": 0.5391655628126928,
+          "visits": 1422
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 2
+          },
+          "label": "Weakness Mark -> Adept",
+          "win_rate": 0.515943244799233,
+          "visits": 1032
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5102188063085857,
+          "visits": 959
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Warden",
+          "win_rate": 0.5072702236478815,
+          "visits": 925
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 1
+          },
+          "label": "Weakness Mark -> Acolyte",
+          "win_rate": 0.5043711731590075,
+          "visits": 894
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4935364911446854,
+          "visits": 788
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4925960366250341,
+          "visits": 780
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.491004992335938,
+          "visits": 767
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.48706629619050706,
+          "visits": 734
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.4799738555756082,
+          "visits": 681
+        }
+      ],
+      "elapsed_s": 0.8077270000067074,
+      "preparation_s": 0.18182399999932386,
+      "prepared_pool_startup_s": 0.18166510001174174
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 2,
+      "phase": "sequential",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "657355fee4c8dad87ae8713d7d0fa690e86646497d80c3a522c213d7e939593e",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                459,
+                232.53209018445125
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                346,
+                166.58091057039732
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                709,
+                382.11602284583483
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                398,
+                196.7649312094097
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                766,
+                416.6933992379714
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                479,
+                244.30751123880225
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                383,
+                188.0093605789142
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                441,
+                221.85854727508595
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                356,
+                172.36294569324505
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                516,
+                266.179409249564
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                759,
+                412.4149728364013
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                388,
+                190.915518317148
+              ]
+            ],
+            "elapsed_s": 0.9635772000183351,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                744,
+                403.4350468481225
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                480,
+                244.99232401113147
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                453,
+                229.04928152906675
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                392,
+                193.30939025037858
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                516,
+                266.27401938324454
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                713,
+                384.57740747381433
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                384,
+                188.59146854275025
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                378,
+                185.14371571058714
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                335,
+                160.28128507659184
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                466,
+                236.69286668983924
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                749,
+                406.37476663150267
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                390,
+                192.14182381260238
+              ]
+            ],
+            "elapsed_s": 0.8678943999984767,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 1.8315513000125065,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 1
+          },
+          "label": "Spark -> Acolyte",
+          "win_rate": 0.5431314212490688,
+          "visits": 1510
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Warden",
+          "win_rate": 0.5429640182147905,
+          "visits": 1508
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 2
+          },
+          "label": "Spark -> Adept",
+          "win_rate": 0.5391655628126928,
+          "visits": 1422
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 2
+          },
+          "label": "Weakness Mark -> Adept",
+          "win_rate": 0.515943244799233,
+          "visits": 1032
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5102188063085857,
+          "visits": 959
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Warden",
+          "win_rate": 0.5072702236478815,
+          "visits": 925
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 1
+          },
+          "label": "Weakness Mark -> Acolyte",
+          "win_rate": 0.5043711731590075,
+          "visits": 894
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4935364911446854,
+          "visits": 788
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4925960366250341,
+          "visits": 780
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.491004992335938,
+          "visits": 767
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.48706629619050706,
+          "visits": 734
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.4799738555756082,
+          "visits": 681
+        }
+      ],
+      "elapsed_s": 1.8316241000138689,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 2,
+      "phase": "cold",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "657355fee4c8dad87ae8713d7d0fa690e86646497d80c3a522c213d7e939593e",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                459,
+                232.53209018445125
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                346,
+                166.58091057039732
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                709,
+                382.11602284583483
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                398,
+                196.7649312094097
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                766,
+                416.6933992379714
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                479,
+                244.30751123880225
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                383,
+                188.0093605789142
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                441,
+                221.85854727508595
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                356,
+                172.36294569324505
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                516,
+                266.179409249564
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                759,
+                412.4149728364013
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                388,
+                190.915518317148
+              ]
+            ],
+            "elapsed_s": 0.8338859000068624,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                744,
+                403.4350468481225
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                480,
+                244.99232401113147
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                453,
+                229.04928152906675
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                392,
+                193.30939025037858
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                516,
+                266.27401938324454
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                713,
+                384.57740747381433
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                384,
+                188.59146854275025
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                378,
+                185.14371571058714
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                335,
+                160.28128507659184
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                466,
+                236.69286668983924
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                749,
+                406.37476663150267
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                390,
+                192.14182381260238
+              ]
+            ],
+            "elapsed_s": 0.8695187999983318,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 1.0546812000102364,
+        "pool_startup_s": 0.18411729999934323
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 1
+          },
+          "label": "Spark -> Acolyte",
+          "win_rate": 0.5431314212490688,
+          "visits": 1510
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Warden",
+          "win_rate": 0.5429640182147905,
+          "visits": 1508
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 2
+          },
+          "label": "Spark -> Adept",
+          "win_rate": 0.5391655628126928,
+          "visits": 1422
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 2
+          },
+          "label": "Weakness Mark -> Adept",
+          "win_rate": 0.515943244799233,
+          "visits": 1032
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5102188063085857,
+          "visits": 959
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Warden",
+          "win_rate": 0.5072702236478815,
+          "visits": 925
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 1
+          },
+          "label": "Weakness Mark -> Acolyte",
+          "win_rate": 0.5043711731590075,
+          "visits": 894
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4935364911446854,
+          "visits": 788
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4925960366250341,
+          "visits": 780
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.491004992335938,
+          "visits": 767
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.48706629619050706,
+          "visits": 734
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.4799738555756082,
+          "visits": 681
+        }
+      ],
+      "elapsed_s": 1.0547685999772511,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 4,
+      "phase": "sequential",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "657355fee4c8dad87ae8713d7d0fa690e86646497d80c3a522c213d7e939593e",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                224,
+                111.71634980614199
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                187,
+                89.3765503717361
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                339,
+                183.51225422611074
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                214,
+                105.73335197891598
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                349,
+                190.07725398558554
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                255,
+                130.7683374150291
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                220,
+                109.30415496051008
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                223,
+                111.25988965324187
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                196,
+                94.655609335893
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                249,
+                127.29191260987552
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                339,
+                183.67349994951746
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                205,
+                100.28880510957697
+              ]
+            ],
+            "elapsed_s": 0.4456417000037618,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                335,
+                180.7070321829669
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                248,
+                126.28078477255093
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                232,
+                116.34759491658374
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                209,
+                102.29640042143399
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                259,
+                132.97213369122247
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                318,
+                169.9563169476709
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                219,
+                108.34928116669644
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                207,
+                101.07601281999641
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                192,
+                92.0555359051773
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                235,
+                118.22003681305654
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                333,
+                179.41313292590013
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                213,
+                104.71317603490593
+              ]
+            ],
+            "elapsed_s": 0.45980939999572,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                200,
+                97.16619493076877
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                334,
+                180.4947544850234
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                330,
+                177.962599171977
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                261,
+                134.57030375887175
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                263,
+                135.85205776749288
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                231,
+                116.03585353919658
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                202,
+                98.46182017307022
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                201,
+                97.71268900328553
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                211,
+                103.80327949214804
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                332,
+                179.22230399909375
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                231,
+                116.13208314762967
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                204,
+                99.52236212245703
+              ]
+            ],
+            "elapsed_s": 0.457351999997627,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                341,
+                184.50018698579854
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                236,
+                118.92272551583729
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                211,
+                103.67830641107929
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                245,
+                124.39421867299836
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                205,
+                99.93553658061401
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                228,
+                113.92827119491082
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                334,
+                180.04774984331513
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                216,
+                106.68322141078056
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                219,
+                108.33069159130356
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                247,
+                125.61626016911913
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                190,
+                90.76427768992804
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                328,
+                176.2747019809603
+              ]
+            ],
+            "elapsed_s": 0.4265570999996271,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 1.7895062000025064,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 1
+          },
+          "label": "Spark -> Acolyte",
+          "win_rate": 0.5406488391571547,
+          "visits": 1348
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Warden",
+          "win_rate": 0.5403785307511598,
+          "visits": 1345
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 2
+          },
+          "label": "Spark -> Adept",
+          "win_rate": 0.5384670414251442,
+          "visits": 1319
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 2
+          },
+          "label": "Weakness Mark -> Adept",
+          "win_rate": 0.5125072340252554,
+          "visits": 1018
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5114109461045095,
+          "visits": 1009
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Warden",
+          "win_rate": 0.5021503188797684,
+          "visits": 926
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 1
+          },
+          "label": "Weakness Mark -> Acolyte",
+          "win_rate": 0.5006253931115241,
+          "visits": 914
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.49141607540117216,
+          "visits": 844
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4911745888071088,
+          "visits": 840
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.49116730848268675,
+          "visits": 841
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.4881834784331452,
+          "visits": 823
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.4808780415126759,
+          "visits": 773
+        }
+      ],
+      "elapsed_s": 1.7896011999982875,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 4,
+      "phase": "warm",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "657355fee4c8dad87ae8713d7d0fa690e86646497d80c3a522c213d7e939593e",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                224,
+                111.71634980614199
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                187,
+                89.3765503717361
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                339,
+                183.51225422611074
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                214,
+                105.73335197891598
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                349,
+                190.07725398558554
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                255,
+                130.7683374150291
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                220,
+                109.30415496051008
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                223,
+                111.25988965324187
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                196,
+                94.655609335893
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                249,
+                127.29191260987552
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                339,
+                183.67349994951746
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                205,
+                100.28880510957697
+              ]
+            ],
+            "elapsed_s": 0.43579509999835864,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                335,
+                180.7070321829669
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                248,
+                126.28078477255093
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                232,
+                116.34759491658374
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                209,
+                102.29640042143399
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                259,
+                132.97213369122247
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                318,
+                169.9563169476709
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                219,
+                108.34928116669644
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                207,
+                101.07601281999641
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                192,
+                92.0555359051773
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                235,
+                118.22003681305654
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                333,
+                179.41313292590013
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                213,
+                104.71317603490593
+              ]
+            ],
+            "elapsed_s": 0.4304742000240367,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                200,
+                97.16619493076877
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                334,
+                180.4947544850234
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                330,
+                177.962599171977
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                261,
+                134.57030375887175
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                263,
+                135.85205776749288
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                231,
+                116.03585353919658
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                202,
+                98.46182017307022
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                201,
+                97.71268900328553
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                211,
+                103.80327949214804
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                332,
+                179.22230399909375
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                231,
+                116.13208314762967
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                204,
+                99.52236212245703
+              ]
+            ],
+            "elapsed_s": 0.4261001999839209,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                341,
+                184.50018698579854
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                236,
+                118.92272551583729
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                211,
+                103.67830641107929
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                245,
+                124.39421867299836
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                205,
+                99.93553658061401
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                228,
+                113.92827119491082
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                334,
+                180.04774984331513
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                216,
+                106.68322141078056
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                219,
+                108.33069159130356
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                247,
+                125.61626016911913
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                190,
+                90.76427768992804
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                328,
+                176.2747019809603
+              ]
+            ],
+            "elapsed_s": 0.44163129999651574,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.4424066999927163,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 1
+          },
+          "label": "Spark -> Acolyte",
+          "win_rate": 0.5406488391571547,
+          "visits": 1348
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Warden",
+          "win_rate": 0.5403785307511598,
+          "visits": 1345
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 2
+          },
+          "label": "Spark -> Adept",
+          "win_rate": 0.5384670414251442,
+          "visits": 1319
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 2
+          },
+          "label": "Weakness Mark -> Adept",
+          "win_rate": 0.5125072340252554,
+          "visits": 1018
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5114109461045095,
+          "visits": 1009
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Warden",
+          "win_rate": 0.5021503188797684,
+          "visits": 926
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 1
+          },
+          "label": "Weakness Mark -> Acolyte",
+          "win_rate": 0.5006253931115241,
+          "visits": 914
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.49141607540117216,
+          "visits": 844
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4911745888071088,
+          "visits": 840
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.49116730848268675,
+          "visits": 841
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.4881834784331452,
+          "visits": 823
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.4808780415126759,
+          "visits": 773
+        }
+      ],
+      "elapsed_s": 0.44246819999534637,
+      "preparation_s": 0.19174439998460002,
+      "prepared_pool_startup_s": 0.19155260000843555
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 4,
+      "phase": "cold",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "657355fee4c8dad87ae8713d7d0fa690e86646497d80c3a522c213d7e939593e",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                224,
+                111.71634980614199
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                187,
+                89.3765503717361
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                339,
+                183.51225422611074
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                214,
+                105.73335197891598
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                349,
+                190.07725398558554
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                255,
+                130.7683374150291
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                220,
+                109.30415496051008
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                223,
+                111.25988965324187
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                196,
+                94.655609335893
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                249,
+                127.29191260987552
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                339,
+                183.67349994951746
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                205,
+                100.28880510957697
+              ]
+            ],
+            "elapsed_s": 0.4378922999894712,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                335,
+                180.7070321829669
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                248,
+                126.28078477255093
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                232,
+                116.34759491658374
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                209,
+                102.29640042143399
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                259,
+                132.97213369122247
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                318,
+                169.9563169476709
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                219,
+                108.34928116669644
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                207,
+                101.07601281999641
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                192,
+                92.0555359051773
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                235,
+                118.22003681305654
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                333,
+                179.41313292590013
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                213,
+                104.71317603490593
+              ]
+            ],
+            "elapsed_s": 0.42324370000278577,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                200,
+                97.16619493076877
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                334,
+                180.4947544850234
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                330,
+                177.962599171977
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                261,
+                134.57030375887175
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                263,
+                135.85205776749288
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                231,
+                116.03585353919658
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                202,
+                98.46182017307022
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                201,
+                97.71268900328553
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                211,
+                103.80327949214804
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                332,
+                179.22230399909375
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                231,
+                116.13208314762967
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                204,
+                99.52236212245703
+              ]
+            ],
+            "elapsed_s": 0.4189448999823071,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                341,
+                184.50018698579854
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                236,
+                118.92272551583729
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                211,
+                103.67830641107929
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                245,
+                124.39421867299836
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                205,
+                99.93553658061401
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 1
+                },
+                228,
+                113.92827119491082
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 1
+                },
+                334,
+                180.04774984331513
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                216,
+                106.68322141078056
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                219,
+                108.33069159130356
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 2
+                },
+                247,
+                125.61626016911913
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                190,
+                90.76427768992804
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 2
+                },
+                328,
+                176.2747019809603
+              ]
+            ],
+            "elapsed_s": 0.41990100001567043,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.6332702999934554,
+        "pool_startup_s": 0.19470610001008026
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 1
+          },
+          "label": "Spark -> Acolyte",
+          "win_rate": 0.5406488391571547,
+          "visits": 1348
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Warden",
+          "win_rate": 0.5403785307511598,
+          "visits": 1345
+        },
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 2
+          },
+          "label": "Spark -> Adept",
+          "win_rate": 0.5384670414251442,
+          "visits": 1319
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 2
+          },
+          "label": "Weakness Mark -> Adept",
+          "win_rate": 0.5125072340252554,
+          "visits": 1018
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5114109461045095,
+          "visits": 1009
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Warden",
+          "win_rate": 0.5021503188797684,
+          "visits": 926
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 1
+          },
+          "label": "Weakness Mark -> Acolyte",
+          "win_rate": 0.5006253931115241,
+          "visits": 914
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.49141607540117216,
+          "visits": 844
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.4911745888071088,
+          "visits": 840
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.49116730848268675,
+          "visits": 841
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.4881834784331452,
+          "visits": 823
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.4808780415126759,
+          "visits": 773
+        }
+      ],
+      "elapsed_s": 0.6333504999929573,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "boss",
+      "roots": 2,
+      "phase": "warm",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "bfc528dfc097ced23dc5a202a729159051d37fc1234e5863eaa8481986923980",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                515,
+                284.6961418408845
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                679,
+                388.9604881742774
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                603,
+                340.4992800433035
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                903,
+                533.6868583458245
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1347,
+                824.8874478804785
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                625,
+                354.5393984478512
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                663,
+                378.7422577837727
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                665,
+                380.0809956022297
+              ]
+            ],
+            "elapsed_s": 0.7937690999824554,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                890,
+                525.6888094355367
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                527,
+                292.48644368139367
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                642,
+                365.6582479724497
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1352,
+                828.9241811548346
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                660,
+                377.2400375591155
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                638,
+                363.1802739209507
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                717,
+                413.7814429723472
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                574,
+                322.2669843734294
+              ]
+            ],
+            "elapsed_s": 0.7933938000060152,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.7943379999778699,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Tyrant",
+          "win_rate": 0.6127497699278671,
+          "visits": 2699
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.590839747786593,
+          "visits": 1793
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5744301292145997,
+          "visits": 1382
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5722184658203083,
+          "visits": 1339
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5702709697960979,
+          "visits": 1301
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Tyrant",
+          "win_rate": 0.5684275030941602,
+          "visits": 1267
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5630979306854145,
+          "visits": 1177
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5539180283323206,
+          "visits": 1042
+        }
+      ],
+      "elapsed_s": 0.794375699973898,
+      "preparation_s": 0.16921750002074987,
+      "prepared_pool_startup_s": 0.16906239997479133
+    },
+    {
+      "scenario": "boss",
+      "roots": 2,
+      "phase": "cold",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "bfc528dfc097ced23dc5a202a729159051d37fc1234e5863eaa8481986923980",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                515,
+                284.6961418408845
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                679,
+                388.9604881742774
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                603,
+                340.4992800433035
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                903,
+                533.6868583458245
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1347,
+                824.8874478804785
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                625,
+                354.5393984478512
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                663,
+                378.7422577837727
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                665,
+                380.0809956022297
+              ]
+            ],
+            "elapsed_s": 0.5977063000027556,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                890,
+                525.6888094355367
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                527,
+                292.48644368139367
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                642,
+                365.6582479724497
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1352,
+                828.9241811548346
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                660,
+                377.2400375591155
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                638,
+                363.1802739209507
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                717,
+                413.7814429723472
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                574,
+                322.2669843734294
+              ]
+            ],
+            "elapsed_s": 0.5969958999776281,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.7593453000008594,
+        "pool_startup_s": 0.16094879998126999
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Tyrant",
+          "win_rate": 0.6127497699278671,
+          "visits": 2699
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.590839747786593,
+          "visits": 1793
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5744301292145997,
+          "visits": 1382
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5722184658203083,
+          "visits": 1339
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5702709697960979,
+          "visits": 1301
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Tyrant",
+          "win_rate": 0.5684275030941602,
+          "visits": 1267
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5630979306854145,
+          "visits": 1177
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5539180283323206,
+          "visits": 1042
+        }
+      ],
+      "elapsed_s": 0.7594119999848772,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "boss",
+      "roots": 2,
+      "phase": "sequential",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "bfc528dfc097ced23dc5a202a729159051d37fc1234e5863eaa8481986923980",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                515,
+                284.6961418408845
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                679,
+                388.9604881742774
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                603,
+                340.4992800433035
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                903,
+                533.6868583458245
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1347,
+                824.8874478804785
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                625,
+                354.5393984478512
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                663,
+                378.7422577837727
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                665,
+                380.0809956022297
+              ]
+            ],
+            "elapsed_s": 0.5972631999757141,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 6000,
+            "assigned_transitions": 30000,
+            "status": "completed",
+            "simulations": 6000,
+            "transitions": 30000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                890,
+                525.6888094355367
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                527,
+                292.48644368139367
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                642,
+                365.6582479724497
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                1352,
+                828.9241811548346
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                660,
+                377.2400375591155
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                638,
+                363.1802739209507
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                717,
+                413.7814429723472
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                574,
+                322.2669843734294
+              ]
+            ],
+            "elapsed_s": 0.5949650000256952,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 1.1923213000118267,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Tyrant",
+          "win_rate": 0.6127497699278671,
+          "visits": 2699
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.590839747786593,
+          "visits": 1793
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5744301292145997,
+          "visits": 1382
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5722184658203083,
+          "visits": 1339
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5702709697960979,
+          "visits": 1301
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Tyrant",
+          "win_rate": 0.5684275030941602,
+          "visits": 1267
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5630979306854145,
+          "visits": 1177
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5539180283323206,
+          "visits": 1042
+        }
+      ],
+      "elapsed_s": 1.1923840999952517,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "boss",
+      "roots": 4,
+      "phase": "cold",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "bfc528dfc097ced23dc5a202a729159051d37fc1234e5863eaa8481986923980",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                298,
+                166.20196579867056
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                356,
+                204.37873406342206
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                311,
+                174.68431043921655
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                435,
+                257.3243992560565
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                536,
+                325.826670543457
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                341,
+                194.57524448710413
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                380,
+                220.48022732883408
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                343,
+                195.9031478117221
+              ]
+            ],
+            "elapsed_s": 0.32656539999879897,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                427,
+                252.31703254787413
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                293,
+                163.1963216080028
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                335,
+                190.91461504379865
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                559,
+                341.90226361124473
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                358,
+                206.131470864862
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                341,
+                194.83261066047575
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                386,
+                224.86002548432418
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                301,
+                168.3304272678574
+              ]
+            ],
+            "elapsed_s": 0.3256878000102006,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                348,
+                199.93249513829863
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                303,
+                170.17556191466878
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                437,
+                259.72545277354436
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                381,
+                221.82829444824353
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                520,
+                316.0619125756927
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                352,
+                202.6180071292439
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                361,
+                208.53881265477222
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                298,
+                166.84301284990212
+              ]
+            ],
+            "elapsed_s": 0.32548070000484586,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                547,
+                333.29555206914046
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                299,
+                166.90038094728286
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                375,
+                217.1374422881201
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                357,
+                205.2542761860236
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                346,
+                197.9285957122046
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                340,
+                193.96602205936296
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                312,
+                175.24076089989936
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                424,
+                249.98549371477154
+              ]
+            ],
+            "elapsed_s": 0.32249530000262894,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.5392351000045892,
+        "pool_startup_s": 0.211925199982943
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Tyrant",
+          "win_rate": 0.6091981493059828,
+          "visits": 2162
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5916148452073399,
+          "visits": 1723
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5778747902480597,
+          "visits": 1470
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5754763629945985,
+          "visits": 1428
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5751915569913112,
+          "visits": 1421
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Tyrant",
+          "win_rate": 0.5725391968538921,
+          "visits": 1381
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5597668581507518,
+          "visits": 1209
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5595477696693545,
+          "visits": 1206
+        }
+      ],
+      "elapsed_s": 0.5393487000255845,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "boss",
+      "roots": 4,
+      "phase": "sequential",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "bfc528dfc097ced23dc5a202a729159051d37fc1234e5863eaa8481986923980",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                298,
+                166.20196579867056
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                356,
+                204.37873406342206
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                311,
+                174.68431043921655
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                435,
+                257.3243992560565
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                536,
+                325.826670543457
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                341,
+                194.57524448710413
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                380,
+                220.48022732883408
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                343,
+                195.9031478117221
+              ]
+            ],
+            "elapsed_s": 0.26855690000229515,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                427,
+                252.31703254787413
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                293,
+                163.1963216080028
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                335,
+                190.91461504379865
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                559,
+                341.90226361124473
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                358,
+                206.131470864862
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                341,
+                194.83261066047575
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                386,
+                224.86002548432418
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                301,
+                168.3304272678574
+              ]
+            ],
+            "elapsed_s": 0.31875840001157485,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                348,
+                199.93249513829863
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                303,
+                170.17556191466878
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                437,
+                259.72545277354436
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                381,
+                221.82829444824353
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                520,
+                316.0619125756927
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                352,
+                202.6180071292439
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                361,
+                208.53881265477222
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                298,
+                166.84301284990212
+              ]
+            ],
+            "elapsed_s": 0.2812456999963615,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                547,
+                333.29555206914046
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                299,
+                166.90038094728286
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                375,
+                217.1374422881201
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                357,
+                205.2542761860236
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                346,
+                197.9285957122046
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                340,
+                193.96602205936296
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                312,
+                175.24076089989936
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                424,
+                249.98549371477154
+              ]
+            ],
+            "elapsed_s": 0.26442980000865646,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 1.133088799979305,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Tyrant",
+          "win_rate": 0.6091981493059828,
+          "visits": 2162
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5916148452073399,
+          "visits": 1723
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5778747902480597,
+          "visits": 1470
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5754763629945985,
+          "visits": 1428
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5751915569913112,
+          "visits": 1421
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Tyrant",
+          "win_rate": 0.5725391968538921,
+          "visits": 1381
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5597668581507518,
+          "visits": 1209
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5595477696693545,
+          "visits": 1206
+        }
+      ],
+      "elapsed_s": 1.1331482999958098,
+      "preparation_s": 0.0,
+      "prepared_pool_startup_s": 0.0
+    },
+    {
+      "scenario": "boss",
+      "roots": 4,
+      "phase": "warm",
+      "search_seed": 42,
+      "environment_seed": 300,
+      "root_pickle_sha256": "bfc528dfc097ced23dc5a202a729159051d37fc1234e5863eaa8481986923980",
+      "status": "completed",
+      "error": null,
+      "report": {
+        "seed": 42,
+        "max_simulations": 12000,
+        "max_transitions": 60000,
+        "workers": [
+          {
+            "worker_id": 0,
+            "seed": 402185745336299419,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                298,
+                166.20196579867056
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                356,
+                204.37873406342206
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                311,
+                174.68431043921655
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                435,
+                257.3243992560565
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                536,
+                325.826670543457
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                341,
+                194.57524448710413
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                380,
+                220.48022732883408
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                343,
+                195.9031478117221
+              ]
+            ],
+            "elapsed_s": 0.3093224000185728,
+            "error": null
+          },
+          {
+            "worker_id": 1,
+            "seed": 13080041716267968860,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                427,
+                252.31703254787413
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                293,
+                163.1963216080028
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                335,
+                190.91461504379865
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                559,
+                341.90226361124473
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                358,
+                206.131470864862
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                341,
+                194.83261066047575
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                386,
+                224.86002548432418
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                301,
+                168.3304272678574
+              ]
+            ],
+            "elapsed_s": 0.30394549999618903,
+            "error": null
+          },
+          {
+            "worker_id": 2,
+            "seed": 7910507952232150002,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                348,
+                199.93249513829863
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                303,
+                170.17556191466878
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                437,
+                259.72545277354436
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                381,
+                221.82829444824353
+              ],
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                520,
+                316.0619125756927
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                352,
+                202.6180071292439
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                361,
+                208.53881265477222
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                298,
+                166.84301284990212
+              ]
+            ],
+            "elapsed_s": 0.3102100999967661,
+            "error": null
+          },
+          {
+            "worker_id": 3,
+            "seed": 8801049008795895936,
+            "assigned_simulations": 3000,
+            "assigned_transitions": 15000,
+            "status": "completed",
+            "simulations": 3000,
+            "transitions": 15000,
+            "unused_simulations": 0,
+            "unused_transitions": 0,
+            "virtual_visits": 0,
+            "stop_reasons": [
+              "transition_allowance",
+              "simulation_cap"
+            ],
+            "statistics": [
+              [
+                {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                547,
+                333.29555206914046
+              ],
+              [
+                {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                299,
+                166.90038094728286
+              ],
+              [
+                {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                375,
+                217.1374422881201
+              ],
+              [
+                {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                357,
+                205.2542761860236
+              ],
+              [
+                {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                346,
+                197.9285957122046
+              ],
+              [
+                {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                340,
+                193.96602205936296
+              ],
+              [
+                {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                312,
+                175.24076089989936
+              ],
+              [
+                {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                424,
+                249.98549371477154
+              ]
+            ],
+            "elapsed_s": 0.3028544000117108,
+            "error": null
+          }
+        ],
+        "complete": true,
+        "simulations": 12000,
+        "transitions": 60000,
+        "known_simulations": 12000,
+        "known_transitions": 60000,
+        "unused_simulations": 0,
+        "unused_transitions": 0,
+        "elapsed_s": 0.3108584999863524,
+        "pool_startup_s": 0.0
+      },
+      "ranked": [
+        {
+          "action": {
+            "card_idx": 2,
+            "target_idx": 0
+          },
+          "label": "Spark -> Frost Tyrant",
+          "win_rate": 0.6091981493059828,
+          "visits": 2162
+        },
+        {
+          "action": {
+            "card_idx": 3,
+            "target_idx": null
+          },
+          "label": "Stone Ward",
+          "win_rate": 0.5916148452073399,
+          "visits": 1723
+        },
+        {
+          "action": {
+            "card_idx": 1,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5778747902480597,
+          "visits": 1470
+        },
+        {
+          "action": {
+            "card_idx": 4,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5754763629945985,
+          "visits": 1428
+        },
+        {
+          "action": {
+            "card_idx": 0,
+            "target_idx": null
+          },
+          "label": "Ember Blade",
+          "win_rate": 0.5751915569913112,
+          "visits": 1421
+        },
+        {
+          "action": {
+            "card_idx": 6,
+            "target_idx": 0
+          },
+          "label": "Weakness Mark -> Frost Tyrant",
+          "win_rate": 0.5725391968538921,
+          "visits": 1381
+        },
+        {
+          "action": {
+            "card_idx": null,
+            "target_idx": null
+          },
+          "label": "Pass",
+          "win_rate": 0.5597668581507518,
+          "visits": 1209
+        },
+        {
+          "action": {
+            "card_idx": 5,
+            "target_idx": null
+          },
+          "label": "Mend",
+          "win_rate": 0.5595477696693545,
+          "visits": 1206
+        }
+      ],
+      "elapsed_s": 0.3109301000076812,
+      "preparation_s": 0.18389169999863952,
+      "prepared_pool_startup_s": 0.1837293000135105
+    }
+  ],
+  "comparisons": [
+    {
+      "scenario": "duel",
+      "roots": 2,
+      "matched": true,
+      "differing_paths": {
+        "cold": [],
+        "warm": []
+      },
+      "sequential_wall_ratio": {
+        "cold": 1.3714473095633235,
+        "warm": 1.9206171521415332
+      }
+    },
+    {
+      "scenario": "duel",
+      "roots": 4,
+      "matched": true,
+      "differing_paths": {
+        "cold": [],
+        "warm": []
+      },
+      "sequential_wall_ratio": {
+        "cold": 2.56984050975511,
+        "warm": 4.312433875494476
+      }
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 2,
+      "matched": true,
+      "differing_paths": {
+        "cold": [],
+        "warm": []
+      },
+      "sequential_wall_ratio": {
+        "cold": 1.736517469379893,
+        "warm": 2.2676276761810104
+      }
+    },
+    {
+      "scenario": "gauntlet",
+      "roots": 4,
+      "matched": true,
+      "differing_paths": {
+        "cold": [],
+        "warm": []
+      },
+      "sequential_wall_ratio": {
+        "cold": 2.825609516402351,
+        "warm": 4.044587159070662
+      }
+    },
+    {
+      "scenario": "boss",
+      "roots": 2,
+      "matched": true,
+      "differing_paths": {
+        "cold": [],
+        "warm": []
+      },
+      "sequential_wall_ratio": {
+        "cold": 1.5701412408797817,
+        "warm": 1.5010329495658437
+      }
+    },
+    {
+      "scenario": "boss",
+      "roots": 4,
+      "matched": true,
+      "differing_paths": {
+        "cold": [],
+        "warm": []
+      },
+      "sequential_wall_ratio": {
+        "cold": 2.1009567649686702,
+        "warm": 3.644382772744796
+      }
+    }
+  ],
+  "source_unchanged_at_end": true,
+  "ended_utc": "2026-09-27T09:41:22.344743+00:00"
+}
