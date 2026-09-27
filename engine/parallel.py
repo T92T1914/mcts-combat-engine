@@ -266,7 +266,8 @@ class ParallelMCTS:
                priors: dict | None = None, *, mode: str = "time",
                max_sims: int | None = None, max_transitions: int | None = None,
                seed: int | None = None,
-               worker_timeout_s: float = 60) -> list[RankedAction]:
+               worker_timeout_s: float = 60,
+               execution: str = "process") -> list[RankedAction]:
         """Use a time budget or explicitly divide fixed total work.
 
         Time mode defaults to 450 ms and preserves the serial fallback. Fixed
@@ -274,6 +275,11 @@ class ParallelMCTS:
         optionally partitions a total transition ceiling. It never reallocates
         unused work. The worker timeout aborts an operation, not a successful
         timed substitute. ``last_report`` retains that distinction.
+
+        Fixed mode can execute the same forest sequentially in the parent with
+        ``execution="sequential"``. Allocation, seeds and merging stay identical.
+        This control does not replace the forest with one larger tree. Local
+        execution has no process watchdog. Process execution remains the default.
         """
         self.last_sims = 0
         self.last_report = None
@@ -281,6 +287,10 @@ class ParallelMCTS:
         _validate_priors(priors)
         if mode not in ("time", "fixed"):
             raise ValueError("mode must be 'time' or 'fixed'")
+        if execution not in ("process", "sequential"):
+            raise ValueError("execution must be 'process' or 'sequential'")
+        if mode != "fixed" and execution != "process":
+            raise ValueError("sequential execution requires mode='fixed'")
         if mode == "fixed":
             if time_budget_ms is not None:
                 raise ValueError("fixed mode cannot use time_budget_ms")
@@ -294,7 +304,7 @@ class ParallelMCTS:
             if worker_timeout_s == 0:
                 raise ValueError("worker_timeout_s must be positive")
             return self._search_fixed(root_state, max_sims, max_transitions,
-                                      seed, priors, worker_timeout_s)
+                                      seed, priors, worker_timeout_s, execution)
         if max_sims is not None or max_transitions is not None or seed is not None:
             raise ValueError("fixed work controls require mode='fixed'")
         time_budget_ms = 450 if time_budget_ms is None else time_budget_ms
@@ -319,7 +329,7 @@ class ParallelMCTS:
 
     def _search_fixed(self, state: GameState, max_sims: int,
                       max_transitions: int | None, seed: int, priors: dict | None,
-                      timeout: float) -> list[RankedAction]:
+                      timeout: float, execution: str) -> list[RankedAction]:
         start = time.perf_counter()
         sims = allocate(max_sims, self.workers)
         transitions = (allocate(max_transitions, self.workers)
@@ -334,7 +344,8 @@ class ParallelMCTS:
             for job in jobs:
                 # Zero work and terminal roots need no process. Applying the
                 # priors still follows the same independent tree contract.
-                if (self.workers == 1 or state.is_terminal() or job.max_sims == 0
+                if (execution == "sequential" or self.workers == 1
+                        or state.is_terminal() or job.max_sims == 0
                         or (job.max_transitions is not None
                             and job.max_transitions < self.horizon)):
                     receipts[job.worker_id] = _fixed_search(job)

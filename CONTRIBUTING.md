@@ -70,6 +70,19 @@ accounting and both generated reports with
 the saved measurements. Neither operation runs the experiment. Keep the measured
 source revision separate from the later site build revision.
 
+The [same forest execution control](docs/same-forest-protocol.json) is a separate
+protocol. Keep its implementation and protocol committed before collecting any
+results with `tools/run_same_forest.py`. Tiny correctness fixtures may run first.
+Sequential and process paths must agree on every computational receipt field,
+including failures and unused work. Do not reuse or replace the earlier study's
+result files. Research for this follow up came after that completed evaluation.
+The retained first attempt is `docs/same-forest-results.json`, measured at
+`3adf64e618c277721d7ea36629cc934d0145a3ac`. Check all receipts and regenerate its
+Markdown and HTML presentations with `python tools/render_same_forest.py`.
+Add `--check` to validate without writing. Neither operation executes search.
+The site builder also checks this report before copying it. Preserve the exact
+first attempt bytes and keep evaluated source distinct from report source.
+
 ## Development container and public site
 
 Open this repository in Codespaces or use VS Code Dev Containers. The container uses Python 3.11 and installs the project into `.venv` during setup. Its image is pinned by digest. The `Project access` workflow builds that same environment and runs `.devcontainer/smoke.sh`. Runtime dependencies still follow the project configuration. Codespaces uses the creating account's compute and storage allowance.

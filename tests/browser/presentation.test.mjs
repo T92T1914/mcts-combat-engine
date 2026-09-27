@@ -79,6 +79,85 @@ async function fonts(page, selector) {
   } finally { await session.detach(); }
 }
 
+for (const mode of ['obscur','clair']) test(`${mode} same forest report preserves identity, timings and downloads`, async t => {
+  const page = await fixture(t, {colorScheme:'dark'});
+  await ready(page);
+  await page.getByRole('link', {name:'Read the same forest report'}).click();
+  await page.locator('#appearance:not([disabled])').waitFor();
+  await page.locator('#appearance').selectOption(mode);
+  const raw = JSON.parse(await readFile(path.join(root, 'same-forest-results.json'), 'utf8'));
+  const tables = await page.locator('tbody').allTextContents();
+  assert.deepEqual(await page.locator('tbody').evaluateAll(es => es.map(e => e.rows.length)), [6,18,18]);
+  const summary = page.getByRole('region', {name:'Observed wall seconds and ratios'});
+  for (const [i, comparison] of raw.comparisons.entries()) {
+    const cells = Object.fromEntries(raw.cells.filter(c => c.scenario === comparison.scenario && c.roots === comparison.roots).map(c => [c.phase,c]));
+    const values = await summary.locator('tbody tr').nth(i).locator('td').allTextContents();
+    assert.deepEqual(values, [comparison.scenario,String(comparison.roots),...['sequential','cold','warm'].map(p => cells[p].elapsed_s.toFixed(6)),...['cold','warm'].map(p => comparison.sequential_wall_ratio[p].toFixed(3))]);
+  }
+  for (const [i, cell] of raw.cells.entries()) {
+    const work = await page.getByRole('region', {name:'All 18 execution receipts'}).locator('tbody tr').nth(i).locator('td').allTextContents();
+    assert.deepEqual(work, [cell.scenario,String(cell.roots),cell.phase,'12000','60000','0','0']);
+  }
+  for (const name of ['same-forest-results.json','same-forest-results.md','same-forest-protocol.json']) {
+    const response = await page.request.get(base+'/'+name);
+    assert.equal(response.status(), 200);
+    assert.deepEqual(await response.body(), await readFile(path.join(root,name)));
+  }
+  for (const [label, name] of [['Download raw results','same-forest-results.json'],['Download Markdown report','same-forest-results.md']]) {
+    const [download] = await Promise.all([page.waitForEvent('download'),page.getByRole('link',{name:label,exact:true}).click()]);
+    assert.equal(download.suggestedFilename(), name);
+    assert.deepEqual(await readFile(await download.path()), await readFile(path.join(root,name)));
+  }
+  assert.match(await page.locator('main').textContent(), /3adf64e618c277721d7ea36629cc934d0145a3ac/);
+  assert.match(await page.locator('main').textContent(), /warm execution took 0.794376 seconds while cold execution took 0.759412/);
+  assert.match(await page.locator('main').textContent(), /not a playing strength study/);
+  for (const [selector, expected] of [['h1','Inter-Bold'],['main p:not(.eyebrow)','Inter-Regular'],['label[for="appearance"]','Inter-SemiBold']]) {
+    const providers = await fonts(page,selector);
+    console.log('Execution report actual glyphs:',JSON.stringify({mode,selector,providers}));
+    if (process.env.MCTS_REQUIRE_INTER === '1') assert.ok(providers.some(f => f.postScriptName === expected && f.glyphCount > 0));
+  }
+  await capture(page, `${mode}-same-forest-summary`, '.table-wrap[aria-label="Observed wall seconds and ratios"]');
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await page.evaluate(() => scrollTo(0,0));
+  if (process.env.MCTS_SCREENSHOT_DIR) await page.screenshot({path:path.join(process.env.MCTS_SCREENSHOT_DIR,`${mode}-same-forest-narrow.png`)});
+  await summary.scrollIntoViewIfNeeded();
+  assert.equal(await summary.locator('tbody tr').nth(2).locator('td').first().evaluate(e => {
+    const range=document.createRange(); range.selectNodeContents(e);
+    return range.getClientRects().length;
+  }),1,'Scenario labels stay on one line instead of stacking letters');
+  if (process.env.MCTS_SCREENSHOT_DIR) await page.screenshot({path:path.join(process.env.MCTS_SCREENSHOT_DIR,`${mode}-same-forest-narrow-table.png`)});
+  await page.locator('#appearance').focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement.textContent),'Download raw results');
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  assert.equal(await summary.evaluate(e => document.activeElement === e),true);
+  assert.equal(await summary.evaluate(e => getComputedStyle(e).outlineStyle),'solid');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => document.querySelector('.table-wrap').scrollLeft > 0);
+  await page.emulateMedia({media:'print'});
+  assert.equal(await background(page),'rgb(248, 247, 243)');
+  assert.equal(await page.locator('#appearance').inputValue(),mode);
+  assert.deepEqual(await page.locator('tbody').allTextContents(),tables);
+  await page.emulateMedia({media:'screen'});
+  await page.addStyleTag({content:'html{font-size:200% !important}'});
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true);
+  await page.locator('#appearance').selectOption(mode === 'clair' ? 'obscur' : 'clair');
+  assert.deepEqual(await page.locator('tbody').allTextContents(),tables);
+  await page.reload();
+  assert.equal(await page.locator('#appearance').inputValue(),mode === 'clair' ? 'obscur' : 'clair');
+  await page.getByRole('link',{name:'Earlier process study',exact:true}).click();
+  assert.equal(new URL(page.url()).pathname,'/parallel-scaling.html');
+  await page.goBack();
+  assert.deepEqual(await page.locator('tbody').allTextContents(),tables);
+  const noScript = await fixture(t,{javaScriptEnabled:false,colorScheme:mode === 'obscur' ? 'dark' : 'light'});
+  await noScript.goto(base+'/same-forest.html');
+  assert.deepEqual(await noScript.locator('tbody').allTextContents(),tables);
+  assert.equal(await background(noScript),mode === 'obscur' ? 'rgb(9, 9, 9)' : 'rgb(248, 247, 243)');
+});
+
 test('Auto, prepaint preference, reload, selection and browser history stay independent', async t => {
   const page = await fixture(t, {colorScheme:'dark'});
   await ready(page);

@@ -61,6 +61,14 @@ time. Different Python versions or floating point platforms may require separate
 verification. Changing worker count changes the collection of independent trees
 and can change the selected action. It does not reproduce one larger serial tree.
 
+Fixed mode also accepts `execution="sequential"`. It runs the same independent
+roots one after another in the parent process. `workers` still sets the number
+of roots, their allowance splits and their seeds. The jobs, receipt validation
+and merge are shared with the default `execution="process"` path. This is an
+execution control, not a different search policy or a retry after a worker failure.
+Time mode rejects sequential execution. Local execution has no process watchdog.
+The setting does not change the existing report shape or default API behavior.
+
 Opening book priors remain virtual evidence in every independent tree, including
 a tree assigned zero simulations. Their visits appear separately in each worker
 receipt. Root visits therefore equal completed simulations plus virtual visits.
@@ -134,3 +142,31 @@ Both report formats use the same validated data. The public HTML uses the
 project's Auto, Clair and Obscur controls, local Inter faces and readable system
 fallback. Public visitors do not automatically receive Inter. The site manifest
 records the presentation revision separately from the measured source revision.
+
+## Same forest execution control
+
+The separate [execution protocol](same-forest-protocol.json) holds the forest
+fixed while comparing sequential execution with cold and initialized process
+pools. It uses six conditions and 18 executions, with one search seed and two
+root counts for each of the three scenarios. Exact computational equality is a
+gate for reporting paired times. Seeds, raw statistics, assigned and unused
+work, stopping reasons and ranked actions must agree. Only elapsed fields are
+excluded from that comparison.
+
+Its warm phase starts an initialized pool before the timer, without an extra
+search. That differs from the second search on a reused pool in the original
+scaling study. The runner retains preparation time separately and saves a
+running cell before starting work. It stops on a failure or identity mismatch
+and preserves the first attempt. The [retained result](same-forest-results.md)
+completed all 18 executions with identical computational receipts in all six
+conditions. The earlier measurements, protocol and reports remain unchanged.
+
+```sh
+python tools/run_same_forest.py --output same-forest-study.json --conditions "Describe the observed measurement conditions"
+```
+
+Commit and review this implementation and protocol before collecting results.
+Pause competing owned workloads during the measurement window and use a fresh
+output path. The narrow comparison can distinguish execution effects from
+changing tree count in these conditions. It does not establish playing strength,
+general scaling or pure communication latency.

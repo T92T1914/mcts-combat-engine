@@ -33,3 +33,7 @@ figure{border:1px solid var(--divider);padding:12px;border-radius:6px}
 :root:not([data-appearance="clair"]):not([data-appearance="obscur"]) .decision-obscur{display:block}
 }
 @media print{#decision-figure .decision-clair{display:block}#decision-figure .decision-obscur{display:none}}
+
+/* Keep short labels intact while the execution tables scroll locally. */
+.execution-report .table-wrap th,.execution-report .table-wrap td{white-space:nowrap;overflow-wrap:normal}
+@media print{.execution-report .table-wrap th,.execution-report .table-wrap td{white-space:normal;padding:4px;font-size:.75rem}}

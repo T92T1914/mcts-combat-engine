@@ -9,8 +9,10 @@ from pathlib import Path
 try:
     from .presentation import appearance_css, load_tokens
     from .render_decision_figure import check_outputs
+    from .render_same_forest import check_outputs as check_execution_report
 except ImportError:
     from render_decision_figure import check_outputs
+    from render_same_forest import check_outputs as check_execution_report
 
     from presentation import appearance_css, load_tokens
 
@@ -33,6 +35,10 @@ FILES = {
     "docs/parallel-scaling-results.json": "parallel-scaling-results.json",
     "docs/parallel-scaling-protocol.json": "parallel-scaling-protocol.json",
     "docs/parallel-scaling-results.md": "parallel-scaling-results.md",
+    "site/same-forest.html": "same-forest.html",
+    "docs/same-forest-results.json": "same-forest-results.json",
+    "docs/same-forest-protocol.json": "same-forest-protocol.json",
+    "docs/same-forest-results.md": "same-forest-results.md",
 }
 GENERATED = {"appearance.css", "presentation.json"}
 
@@ -56,6 +62,9 @@ def provenance(data):
             (ROOT / "docs/parallel-scaling-results.json").read_text()
         )["source"]["revision"],
         "evaluation_rerun": False,
+        "same_forest_source_revision": json.loads(
+            (ROOT / "docs/same-forest-results.json").read_text()
+        )["source"]["revision"],
         "tokens": load_tokens()["source"],
         "files": {
             target: hashlib.sha256((OUT / target).read_bytes()).hexdigest()
@@ -69,6 +78,7 @@ def main():
     if not data.get("source_commit"):
         raise ValueError("Example data must retain its source revision.")
     check_outputs()
+    check_execution_report()
     OUT.mkdir(exist_ok=True)
     unexpected = {p.name for p in OUT.iterdir()} - set(FILES.values()) - GENERATED
     if unexpected:
