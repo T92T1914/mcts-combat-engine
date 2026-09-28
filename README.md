@@ -277,3 +277,5 @@ I built this to understand how software compares uncertain outcomes under a limi
 - **Fair comparisons.** Compare recorded search results under stated seeds and budgets, including the weaker result. [Inspect the work](docs/benchmark-results.md).
 
 This demonstrates algorithm and experiment design. Applying it to routing or scheduling would need a new domain model, constraints and validation; the current project does not claim that deployment.
+
+See [sharing previews](docs/sharing-preview.md) for the maintained link image and its source.

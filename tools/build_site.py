@@ -4,6 +4,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 try:
@@ -17,8 +18,10 @@ except ImportError:
     from presentation import appearance_css, load_tokens
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 OUT = ROOT / "_site"
 FILES = {
+    "site/share-preview.png": "share-preview.png",
     "docs/mcts-decision-clair-wide.png": "decision-clair-wide.png",
     "docs/mcts-decision-clair-wide.svg": "decision-clair-wide.svg",
     "docs/mcts-decision-obscur-wide.png": "decision-obscur-wide.png",
@@ -78,6 +81,9 @@ def provenance(data):
 
 
 def main():
+    from tools.render_share_preview import check as check_share_preview
+
+    check_share_preview()
     data = json.loads((ROOT / "docs/visual-example-data.json").read_text())
     if not data.get("source_commit"):
         raise ValueError("Example data must retain its source revision.")

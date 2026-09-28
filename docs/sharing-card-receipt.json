@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "content": {
+    "title": "MCTS",
+    "subtitle": "Search and execution controls",
+    "panels": [
+      [
+        "Same forest",
+        "Sequential",
+        "independent roots"
+      ],
+      [
+        "Same forest",
+        "Parallel",
+        "independent roots"
+      ]
+    ],
+    "context": "Fixed seeds and work | Retained execution comparison",
+    "footer": "No general speedup or stronger-play claim.",
+    "source_sha256": "638f59b3baa778c67a40694dad07d87618deb93eecac23d8326dbaf45f5cb86b"
+  },
+  "inputs_sha256_lf": {
+    "tools/render_share_preview.py": "659aed220e79634e83c6b465b77bb4aea894f4a20d3a53deb888bfca917254e2",
+    "docs/sharing-card.json": "bdae301d638c5ead8cb58a879f7a7d59740101ac809b01a922d023ba00aac6de",
+    "docs/same-forest-results.md": "638f59b3baa778c67a40694dad07d87618deb93eecac23d8326dbaf45f5cb86b",
+    "presentation/tokens.json": "96a3b9d2e35e074069b7a70213327b1f79ca898454c6e64906899e5d59ae0feb",
+    "tools/render_decision_figure.py": "94eaf72b4a3c17552cfdef6a32a41121ff1847f36a148878b12d7aeaa7a4b635"
+  },
+  "png_sha256": "30cefd4d405644dba3b23b5f64e2726b08a82dd970361a79341f6b53715bd9f0",
+  "dimensions": [
+    1280,
+    640
+  ],
+  "appearance": "obscur",
+  "opaque": true,
+  "renderer": {
+    "Pillow": "12.3.0"
+  },
+  "font_files": {
+    "Regular": {
+      "sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "postscript": "Inter-Regular",
+      "weight": 400,
+      "italic": false
+    },
+    "SemiBold": {
+      "sha256": "78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3",
+      "postscript": "Inter-SemiBold",
+      "weight": 600,
+      "italic": false
+    },
+    "Bold": {
+      "sha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f",
+      "postscript": "Inter-Bold",
+      "weight": 700,
+      "italic": false
+    },
+    "Italic": {
+      "sha256": "bbc051dd204b5019a1aa0bc0ae2aa8a05ab13e7a3f979fa357631dc7feb6833a",
+      "postscript": "Inter-Italic",
+      "weight": 400,
+      "italic": true
+    },
+    "SemiBoldItalic": {
+      "sha256": "eff2930c3d3b35d3fcf5f76252b6baef4c3e907d9d2fde1d16cf5d417f8deef4",
+      "postscript": "Inter-SemiBoldItalic",
+      "weight": 600,
+      "italic": true
+    },
+    "BoldItalic": {
+      "sha256": "948405a16cdc62701da5f4005ed068ca5f4d27061d98f7974ccfc37831d9581d",
+      "postscript": "Inter-BoldItalic",
+      "weight": 700,
+      "italic": true
+    }
+  },
+  "painted_labels": [
+    {
+      "text": "MCTS",
+      "face": "Inter-Bold",
+      "bounds": [
+        68,
+        52,
+        259,
+        101
+      ],
+      "size": 64
+    },
+    {
+      "text": "Search and execution controls",
+      "face": "Inter-SemiBold",
+      "bounds": [
+        68,
+        136,
+        683,
+        169
+      ],
+      "size": 42
+    },
+    {
+      "text": "Fixed seeds and work | Retained execution comparison",
+      "face": "Inter-Regular",
+      "bounds": [
+        68,
+        208,
+        851,
+        245
+      ],
+      "size": 30
+    },
+    {
+      "text": "Same forest",
+      "face": "Inter-SemiBold",
+      "bounds": [
+        94,
+        298,
+        280,
+        323
+      ],
+      "size": 32
+    },
+    {
+      "text": "Sequential",
+      "face": "Inter-Bold",
+      "bounds": [
+        94,
+        350,
+        386,
+        404
+      ],
+      "size": 56
+    },
+    {
+      "text": "independent roots",
+      "face": "Inter-Regular",
+      "bounds": [
+        94,
+        451,
+        352,
+        481
+      ],
+      "size": 30
+    },
+    {
+      "text": "Same forest",
+      "face": "Inter-SemiBold",
+      "bounds": [
+        682,
+        298,
+        868,
+        323
+      ],
+      "size": 32
+    },
+    {
+      "text": "Parallel",
+      "face": "Inter-Bold",
+      "bounds": [
+        682,
+        350,
+        927,
+        401
+      ],
+      "size": 68
+    },
+    {
+      "text": "independent roots",
+      "face": "Inter-Regular",
+      "bounds": [
+        682,
+        451,
+        940,
+        481
+      ],
+      "size": 30
+    },
+    {
+      "text": "No general speedup or stronger-play claim.",
+      "face": "Inter-Italic",
+      "bounds": [
+        68,
+        548,
+        688,
+        578
+      ],
+      "size": 30
+    }
+  ],
+  "experimental_work_rerun": false,
+  "kind": "authored summary, not an application screenshot"
+}

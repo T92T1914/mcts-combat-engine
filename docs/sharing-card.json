@@ -1,0 +1,19 @@
+{
+  "repo": "mcts-combat-engine",
+  "title": "MCTS",
+  "subtitle": "Search and execution controls",
+  "description": "Explore reproducible search and the same-forest execution control. Fixed seeds and work separate process execution from search structure without a general speedup or stronger-play claim.",
+  "helper": "render_decision_figure",
+  "tokens": "presentation/tokens.json",
+  "source": "docs/same-forest-results.md",
+  "pages": [
+    "site/index.html"
+  ],
+  "kind": "mcts",
+  "output": "site/share-preview.png",
+  "image_url": "https://t92t1914.github.io/mcts-combat-engine/share-preview.png",
+  "page_urls": {
+    "site/index.html": "https://t92t1914.github.io/mcts-combat-engine/"
+  },
+  "alt": "MCTS. Search and execution controls. Authored summary of the linked evidence."
+}
