@@ -24,13 +24,26 @@ function call counts, self time and cumulative time. Its instrumentation adds
 cost, so the instrumented time is not an optimization result. Cumulative times
 include nested calls and cannot be added as if they were disjoint work.
 
-The profile will determine whether one local change merits a separate paired
-timing experiment. A change must preserve move legality, fixed allowances,
+The [first result](serial-profile-results.md) supports keeping the engine
+unchanged for this bounded investigation. The raw function costs and decision
+are retained. Any later change must preserve move legality, fixed allowances,
 random draws and arithmetic order. No native port is assumed. A documented
 decision to keep the current implementation is a valid outcome when the
 measured cost does not justify a change.
 
-This protocol was prepared before collecting its results. Measurement is a
-separate step, with no competing agent benchmark or build on the same machine.
+This protocol was prepared and committed before collecting its results.
+Measurement is a separate step, with no competing agent benchmark or build on
+the same machine.
 Ordinary user applications stay in place. These controls do not turn a shared
 development computer into a dedicated benchmark host.
+
+Check the retained first attempt without executing another search:
+
+```sh
+python tools/validate_serial_profile.py
+```
+
+The validator checks the retained bytes, declared conditions, actual work,
+unchanged roots, matching random state and independently reconstructed rankings.
+It also checks profiler values and sanitized paths. It does not replace native
+execution evidence or demonstrate an optimization.

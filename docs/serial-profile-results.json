@@ -1,0 +1,3021 @@
+{
+  "schema_version": 1,
+  "protocol": "serial-hotspot-profile-v1",
+  "protocol_sha256": "a206e696a8c25a97ae541807db475a4f0ef2e00c479f3ac7dbb3b5f228da5c56",
+  "source": {
+    "revision": "a8e18580401601846fbd21ab27d4731d19cceef6",
+    "worktree_clean": true,
+    "hash_method": "UTF-8 text normalized to LF without BOM",
+    "sha256": {
+      "docs/serial-profile-protocol.json": "a206e696a8c25a97ae541807db475a4f0ef2e00c479f3ac7dbb3b5f228da5c56",
+      "tools/run_serial_profile.py": "e92c0e3c9457d94bf6858a90c04457ff81091bb79476f99e1cf4df3a72a3fee2",
+      "tools/run_parallel_scaling.py": "b5d2a34c9370d174e6b70f9d7b83b8e6d9ec95eff562bc4eb4070215d2806039",
+      "engine/__init__.py": "f241ae0f309145d2594c91fdaedecf6183d05a18da41b4a968bc8b890baa3c01",
+      "engine/actions.py": "468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618",
+      "engine/mcts.py": "86902c63ed6a2f5bb8acb26413167947dbf2687bf4e7dfb911743851be35c04d",
+      "engine/parallel.py": "35884134e6915fd1ded5635cc5ffbb1be58f9e3f7b0f38117371b303d1735716",
+      "engine/rules.py": "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b",
+      "engine/simulator.py": "f08d7f20ce46a33b724dfd54068285bf15d3bec68dbb2707707fff4c5abbd1b7",
+      "engine/state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
+      "game/__init__.py": "735978f2d5b6b3d98ccd18a95cb4d7507b1b698d6daa16c1732f1a6e878bc22f",
+      "game/baselines.py": "2ebae9fee93f61a0f03cd031ef2a43b8202ccd162765262580b5f015080d86ee",
+      "game/content.py": "46969faf37663cbcf9ceadb0aa0cb0f84a2dfdd9e369fffdbb96d80537a4aabc",
+      "game/loader.py": "787ada9c715e0d6745b41470810ef3dfab18f3f40b51335ca82b3bab210c1266",
+      "game/runner.py": "192227008dcfd44259e74db54b6ec0528ac3d02dddb039da72f25db782bc5de6",
+      "game/stats.py": "cdc86beb41a03d27025faa10bdf6b5ff65e8fbf9cd10136d0c6dab1cf402d2b3",
+      "data/cards.json": "38ced8d0b83104610f421fb340679c9f0facfde46d95def33430ec1155656e20",
+      "data/scenarios.json": "7b1b7b7d882c94ade7f1448bc71703758aa367230ae361ec77b985b7c2f9a378"
+    }
+  },
+  "started_utc": "2026-09-29T22:13:28.340390+00:00",
+  "environment": {
+    "python": "3.11.8 (tags/v3.11.8:db85d51, Feb  6 2024, 22:03:32) [MSC v.1937 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "logical_cpus": 16,
+    "conditions": "Coordinator reserved the agent measurement slot. Other engineering agents were asked to hold builds and tests. Ordinary user applications were preserved on the shared Windows machine. External load and hardware counters were not measured."
+  },
+  "status": "complete",
+  "cells": [
+    {
+      "scenario": "duel",
+      "mode": "control",
+      "status": "completed",
+      "root_sha256": "d4bcd30a387e8ac47366e8b99bd0382d97ebce667f761b11e72d6917d5e44e32",
+      "error": null,
+      "elapsed_s": 0.23191919998498634,
+      "computation": {
+        "simulations": 3000,
+        "transitions": 15000,
+        "unused_transitions": 0,
+        "stop_reasons": [
+          "transition_allowance",
+          "simulation_cap"
+        ],
+        "root_statistics": [
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "visits": 362,
+            "value_sum": 220.81859841040304
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "visits": 347,
+            "value_sum": 210.34604719964636
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "visits": 557,
+            "value_sum": 359.04574835559004
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "visits": 319,
+            "value_sum": 190.90854397626438
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "visits": 423,
+            "value_sum": 263.6188063769217
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "visits": 336,
+            "value_sum": 202.6358210372937
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "visits": 348,
+            "value_sum": 211.0770667042509
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "visits": 308,
+            "value_sum": 183.13674326979137
+          }
+        ],
+        "ranked": [
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "label": "Spark -> Frost Warden",
+            "win_rate": 0.6446063704768223,
+            "visits": 557
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "label": "Stone Ward",
+            "win_rate": 0.6232123082196731,
+            "visits": 423
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.6099961282055333,
+            "visits": 362
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.6065432951271578,
+            "visits": 348
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "label": "Weakness Mark -> Frost Warden",
+            "win_rate": 0.6061845740623815,
+            "visits": 347
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.6030828007062313,
+            "visits": 336
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "label": "Mend",
+            "win_rate": 0.598459385505531,
+            "visits": 319
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "label": "Pass",
+            "win_rate": 0.594599815811011,
+            "visits": 308
+          }
+        ],
+        "rng_sha256": "0a2f76101aebe7becf9a86d09ef0b513ee42d3ab15c043aafdcb5f3acea768ab"
+      },
+      "root_unchanged": true,
+      "observed_simulations": 3000,
+      "observed_transitions": 15000,
+      "profile": []
+    },
+    {
+      "scenario": "duel",
+      "mode": "profiled",
+      "status": "completed",
+      "root_sha256": "d4bcd30a387e8ac47366e8b99bd0382d97ebce667f761b11e72d6917d5e44e32",
+      "error": null,
+      "elapsed_s": 0.7582943000015803,
+      "computation": {
+        "simulations": 3000,
+        "transitions": 15000,
+        "unused_transitions": 0,
+        "stop_reasons": [
+          "transition_allowance",
+          "simulation_cap"
+        ],
+        "root_statistics": [
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "visits": 362,
+            "value_sum": 220.81859841040304
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "visits": 347,
+            "value_sum": 210.34604719964636
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "visits": 557,
+            "value_sum": 359.04574835559004
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "visits": 319,
+            "value_sum": 190.90854397626438
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "visits": 423,
+            "value_sum": 263.6188063769217
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "visits": 336,
+            "value_sum": 202.6358210372937
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "visits": 348,
+            "value_sum": 211.0770667042509
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "visits": 308,
+            "value_sum": 183.13674326979137
+          }
+        ],
+        "ranked": [
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "label": "Spark -> Frost Warden",
+            "win_rate": 0.6446063704768223,
+            "visits": 557
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "label": "Stone Ward",
+            "win_rate": 0.6232123082196731,
+            "visits": 423
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.6099961282055333,
+            "visits": 362
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.6065432951271578,
+            "visits": 348
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "label": "Weakness Mark -> Frost Warden",
+            "win_rate": 0.6061845740623815,
+            "visits": 347
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.6030828007062313,
+            "visits": 336
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "label": "Mend",
+            "win_rate": 0.598459385505531,
+            "visits": 319
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "label": "Pass",
+            "win_rate": 0.594599815811011,
+            "visits": 308
+          }
+        ],
+        "rng_sha256": "0a2f76101aebe7becf9a86d09ef0b513ee42d3ab15c043aafdcb5f3acea768ab"
+      },
+      "root_unchanged": true,
+      "observed_simulations": 3000,
+      "observed_transitions": 15000,
+      "profile": [
+        {
+          "file": "engine/actions.py",
+          "line": 64,
+          "function": "legal_actions",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.07391640000000001,
+          "cumulative_s": 0.11643780000000001
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__hash__",
+          "primitive_calls": 308024,
+          "calls": 308024,
+          "self_s": 0.055382900000000006,
+          "cumulative_s": 0.07478130000000001
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 197,
+          "function": "search",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 0.047347900000000005,
+          "cumulative_s": 0.7582573
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 156,
+          "function": "advance_round",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.046188700000000006,
+          "cumulative_s": 0.2212531
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 97,
+          "function": "ucb1",
+          "primitive_calls": 64748,
+          "calls": 64748,
+          "self_s": 0.0380023,
+          "cumulative_s": 0.058630800000000004
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 63,
+          "function": "cast",
+          "primitive_calls": 15614,
+          "calls": 15614,
+          "self_s": 0.0345279,
+          "cumulative_s": 0.0789015
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 113,
+          "function": "<dictcomp>",
+          "primitive_calls": 12277,
+          "calls": 12277,
+          "self_s": 0.03366,
+          "cumulative_s": 0.07031820000000001
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__eq__",
+          "primitive_calls": 123151,
+          "calls": 123151,
+          "self_s": 0.0262287,
+          "cumulative_s": 0.0262287
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 286,
+          "function": "<genexpr>",
+          "primitive_calls": 74025,
+          "calls": 74025,
+          "self_s": 0.024982,
+          "cumulative_s": 0.0526401
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.max>",
+          "primitive_calls": 73976,
+          "calls": 73976,
+          "self_s": 0.024416700000000003,
+          "cumulative_s": 0.15058010000000002
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 279,
+          "function": "<listcomp>",
+          "primitive_calls": 12277,
+          "calls": 12277,
+          "self_s": 0.0207769,
+          "cumulative_s": 0.0518785
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 102,
+          "function": "enemy_act",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.0205422,
+          "cumulative_s": 0.0554013
+        },
+        {
+          "file": "engine/state.py",
+          "line": 101,
+          "function": "effective_pips",
+          "primitive_calls": 106462,
+          "calls": 106462,
+          "self_s": 0.0201115,
+          "cumulative_s": 0.0201115
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.hash>",
+          "primitive_calls": 308024,
+          "calls": 308024,
+          "self_s": 0.0193984,
+          "cumulative_s": 0.0193984
+        },
+        {
+          "file": "engine/actions.py",
+          "line": 41,
+          "function": "is_legal_action",
+          "primitive_calls": 12673,
+          "calls": 12673,
+          "self_s": 0.0182636,
+          "cumulative_s": 0.0256405
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 287,
+          "function": "<lambda>",
+          "primitive_calls": 64748,
+          "calls": 64748,
+          "self_s": 0.014892500000000001,
+          "cumulative_s": 0.0735233
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 278,
+          "function": "<setcomp>",
+          "primitive_calls": 12277,
+          "calls": 12277,
+          "self_s": 0.014090700000000001,
+          "cumulative_s": 0.030633100000000003
+        },
+        {
+          "file": "engine/state.py",
+          "line": 97,
+          "function": "alive",
+          "primitive_calls": 153789,
+          "calls": 153789,
+          "self_s": 0.0136755,
+          "cumulative_s": 0.0136755
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 145,
+          "function": "_regen_pips",
+          "primitive_calls": 30000,
+          "calls": 30000,
+          "self_s": 0.0110822,
+          "cumulative_s": 0.012703800000000001
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 135,
+          "function": "_tick_dots",
+          "primitive_calls": 30000,
+          "calls": 30000,
+          "self_s": 0.010202600000000001,
+          "cumulative_s": 0.0128778
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 93,
+          "function": "mean",
+          "primitive_calls": 64756,
+          "calls": 64756,
+          "self_s": 0.009588600000000001,
+          "cumulative_s": 0.009588600000000001
+        },
+        {
+          "file": "engine/state.py",
+          "line": 115,
+          "function": "clone",
+          "primitive_calls": 6000,
+          "calls": 6000,
+          "self_s": 0.009184900000000001,
+          "cumulative_s": 0.014924000000000002
+        },
+        {
+          "file": "engine/state.py",
+          "line": 107,
+          "function": "spend_pips",
+          "primitive_calls": 15614,
+          "calls": 15614,
+          "self_s": 0.0088442,
+          "cumulative_s": 0.0122667
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 172,
+          "function": "<listcomp>",
+          "primitive_calls": 12673,
+          "calls": 12673,
+          "self_s": 0.0077736,
+          "cumulative_s": 0.0077736
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 42,
+          "function": "resolve_damage",
+          "primitive_calls": 4358,
+          "calls": 4358,
+          "self_s": 0.007472800000000001,
+          "cumulative_s": 0.0117771
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__init__",
+          "primitive_calls": 45194,
+          "calls": 45194,
+          "self_s": 0.0069699,
+          "cumulative_s": 0.0069699
+        },
+        {
+          "file": "python/random.py",
+          "line": 284,
+          "function": "randrange",
+          "primitive_calls": 10081,
+          "calls": 10081,
+          "self_s": 0.006525400000000001,
+          "cumulative_s": 0.015030400000000001
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 107,
+          "function": "_available_actions",
+          "primitive_calls": 12277,
+          "calls": 12277,
+          "self_s": 0.006413500000000001,
+          "cumulative_s": 0.17708390000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.log>",
+          "primitive_calls": 64748,
+          "calls": 64748,
+          "self_s": 0.0062802000000000005,
+          "cumulative_s": 0.0062802000000000005
+        },
+        {
+          "file": "engine/state.py",
+          "line": 155,
+          "function": "heuristic_value",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0056591,
+          "cumulative_s": 0.0075412000000000005
+        },
+        {
+          "file": "engine/state.py",
+          "line": 144,
+          "function": "is_terminal",
+          "primitive_calls": 12278,
+          "calls": 12278,
+          "self_s": 0.005495000000000001,
+          "cumulative_s": 0.014728600000000001
+        },
+        {
+          "file": "engine/rules.py",
+          "line": 37,
+          "function": "fire_rules",
+          "primitive_calls": 45194,
+          "calls": 45194,
+          "self_s": 0.0054698,
+          "cumulative_s": 0.0054698
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 339,
+          "function": "_rollout",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0054695,
+          "cumulative_s": 0.07874940000000001
+        },
+        {
+          "file": "engine/state.py",
+          "line": 140,
+          "function": "living_enemies",
+          "primitive_calls": 18001,
+          "calls": 18001,
+          "self_s": 0.0054223000000000006,
+          "cumulative_s": 0.011826600000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "primitive_calls": 90853,
+          "calls": 90853,
+          "self_s": 0.0054044,
+          "cumulative_s": 0.0054044
+        },
+        {
+          "file": "python/random.py",
+          "line": 235,
+          "function": "_randbelow_with_getrandbits",
+          "primitive_calls": 10081,
+          "calls": 10081,
+          "self_s": 0.0053734,
+          "cumulative_s": 0.0072808000000000005
+        },
+        {
+          "file": "engine/state.py",
+          "line": 142,
+          "function": "<listcomp>",
+          "primitive_calls": 18001,
+          "calls": 18001,
+          "self_s": 0.004900900000000001,
+          "cumulative_s": 0.006404300000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.sqrt>",
+          "primitive_calls": 64748,
+          "calls": 64748,
+          "self_s": 0.0047609,
+          "cumulative_s": 0.0047609
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 29,
+          "function": "_consume_charms",
+          "primitive_calls": 13074,
+          "calls": 13074,
+          "self_s": 0.0036691000000000002,
+          "cumulative_s": 0.0036691000000000002
+        },
+        {
+          "file": "engine/state.py",
+          "line": 184,
+          "function": "clone",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0035378000000000002,
+          "cumulative_s": 0.0201946
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'random' of '_random.Random' objects>",
+          "primitive_calls": 43794,
+          "calls": 43794,
+          "self_s": 0.0029141,
+          "cumulative_s": 0.0029141
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 142,
+          "function": "<listcomp>",
+          "primitive_calls": 30000,
+          "calls": 30000,
+          "self_s": 0.0026752,
+          "cumulative_s": 0.0026752
+        },
+        {
+          "file": "engine/state.py",
+          "line": 147,
+          "function": "result",
+          "primitive_calls": 5723,
+          "calls": 5723,
+          "self_s": 0.0025679,
+          "cumulative_s": 0.0068446
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.isinstance>",
+          "primitive_calls": 32698,
+          "calls": 32698,
+          "self_s": 0.0021829,
+          "cumulative_s": 0.0021829
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 25067,
+          "calls": 25067,
+          "self_s": 0.0016251000000000002,
+          "cumulative_s": 0.0016251000000000002
+        },
+        {
+          "file": "python/random.py",
+          "line": 358,
+          "function": "randint",
+          "primitive_calls": 4358,
+          "calls": 4358,
+          "self_s": 0.0014600000000000001,
+          "cumulative_s": 0.0089026
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 74,
+          "function": "<listcomp>",
+          "primitive_calls": 4358,
+          "calls": 4358,
+          "self_s": 0.0012882,
+          "cumulative_s": 0.0016914
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _operator.index>",
+          "primitive_calls": 18797,
+          "calls": 18797,
+          "self_s": 0.0012242000000000002,
+          "cumulative_s": 0.0012242000000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'getrandbits' of '_random.Random' objects>",
+          "primitive_calls": 15965,
+          "calls": 15965,
+          "self_s": 0.0011807,
+          "cumulative_s": 0.0011807
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'pop' of 'list' objects>",
+          "primitive_calls": 10515,
+          "calls": 10515,
+          "self_s": 0.0010716,
+          "cumulative_s": 0.0010716
+        },
+        {
+          "file": "engine/state.py",
+          "line": 187,
+          "function": "<listcomp>",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0009448000000000001,
+          "cumulative_s": 0.0077104
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 86,
+          "function": "__init__",
+          "primitive_calls": 3001,
+          "calls": 3001,
+          "self_s": 0.0007772,
+          "cumulative_s": 0.0007772
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'bit_length' of 'int' objects>",
+          "primitive_calls": 10081,
+          "calls": 10081,
+          "self_s": 0.0007267,
+          "cumulative_s": 0.0007267
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'get' of 'dict' objects>",
+          "primitive_calls": 8716,
+          "calls": 8716,
+          "self_s": 0.0007073,
+          "cumulative_s": 0.0007073
+        },
+        {
+          "file": "engine/state.py",
+          "line": 128,
+          "function": "<listcomp>",
+          "primitive_calls": 6000,
+          "calls": 6000,
+          "self_s": 0.000567,
+          "cumulative_s": 0.000567
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.min>",
+          "primitive_calls": 4774,
+          "calls": 4774,
+          "self_s": 0.0005520000000000001,
+          "cumulative_s": 0.0005520000000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method time.perf_counter>",
+          "primitive_calls": 3001,
+          "calls": 3001,
+          "self_s": 0.0002927,
+          "cumulative_s": 0.0002927
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.abs>",
+          "primitive_calls": 1849,
+          "calls": 1849,
+          "self_s": 0.00015260000000000002,
+          "cumulative_s": 0.00015260000000000002
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 312,
+          "function": "<listcomp>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 7.5e-06,
+          "cumulative_s": 1.3100000000000002e-05
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 183,
+          "function": "_validate_configuration",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 5.600000000000001e-06,
+          "cumulative_s": 7.6e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'list' objects>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 5.2e-06,
+          "cumulative_s": 6.200000000000001e-06
+        },
+        {
+          "file": "engine/actions.py",
+          "line": 26,
+          "function": "describe",
+          "primitive_calls": 8,
+          "calls": 8,
+          "self_s": 2.8000000000000003e-06,
+          "cumulative_s": 2.8000000000000003e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 36,
+          "function": "_validate_nonnegative_finite",
+          "primitive_calls": 2,
+          "calls": 2,
+          "self_s": 1.9e-06,
+          "cumulative_s": 2.5e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 323,
+          "function": "<listcomp>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 1.3e-06,
+          "cumulative_s": 1.3e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 322,
+          "function": "<lambda>",
+          "primitive_calls": 8,
+          "calls": 8,
+          "self_s": 1.0000000000000002e-06,
+          "cumulative_s": 1.0000000000000002e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 9.000000000000001e-07,
+          "cumulative_s": 9.000000000000001e-07
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.isfinite>",
+          "primitive_calls": 2,
+          "calls": 2,
+          "self_s": 4.0000000000000003e-07,
+          "cumulative_s": 4.0000000000000003e-07
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 48,
+          "function": "_validate_priors",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 1.0000000000000001e-07,
+          "cumulative_s": 1.0000000000000001e-07
+        }
+      ]
+    },
+    {
+      "scenario": "gauntlet",
+      "mode": "control",
+      "status": "completed",
+      "root_sha256": "6b5294c3f58641cfa69cb9c53b74b963d6ef64f76937b8b362bf578e3e855d0d",
+      "error": null,
+      "elapsed_s": 0.3174533999990672,
+      "computation": {
+        "simulations": 3000,
+        "transitions": 15000,
+        "unused_transitions": 0,
+        "stop_reasons": [
+          "transition_allowance",
+          "simulation_cap"
+        ],
+        "root_statistics": [
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 1
+            },
+            "visits": 233,
+            "value_sum": 117.34493837070336
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "visits": 329,
+            "value_sum": 177.3312433357027
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "visits": 199,
+            "value_sum": 96.62897539262794
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "visits": 245,
+            "value_sum": 124.82799956946627
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 2
+            },
+            "visits": 329,
+            "value_sum": 177.292042575486
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "visits": 211,
+            "value_sum": 103.93981037536388
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 1
+            },
+            "visits": 337,
+            "value_sum": 182.38857031480234
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "visits": 253,
+            "value_sum": 129.66623125883484
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 2
+            },
+            "visits": 249,
+            "value_sum": 127.22672027968662
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "visits": 194,
+            "value_sum": 93.57249966470637
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "visits": 210,
+            "value_sum": 103.21918269416835
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "visits": 211,
+            "value_sum": 103.85942596403143
+          }
+        ],
+        "ranked": [
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 1
+            },
+            "label": "Spark -> Acolyte",
+            "win_rate": 0.541212374821372,
+            "visits": 337
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "label": "Spark -> Warden",
+            "win_rate": 0.5390007396221966,
+            "visits": 329
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 2
+            },
+            "label": "Spark -> Adept",
+            "win_rate": 0.5388815883753374,
+            "visits": 329
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "label": "Weakness Mark -> Warden",
+            "win_rate": 0.5125147480586357,
+            "visits": 253
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 2
+            },
+            "label": "Weakness Mark -> Adept",
+            "win_rate": 0.5109506838541631,
+            "visits": 249
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "label": "Stone Ward",
+            "win_rate": 0.509502039059046,
+            "visits": 245
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 1
+            },
+            "label": "Weakness Mark -> Acolyte",
+            "win_rate": 0.503626344938641,
+            "visits": 233
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.49260573637613214,
+            "visits": 211
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.4922247676020447,
+            "visits": 211
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "label": "Pass",
+            "win_rate": 0.4915199175912779,
+            "visits": 210
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.48557274066647205,
+            "visits": 199
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "label": "Mend",
+            "win_rate": 0.48233247249848643,
+            "visits": 194
+          }
+        ],
+        "rng_sha256": "e8d784456a3358925f74a97825dc31339144927e51f8f072390204e4e9ada204"
+      },
+      "root_unchanged": true,
+      "observed_simulations": 3000,
+      "observed_transitions": 15000,
+      "profile": []
+    },
+    {
+      "scenario": "gauntlet",
+      "mode": "profiled",
+      "status": "completed",
+      "root_sha256": "6b5294c3f58641cfa69cb9c53b74b963d6ef64f76937b8b362bf578e3e855d0d",
+      "error": null,
+      "elapsed_s": 1.088049600017257,
+      "computation": {
+        "simulations": 3000,
+        "transitions": 15000,
+        "unused_transitions": 0,
+        "stop_reasons": [
+          "transition_allowance",
+          "simulation_cap"
+        ],
+        "root_statistics": [
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 1
+            },
+            "visits": 233,
+            "value_sum": 117.34493837070336
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "visits": 329,
+            "value_sum": 177.3312433357027
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "visits": 199,
+            "value_sum": 96.62897539262794
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "visits": 245,
+            "value_sum": 124.82799956946627
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 2
+            },
+            "visits": 329,
+            "value_sum": 177.292042575486
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "visits": 211,
+            "value_sum": 103.93981037536388
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 1
+            },
+            "visits": 337,
+            "value_sum": 182.38857031480234
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "visits": 253,
+            "value_sum": 129.66623125883484
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 2
+            },
+            "visits": 249,
+            "value_sum": 127.22672027968662
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "visits": 194,
+            "value_sum": 93.57249966470637
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "visits": 210,
+            "value_sum": 103.21918269416835
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "visits": 211,
+            "value_sum": 103.85942596403143
+          }
+        ],
+        "ranked": [
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 1
+            },
+            "label": "Spark -> Acolyte",
+            "win_rate": 0.541212374821372,
+            "visits": 337
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "label": "Spark -> Warden",
+            "win_rate": 0.5390007396221966,
+            "visits": 329
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 2
+            },
+            "label": "Spark -> Adept",
+            "win_rate": 0.5388815883753374,
+            "visits": 329
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "label": "Weakness Mark -> Warden",
+            "win_rate": 0.5125147480586357,
+            "visits": 253
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 2
+            },
+            "label": "Weakness Mark -> Adept",
+            "win_rate": 0.5109506838541631,
+            "visits": 249
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "label": "Stone Ward",
+            "win_rate": 0.509502039059046,
+            "visits": 245
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 1
+            },
+            "label": "Weakness Mark -> Acolyte",
+            "win_rate": 0.503626344938641,
+            "visits": 233
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.49260573637613214,
+            "visits": 211
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.4922247676020447,
+            "visits": 211
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "label": "Pass",
+            "win_rate": 0.4915199175912779,
+            "visits": 210
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.48557274066647205,
+            "visits": 199
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "label": "Mend",
+            "win_rate": 0.48233247249848643,
+            "visits": 194
+          }
+        ],
+        "rng_sha256": "e8d784456a3358925f74a97825dc31339144927e51f8f072390204e4e9ada204"
+      },
+      "root_unchanged": true,
+      "observed_simulations": 3000,
+      "observed_transitions": 15000,
+      "profile": [
+        {
+          "file": "engine/actions.py",
+          "line": 64,
+          "function": "legal_actions",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.0914432,
+          "cumulative_s": 0.1454038
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 156,
+          "function": "advance_round",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.0714994,
+          "cumulative_s": 0.42148270000000004
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__hash__",
+          "primitive_calls": 375784,
+          "calls": 375784,
+          "self_s": 0.065927,
+          "cumulative_s": 0.08946520000000001
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 63,
+          "function": "cast",
+          "primitive_calls": 26956,
+          "calls": 26956,
+          "self_s": 0.0607405,
+          "cumulative_s": 0.1656591
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 102,
+          "function": "enemy_act",
+          "primitive_calls": 45000,
+          "calls": 45000,
+          "self_s": 0.059733400000000006,
+          "cumulative_s": 0.1938012
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 97,
+          "function": "ucb1",
+          "primitive_calls": 78773,
+          "calls": 78773,
+          "self_s": 0.0466362,
+          "cumulative_s": 0.0718694
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 197,
+          "function": "search",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 0.046186500000000005,
+          "cumulative_s": 1.088041
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 113,
+          "function": "<dictcomp>",
+          "primitive_calls": 10710,
+          "calls": 10710,
+          "self_s": 0.0431227,
+          "cumulative_s": 0.08939580000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.max>",
+          "primitive_calls": 150068,
+          "calls": 150068,
+          "self_s": 0.034824,
+          "cumulative_s": 0.18867740000000002
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__eq__",
+          "primitive_calls": 154549,
+          "calls": 154549,
+          "self_s": 0.0325232,
+          "cumulative_s": 0.0325232
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 286,
+          "function": "<genexpr>",
+          "primitive_calls": 86483,
+          "calls": 86483,
+          "self_s": 0.029994200000000002,
+          "cumulative_s": 0.0636859
+        },
+        {
+          "file": "engine/state.py",
+          "line": 97,
+          "function": "alive",
+          "primitive_calls": 348980,
+          "calls": 348980,
+          "self_s": 0.02908,
+          "cumulative_s": 0.02908
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 279,
+          "function": "<listcomp>",
+          "primitive_calls": 10710,
+          "calls": 10710,
+          "self_s": 0.025446200000000002,
+          "cumulative_s": 0.0637505
+        },
+        {
+          "file": "engine/state.py",
+          "line": 101,
+          "function": "effective_pips",
+          "primitive_calls": 135925,
+          "calls": 135925,
+          "self_s": 0.02542,
+          "cumulative_s": 0.02542
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.hash>",
+          "primitive_calls": 375784,
+          "calls": 375784,
+          "self_s": 0.023538200000000002,
+          "cumulative_s": 0.023538200000000002
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 42,
+          "function": "resolve_damage",
+          "primitive_calls": 14513,
+          "calls": 14513,
+          "self_s": 0.0225097,
+          "cumulative_s": 0.034517200000000005
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 145,
+          "function": "_regen_pips",
+          "primitive_calls": 60000,
+          "calls": 60000,
+          "self_s": 0.0209772,
+          "cumulative_s": 0.024266600000000003
+        },
+        {
+          "file": "engine/actions.py",
+          "line": 41,
+          "function": "is_legal_action",
+          "primitive_calls": 13033,
+          "calls": 13033,
+          "self_s": 0.0201706,
+          "cumulative_s": 0.028131800000000002
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 135,
+          "function": "_tick_dots",
+          "primitive_calls": 60000,
+          "calls": 60000,
+          "self_s": 0.0191827,
+          "cumulative_s": 0.0241319
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 287,
+          "function": "<lambda>",
+          "primitive_calls": 78773,
+          "calls": 78773,
+          "self_s": 0.0182981,
+          "cumulative_s": 0.09016750000000001
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 278,
+          "function": "<setcomp>",
+          "primitive_calls": 10710,
+          "calls": 10710,
+          "self_s": 0.0174711,
+          "cumulative_s": 0.037294100000000004
+        },
+        {
+          "file": "engine/state.py",
+          "line": 115,
+          "function": "clone",
+          "primitive_calls": 12000,
+          "calls": 12000,
+          "self_s": 0.0172252,
+          "cumulative_s": 0.0284107
+        },
+        {
+          "file": "engine/state.py",
+          "line": 107,
+          "function": "spend_pips",
+          "primitive_calls": 26956,
+          "calls": 26956,
+          "self_s": 0.0156881,
+          "cumulative_s": 0.0215803
+        },
+        {
+          "file": "python/random.py",
+          "line": 284,
+          "function": "randrange",
+          "primitive_calls": 21803,
+          "calls": 21803,
+          "self_s": 0.014463900000000002,
+          "cumulative_s": 0.0324102
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__init__",
+          "primitive_calls": 84870,
+          "calls": 84870,
+          "self_s": 0.0125841,
+          "cumulative_s": 0.0125841
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 93,
+          "function": "mean",
+          "primitive_calls": 78785,
+          "calls": 78785,
+          "self_s": 0.0117362,
+          "cumulative_s": 0.0117362
+        },
+        {
+          "file": "python/random.py",
+          "line": 235,
+          "function": "_randbelow_with_getrandbits",
+          "primitive_calls": 21803,
+          "calls": 21803,
+          "self_s": 0.011058100000000001,
+          "cumulative_s": 0.014883100000000002
+        },
+        {
+          "file": "engine/state.py",
+          "line": 155,
+          "function": "heuristic_value",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0107522,
+          "cumulative_s": 0.0146183
+        },
+        {
+          "file": "engine/state.py",
+          "line": 142,
+          "function": "<listcomp>",
+          "primitive_calls": 18001,
+          "calls": 18001,
+          "self_s": 0.0104063,
+          "cumulative_s": 0.014581100000000001
+        },
+        {
+          "file": "engine/rules.py",
+          "line": 37,
+          "function": "fire_rules",
+          "primitive_calls": 84870,
+          "calls": 84870,
+          "self_s": 0.009915700000000001,
+          "cumulative_s": 0.009915700000000001
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 29,
+          "function": "_consume_charms",
+          "primitive_calls": 43539,
+          "calls": 43539,
+          "self_s": 0.008919100000000001,
+          "cumulative_s": 0.008919100000000001
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 172,
+          "function": "<listcomp>",
+          "primitive_calls": 13033,
+          "calls": 13033,
+          "self_s": 0.008022300000000001,
+          "cumulative_s": 0.008022300000000001
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 339,
+          "function": "_rollout",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0078875,
+          "cumulative_s": 0.20334790000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.log>",
+          "primitive_calls": 78773,
+          "calls": 78773,
+          "self_s": 0.007572700000000001,
+          "cumulative_s": 0.007572700000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "primitive_calls": 122462,
+          "calls": 122462,
+          "self_s": 0.007370700000000001,
+          "cumulative_s": 0.007370700000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'random' of '_random.Random' objects>",
+          "primitive_calls": 96660,
+          "calls": 96660,
+          "self_s": 0.0060501,
+          "cumulative_s": 0.0060501
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.sqrt>",
+          "primitive_calls": 78773,
+          "calls": 78773,
+          "self_s": 0.0059261,
+          "cumulative_s": 0.0059261
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 107,
+          "function": "_available_actions",
+          "primitive_calls": 10710,
+          "calls": 10710,
+          "self_s": 0.0058465,
+          "cumulative_s": 0.2124716
+        },
+        {
+          "file": "engine/state.py",
+          "line": 140,
+          "function": "living_enemies",
+          "primitive_calls": 18001,
+          "calls": 18001,
+          "self_s": 0.0057137,
+          "cumulative_s": 0.0202948
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 142,
+          "function": "<listcomp>",
+          "primitive_calls": 60000,
+          "calls": 60000,
+          "self_s": 0.0049492,
+          "cumulative_s": 0.0049492
+        },
+        {
+          "file": "engine/state.py",
+          "line": 144,
+          "function": "is_terminal",
+          "primitive_calls": 10711,
+          "calls": 10711,
+          "self_s": 0.0048766,
+          "cumulative_s": 0.0178912
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 74,
+          "function": "<listcomp>",
+          "primitive_calls": 14513,
+          "calls": 14513,
+          "self_s": 0.004249,
+          "cumulative_s": 0.0055335
+        },
+        {
+          "file": "python/random.py",
+          "line": 358,
+          "function": "randint",
+          "primitive_calls": 14513,
+          "calls": 14513,
+          "self_s": 0.00417,
+          "cumulative_s": 0.027393
+        },
+        {
+          "file": "engine/state.py",
+          "line": 184,
+          "function": "clone",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0036867000000000002,
+          "cumulative_s": 0.0351114
+        },
+        {
+          "file": "engine/state.py",
+          "line": 147,
+          "function": "result",
+          "primitive_calls": 7290,
+          "calls": 7290,
+          "self_s": 0.0033399000000000002,
+          "cumulative_s": 0.0121934
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _operator.index>",
+          "primitive_calls": 50829,
+          "calls": 50829,
+          "self_s": 0.0030632000000000003,
+          "cumulative_s": 0.0030632000000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.isinstance>",
+          "primitive_calls": 36710,
+          "calls": 36710,
+          "self_s": 0.0024606000000000003,
+          "cumulative_s": 0.0024606000000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'getrandbits' of '_random.Random' objects>",
+          "primitive_calls": 36164,
+          "calls": 36164,
+          "self_s": 0.0023657,
+          "cumulative_s": 0.0023657
+        },
+        {
+          "file": "engine/state.py",
+          "line": 187,
+          "function": "<listcomp>",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.002228,
+          "cumulative_s": 0.0221444
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'get' of 'dict' objects>",
+          "primitive_calls": 29026,
+          "calls": 29026,
+          "self_s": 0.0019986,
+          "cumulative_s": 0.0019986
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 28640,
+          "calls": 28640,
+          "self_s": 0.0019142,
+          "cumulative_s": 0.0019142
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'bit_length' of 'int' objects>",
+          "primitive_calls": 21803,
+          "calls": 21803,
+          "self_s": 0.0014593000000000002,
+          "cumulative_s": 0.0014593000000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.min>",
+          "primitive_calls": 13531,
+          "calls": 13531,
+          "self_s": 0.0013901,
+          "cumulative_s": 0.0013901
+        },
+        {
+          "file": "engine/state.py",
+          "line": 128,
+          "function": "<listcomp>",
+          "primitive_calls": 12000,
+          "calls": 12000,
+          "self_s": 0.0011339,
+          "cumulative_s": 0.0011339
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'pop' of 'list' objects>",
+          "primitive_calls": 9546,
+          "calls": 9546,
+          "self_s": 0.0010511000000000001,
+          "cumulative_s": 0.0010511000000000001
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 86,
+          "function": "__init__",
+          "primitive_calls": 3001,
+          "calls": 3001,
+          "self_s": 0.0008066000000000001,
+          "cumulative_s": 0.0008066000000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method time.perf_counter>",
+          "primitive_calls": 3001,
+          "calls": 3001,
+          "self_s": 0.0002932,
+          "cumulative_s": 0.0002932
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.abs>",
+          "primitive_calls": 1551,
+          "calls": 1551,
+          "self_s": 0.0001354,
+          "cumulative_s": 0.0001354
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 312,
+          "function": "<listcomp>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 1.15e-05,
+          "cumulative_s": 2.0700000000000002e-05
+        },
+        {
+          "file": "engine/actions.py",
+          "line": 26,
+          "function": "describe",
+          "primitive_calls": 12,
+          "calls": 12,
+          "self_s": 4.9000000000000005e-06,
+          "cumulative_s": 4.9000000000000005e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'list' objects>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 4.1000000000000006e-06,
+          "cumulative_s": 6.1e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 183,
+          "function": "_validate_configuration",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 3.7e-06,
+          "cumulative_s": 6.1e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 323,
+          "function": "<listcomp>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 2.3e-06,
+          "cumulative_s": 2.3e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 36,
+          "function": "_validate_nonnegative_finite",
+          "primitive_calls": 2,
+          "calls": 2,
+          "self_s": 2.1000000000000002e-06,
+          "cumulative_s": 2.7e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 322,
+          "function": "<lambda>",
+          "primitive_calls": 12,
+          "calls": 12,
+          "self_s": 2.0000000000000003e-06,
+          "cumulative_s": 2.0000000000000003e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 9.000000000000001e-07,
+          "cumulative_s": 9.000000000000001e-07
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 48,
+          "function": "_validate_priors",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 2.0000000000000002e-07,
+          "cumulative_s": 2.0000000000000002e-07
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.isfinite>",
+          "primitive_calls": 2,
+          "calls": 2,
+          "self_s": 2.0000000000000002e-07,
+          "cumulative_s": 2.0000000000000002e-07
+        }
+      ]
+    },
+    {
+      "scenario": "boss",
+      "mode": "control",
+      "status": "completed",
+      "root_sha256": "b5839164a2652d117fd428062a33021e5eaee6197984c76076417e241527f69a",
+      "error": null,
+      "elapsed_s": 0.23911990004125983,
+      "computation": {
+        "simulations": 3000,
+        "transitions": 15000,
+        "unused_transitions": 0,
+        "stop_reasons": [
+          "transition_allowance",
+          "simulation_cap"
+        ],
+        "root_statistics": [
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "visits": 358,
+            "value_sum": 206.3488125378324
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "visits": 363,
+            "value_sum": 209.72190031641625
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "visits": 359,
+            "value_sum": 207.07103650517632
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "visits": 292,
+            "value_sum": 162.70456156841885
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "visits": 425,
+            "value_sum": 251.3167306267301
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "visits": 320,
+            "value_sum": 181.11968017967953
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "visits": 557,
+            "value_sum": 340.8876712260783
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "visits": 326,
+            "value_sum": 185.09710807422005
+          }
+        ],
+        "ranked": [
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "label": "Spark -> Frost Tyrant",
+            "win_rate": 0.6120065910701585,
+            "visits": 557
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "label": "Stone Ward",
+            "win_rate": 0.5913334838276002,
+            "visits": 425
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.5777462818634057,
+            "visits": 363
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "label": "Weakness Mark -> Frost Tyrant",
+            "win_rate": 0.5767995445826638,
+            "visits": 359
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.5763933311112637,
+            "visits": 358
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.5677825401049694,
+            "visits": 326
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "label": "Pass",
+            "win_rate": 0.5659990005614985,
+            "visits": 320
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "label": "Mend",
+            "win_rate": 0.5572074026315714,
+            "visits": 292
+          }
+        ],
+        "rng_sha256": "97e26d24364b19745a619dceb06c2a41b56e10e7b1a4db8de55e74c050405df8"
+      },
+      "root_unchanged": true,
+      "observed_simulations": 3000,
+      "observed_transitions": 15000,
+      "profile": []
+    },
+    {
+      "scenario": "boss",
+      "mode": "profiled",
+      "status": "completed",
+      "root_sha256": "b5839164a2652d117fd428062a33021e5eaee6197984c76076417e241527f69a",
+      "error": null,
+      "elapsed_s": 0.9924284999724478,
+      "computation": {
+        "simulations": 3000,
+        "transitions": 15000,
+        "unused_transitions": 0,
+        "stop_reasons": [
+          "transition_allowance",
+          "simulation_cap"
+        ],
+        "root_statistics": [
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "visits": 358,
+            "value_sum": 206.3488125378324
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "visits": 363,
+            "value_sum": 209.72190031641625
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "visits": 359,
+            "value_sum": 207.07103650517632
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "visits": 292,
+            "value_sum": 162.70456156841885
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "visits": 425,
+            "value_sum": 251.3167306267301
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "visits": 320,
+            "value_sum": 181.11968017967953
+          },
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "visits": 557,
+            "value_sum": 340.8876712260783
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "visits": 326,
+            "value_sum": 185.09710807422005
+          }
+        ],
+        "ranked": [
+          {
+            "action": {
+              "card_idx": 2,
+              "target_idx": 0
+            },
+            "label": "Spark -> Frost Tyrant",
+            "win_rate": 0.6120065910701585,
+            "visits": 557
+          },
+          {
+            "action": {
+              "card_idx": 3,
+              "target_idx": null
+            },
+            "label": "Stone Ward",
+            "win_rate": 0.5913334838276002,
+            "visits": 425
+          },
+          {
+            "action": {
+              "card_idx": 1,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.5777462818634057,
+            "visits": 363
+          },
+          {
+            "action": {
+              "card_idx": 6,
+              "target_idx": 0
+            },
+            "label": "Weakness Mark -> Frost Tyrant",
+            "win_rate": 0.5767995445826638,
+            "visits": 359
+          },
+          {
+            "action": {
+              "card_idx": 0,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.5763933311112637,
+            "visits": 358
+          },
+          {
+            "action": {
+              "card_idx": 4,
+              "target_idx": null
+            },
+            "label": "Ember Blade",
+            "win_rate": 0.5677825401049694,
+            "visits": 326
+          },
+          {
+            "action": {
+              "card_idx": null,
+              "target_idx": null
+            },
+            "label": "Pass",
+            "win_rate": 0.5659990005614985,
+            "visits": 320
+          },
+          {
+            "action": {
+              "card_idx": 5,
+              "target_idx": null
+            },
+            "label": "Mend",
+            "win_rate": 0.5572074026315714,
+            "visits": 292
+          }
+        ],
+        "rng_sha256": "97e26d24364b19745a619dceb06c2a41b56e10e7b1a4db8de55e74c050405df8"
+      },
+      "root_unchanged": true,
+      "observed_simulations": 3000,
+      "observed_transitions": 15000,
+      "profile": [
+        {
+          "file": "engine/actions.py",
+          "line": 64,
+          "function": "legal_actions",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.0926893,
+          "cumulative_s": 0.1454311
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__hash__",
+          "primitive_calls": 308031,
+          "calls": 308031,
+          "self_s": 0.0673364,
+          "cumulative_s": 0.091148
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 197,
+          "function": "search",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 0.058095400000000005,
+          "cumulative_s": 0.9924184
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 156,
+          "function": "advance_round",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.0566269,
+          "cumulative_s": 0.3207722
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 97,
+          "function": "ucb1",
+          "primitive_calls": 64711,
+          "calls": 64711,
+          "self_s": 0.047618100000000003,
+          "cumulative_s": 0.073517
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 113,
+          "function": "<dictcomp>",
+          "primitive_calls": 12261,
+          "calls": 12261,
+          "self_s": 0.0435819,
+          "cumulative_s": 0.0891652
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 63,
+          "function": "cast",
+          "primitive_calls": 15828,
+          "calls": 15828,
+          "self_s": 0.0431307,
+          "cumulative_s": 0.11621840000000001
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__eq__",
+          "primitive_calls": 123144,
+          "calls": 123144,
+          "self_s": 0.0333952,
+          "cumulative_s": 0.0333952
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.max>",
+          "primitive_calls": 80380,
+          "calls": 80380,
+          "self_s": 0.0316083,
+          "cumulative_s": 0.1889083
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 286,
+          "function": "<genexpr>",
+          "primitive_calls": 73972,
+          "calls": 73972,
+          "self_s": 0.030961600000000002,
+          "cumulative_s": 0.0654275
+        },
+        {
+          "file": "engine/rules.py",
+          "line": 37,
+          "function": "fire_rules",
+          "primitive_calls": 45503,
+          "calls": 45503,
+          "self_s": 0.027846000000000003,
+          "cumulative_s": 0.053403400000000004
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 279,
+          "function": "<listcomp>",
+          "primitive_calls": 12261,
+          "calls": 12261,
+          "self_s": 0.026385400000000003,
+          "cumulative_s": 0.0649328
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 102,
+          "function": "enemy_act",
+          "primitive_calls": 15000,
+          "calls": 15000,
+          "self_s": 0.0255766,
+          "cumulative_s": 0.08405030000000001
+        },
+        {
+          "file": "engine/state.py",
+          "line": 101,
+          "function": "effective_pips",
+          "primitive_calls": 106605,
+          "calls": 106605,
+          "self_s": 0.024246,
+          "cumulative_s": 0.024246
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.hash>",
+          "primitive_calls": 308031,
+          "calls": 308031,
+          "self_s": 0.023811600000000002,
+          "cumulative_s": 0.023811600000000002
+        },
+        {
+          "file": "engine/actions.py",
+          "line": 41,
+          "function": "is_legal_action",
+          "primitive_calls": 12691,
+          "calls": 12691,
+          "self_s": 0.022117300000000003,
+          "cumulative_s": 0.0309653
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 278,
+          "function": "<setcomp>",
+          "primitive_calls": 12261,
+          "calls": 12261,
+          "self_s": 0.0183696,
+          "cumulative_s": 0.0387696
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 287,
+          "function": "<lambda>",
+          "primitive_calls": 64711,
+          "calls": 64711,
+          "self_s": 0.0183555,
+          "cumulative_s": 0.09187250000000001
+        },
+        {
+          "file": "engine/state.py",
+          "line": 97,
+          "function": "alive",
+          "primitive_calls": 169145,
+          "calls": 169145,
+          "self_s": 0.0182993,
+          "cumulative_s": 0.0182993
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 145,
+          "function": "_regen_pips",
+          "primitive_calls": 30000,
+          "calls": 30000,
+          "self_s": 0.013525400000000002,
+          "cumulative_s": 0.0154683
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 135,
+          "function": "_tick_dots",
+          "primitive_calls": 30000,
+          "calls": 30000,
+          "self_s": 0.013016600000000001,
+          "cumulative_s": 0.0162471
+        },
+        {
+          "file": "engine/rules.py",
+          "line": 69,
+          "function": "apply",
+          "primitive_calls": 45503,
+          "calls": 45503,
+          "self_s": 0.012564200000000001,
+          "cumulative_s": 0.0141758
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 93,
+          "function": "mean",
+          "primitive_calls": 64719,
+          "calls": 64719,
+          "self_s": 0.012090700000000001,
+          "cumulative_s": 0.012090700000000001
+        },
+        {
+          "file": "engine/state.py",
+          "line": 115,
+          "function": "clone",
+          "primitive_calls": 6000,
+          "calls": 6000,
+          "self_s": 0.011589700000000001,
+          "cumulative_s": 0.0187579
+        },
+        {
+          "file": "engine/rules.py",
+          "line": 53,
+          "function": "apply",
+          "primitive_calls": 45503,
+          "calls": 45503,
+          "self_s": 0.011140800000000001,
+          "cumulative_s": 0.0113816
+        },
+        {
+          "file": "engine/state.py",
+          "line": 107,
+          "function": "spend_pips",
+          "primitive_calls": 15828,
+          "calls": 15828,
+          "self_s": 0.011005500000000001,
+          "cumulative_s": 0.015381400000000002
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 42,
+          "function": "resolve_damage",
+          "primitive_calls": 4624,
+          "calls": 4624,
+          "self_s": 0.009633800000000001,
+          "cumulative_s": 0.015159500000000001
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 172,
+          "function": "<listcomp>",
+          "primitive_calls": 12691,
+          "calls": 12691,
+          "self_s": 0.0095116,
+          "cumulative_s": 0.0095116
+        },
+        {
+          "file": "<string>",
+          "line": 2,
+          "function": "__init__",
+          "primitive_calls": 45503,
+          "calls": 45503,
+          "self_s": 0.008620300000000001,
+          "cumulative_s": 0.008620300000000001
+        },
+        {
+          "file": "engine/state.py",
+          "line": 155,
+          "function": "heuristic_value",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0082371,
+          "cumulative_s": 0.011279800000000001
+        },
+        {
+          "file": "python/random.py",
+          "line": 284,
+          "function": "randrange",
+          "primitive_calls": 10363,
+          "calls": 10363,
+          "self_s": 0.0079778,
+          "cumulative_s": 0.018394
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.log>",
+          "primitive_calls": 64711,
+          "calls": 64711,
+          "self_s": 0.007846200000000001,
+          "cumulative_s": 0.007846200000000001
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 107,
+          "function": "_available_actions",
+          "primitive_calls": 12261,
+          "calls": 12261,
+          "self_s": 0.0078396,
+          "cumulative_s": 0.22362120000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "primitive_calls": 91046,
+          "calls": 91046,
+          "self_s": 0.006928,
+          "cumulative_s": 0.006928
+        },
+        {
+          "file": "engine/state.py",
+          "line": 140,
+          "function": "living_enemies",
+          "primitive_calls": 18001,
+          "calls": 18001,
+          "self_s": 0.0068057000000000005,
+          "cumulative_s": 0.014615800000000002
+        },
+        {
+          "file": "engine/state.py",
+          "line": 144,
+          "function": "is_terminal",
+          "primitive_calls": 12262,
+          "calls": 12262,
+          "self_s": 0.0066379,
+          "cumulative_s": 0.018119200000000002
+        },
+        {
+          "file": "python/random.py",
+          "line": 235,
+          "function": "_randbelow_with_getrandbits",
+          "primitive_calls": 10363,
+          "calls": 10363,
+          "self_s": 0.0065652,
+          "cumulative_s": 0.0088559
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 339,
+          "function": "_rollout",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.006458800000000001,
+          "cumulative_s": 0.10261890000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.sqrt>",
+          "primitive_calls": 64711,
+          "calls": 64711,
+          "self_s": 0.0059643000000000005,
+          "cumulative_s": 0.0059643000000000005
+        },
+        {
+          "file": "engine/state.py",
+          "line": 142,
+          "function": "<listcomp>",
+          "primitive_calls": 18001,
+          "calls": 18001,
+          "self_s": 0.005963100000000001,
+          "cumulative_s": 0.0078101
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 29,
+          "function": "_consume_charms",
+          "primitive_calls": 13872,
+          "calls": 13872,
+          "self_s": 0.0046538000000000005,
+          "cumulative_s": 0.0046538000000000005
+        },
+        {
+          "file": "engine/state.py",
+          "line": 184,
+          "function": "clone",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0044104,
+          "cumulative_s": 0.0252822
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'random' of '_random.Random' objects>",
+          "primitive_calls": 44263,
+          "calls": 44263,
+          "self_s": 0.0035654000000000003,
+          "cumulative_s": 0.0035654000000000003
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 142,
+          "function": "<listcomp>",
+          "primitive_calls": 30000,
+          "calls": 30000,
+          "self_s": 0.0032305000000000003,
+          "cumulative_s": 0.0032305000000000003
+        },
+        {
+          "file": "engine/state.py",
+          "line": 147,
+          "function": "result",
+          "primitive_calls": 5739,
+          "calls": 5739,
+          "self_s": 0.0030264000000000003,
+          "cumulative_s": 0.008114
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.isinstance>",
+          "primitive_calls": 32634,
+          "calls": 32634,
+          "self_s": 0.0026762,
+          "cumulative_s": 0.0026762
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 25051,
+          "calls": 25051,
+          "self_s": 0.0019629,
+          "cumulative_s": 0.0019629
+        },
+        {
+          "file": "python/random.py",
+          "line": 358,
+          "function": "randint",
+          "primitive_calls": 4624,
+          "calls": 4624,
+          "self_s": 0.0017914,
+          "cumulative_s": 0.011366900000000001
+        },
+        {
+          "file": "engine/simulator.py",
+          "line": 74,
+          "function": "<listcomp>",
+          "primitive_calls": 4624,
+          "calls": 4624,
+          "self_s": 0.0016641000000000002,
+          "cumulative_s": 0.0021878
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method _operator.index>",
+          "primitive_calls": 19611,
+          "calls": 19611,
+          "self_s": 0.0015603000000000001,
+          "cumulative_s": 0.0015603000000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'getrandbits' of '_random.Random' objects>",
+          "primitive_calls": 17268,
+          "calls": 17268,
+          "self_s": 0.0014195000000000002,
+          "cumulative_s": 0.0014195000000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'pop' of 'list' objects>",
+          "primitive_calls": 10483,
+          "calls": 10483,
+          "self_s": 0.0013881000000000002,
+          "cumulative_s": 0.0013881000000000002
+        },
+        {
+          "file": "engine/state.py",
+          "line": 187,
+          "function": "<listcomp>",
+          "primitive_calls": 3000,
+          "calls": 3000,
+          "self_s": 0.0011703,
+          "cumulative_s": 0.0096745
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.min>",
+          "primitive_calls": 7749,
+          "calls": 7749,
+          "self_s": 0.001092,
+          "cumulative_s": 0.001092
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 86,
+          "function": "__init__",
+          "primitive_calls": 3001,
+          "calls": 3001,
+          "self_s": 0.0009443,
+          "cumulative_s": 0.0009443
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'get' of 'dict' objects>",
+          "primitive_calls": 9248,
+          "calls": 9248,
+          "self_s": 0.0009304000000000001,
+          "cumulative_s": 0.0009304000000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'bit_length' of 'int' objects>",
+          "primitive_calls": 10363,
+          "calls": 10363,
+          "self_s": 0.0008712,
+          "cumulative_s": 0.0008712
+        },
+        {
+          "file": "engine/state.py",
+          "line": 128,
+          "function": "<listcomp>",
+          "primitive_calls": 6000,
+          "calls": 6000,
+          "self_s": 0.0006838,
+          "cumulative_s": 0.0006838
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method time.perf_counter>",
+          "primitive_calls": 3001,
+          "calls": 3001,
+          "self_s": 0.00036780000000000005,
+          "cumulative_s": 0.00036780000000000005
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.abs>",
+          "primitive_calls": 1856,
+          "calls": 1856,
+          "self_s": 0.00020050000000000002,
+          "cumulative_s": 0.00020050000000000002
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 312,
+          "function": "<listcomp>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 1.18e-05,
+          "cumulative_s": 2.09e-05
+        },
+        {
+          "file": "engine/actions.py",
+          "line": 26,
+          "function": "describe",
+          "primitive_calls": 8,
+          "calls": 8,
+          "self_s": 4.2000000000000004e-06,
+          "cumulative_s": 4.2000000000000004e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'list' objects>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 4.000000000000001e-06,
+          "cumulative_s": 6.4000000000000006e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 183,
+          "function": "_validate_configuration",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 3.5000000000000004e-06,
+          "cumulative_s": 6.4000000000000006e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 36,
+          "function": "_validate_nonnegative_finite",
+          "primitive_calls": 2,
+          "calls": 2,
+          "self_s": 2.6e-06,
+          "cumulative_s": 3e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 322,
+          "function": "<lambda>",
+          "primitive_calls": 8,
+          "calls": 8,
+          "self_s": 2.4000000000000003e-06,
+          "cumulative_s": 2.4000000000000003e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 323,
+          "function": "<listcomp>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 2.1000000000000002e-06,
+          "cumulative_s": 2.1000000000000002e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 1.2000000000000002e-06,
+          "cumulative_s": 1.2000000000000002e-06
+        },
+        {
+          "file": "engine/mcts.py",
+          "line": 48,
+          "function": "_validate_priors",
+          "primitive_calls": 1,
+          "calls": 1,
+          "self_s": 3.0000000000000004e-07,
+          "cumulative_s": 3.0000000000000004e-07
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.isfinite>",
+          "primitive_calls": 2,
+          "calls": 2,
+          "self_s": 2.0000000000000002e-07,
+          "cumulative_s": 2.0000000000000002e-07
+        }
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "scenario": "duel",
+      "matched": true
+    },
+    {
+      "scenario": "gauntlet",
+      "matched": true
+    },
+    {
+      "scenario": "boss",
+      "matched": true
+    }
+  ],
+  "source_unchanged_at_end": true,
+  "ended_utc": "2026-09-29T22:13:32.130403+00:00"
+}
