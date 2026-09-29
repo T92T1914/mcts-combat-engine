@@ -210,6 +210,14 @@ is separate from its search timer.
 for every timing, raw receipt, the declared protocol and the research that
 informed this separate control after the earlier study was complete.
 
+The [serial profiling investigation](docs/serial-profile-results.md) inspects
+three fixed decisions without changing the engine. All six control and
+instrumented searches completed the same work and matched their root statistics,
+rankings and random generator states. Cost was spread across legal actions,
+hashing, tree traversal and simulator operations. The bounded result did not
+justify a native port, so the Python reference remains unchanged. The report
+retains the full profile and the limits of that no-change decision.
+
 ## How it works
 
 1. Clone the current state and replay an action sequence under fresh randomness.

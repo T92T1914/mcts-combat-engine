@@ -83,6 +83,13 @@ Add `--check` to validate without writing. Neither operation executes search.
 The site builder also checks this report before copying it. Preserve the exact
 first attempt bytes and keep evaluated source distinct from report source.
 
+The [serial profiling protocol](docs/serial-profile.md) is a separate diagnostic
+for a possible narrow optimization. Commit its tested runner and protocol before
+measurement. Preserve the control and instrumented receipts, including any
+shortfall or mismatch. Profile time includes instrumentation overhead and does
+not establish an optimization speedup. A proposed change needs a separate
+committed comparison protocol before its timing evidence is collected.
+
 ## Development container and public site
 
 Open this repository in Codespaces or use VS Code Dev Containers. The container uses Python 3.11 and installs the project into `.venv` during setup. Its image is pinned by digest. The `Project access` workflow builds that same environment and runs `.devcontainer/smoke.sh`. Runtime dependencies still follow the project configuration. Codespaces uses the creating account's compute and storage allowance.
