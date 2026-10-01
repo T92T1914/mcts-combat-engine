@@ -96,6 +96,12 @@ its used and unused work are unknown. Aggregate totals then remain `None` while
 `known_simulations` and `known_transitions` retain the received counts. In this
 failure case `last_sims` is only the known completed count, not a complete total.
 
+Worker actions use the simulator's index and target validation before merging.
+Boolean and floating point indices are refused even when Python compares them
+equal to a legal integer action. A reward sum that cannot be represented for
+the finite-value check also makes the receipt unreported. These refusals retain
+the incomplete-work report and do not start another search.
+
 `worker_timeout_s` is an operational watchdog for dispatched process work. It is
 not a successful time mode result or a hard real time guarantee. A one worker
 search executes locally and has no process watchdog. Caller interrupts propagate.
