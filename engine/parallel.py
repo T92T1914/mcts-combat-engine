@@ -29,7 +29,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from multiprocessing.pool import Pool
 
-from .actions import Action, legal_actions
+from .actions import Action, is_legal_action, legal_actions
 from .mcts import MCTS, RankedAction, _validate_nonnegative_finite, _validate_priors
 from .state import GameState
 
@@ -375,7 +375,7 @@ class ParallelMCTS:
             else:
                 try:
                     valid = self._valid_receipt(record, job, legal)
-                except (TypeError, ValueError, AttributeError):
+                except (TypeError, ValueError, AttributeError, OverflowError):
                     valid = False
                 if not valid:
                     receipts[job.worker_id] = _unreported(
@@ -454,7 +454,10 @@ class ParallelMCTS:
             return False
         actions = set()
         for action, visits, value_sum in record.statistics:
-            if (action not in legal or action in actions
+            # Equality alone accepts bool/float aliases of integer indices.
+            if (not isinstance(action, Action)
+                    or not is_legal_action(job.state, action)
+                    or action not in legal or action in actions
                     or not isinstance(visits, int) or isinstance(visits, bool)
                     or visits < 0 or not math.isfinite(value_sum)
                     or not 0 <= value_sum <= visits):
