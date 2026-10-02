@@ -102,6 +102,15 @@ equal to a legal integer action. A reward sum that cannot be represented for
 the finite-value check also makes the receipt unreported. These refusals retain
 the incomplete-work report and do not start another search.
 
+The receipt's worker identity, seed, assigned allowances and unused counts must
+also retain integer types. Numeric aliases such as `False` for zero or `2.0` for
+two are not accepted just because they compare equal. An absent transition ceiling
+requires an absent unused-transition count. Reported compute duration must be
+finite and nonnegative. Completed receipts have no error, while failed receipts
+retain a nonempty error name and no usable virtual visits or root statistics.
+Contradictory receipts become unreported work, preserving other workers' valid
+counts without retrying the uncertain allowance.
+
 `worker_timeout_s` is an operational watchdog for dispatched process work. It is
 not a successful time mode result or a hard real time guarantee. A one worker
 search executes locally and has no process watchdog. Caller interrupts propagate.
