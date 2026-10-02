@@ -69,6 +69,16 @@ execution control, not a different search policy or a retry after a worker failu
 Time mode rejects sequential execution. Local execution has no process watchdog.
 The setting does not change the existing report shape or default API behavior.
 
+Time mode validates the complete worker batch before merging recommendations.
+Actions must be legal and unique within each worker result. Simulation and visit
+counts must be nonnegative integers, and raw reward sums must be finite and
+between zero and their visit counts. Each worker's visits must equal its completed
+simulations plus the opening book's virtual visits. A worker can complete zero
+simulations, with an empty result when it has no priors. Invalid batches follow
+the existing time mode policy: retire the pool before a serial fallback. If
+retirement fails, the error stays visible and no fallback starts. These checks
+do not turn timed work into a fixed allowance or change the raw merge helper.
+
 Opening book priors remain virtual evidence in every independent tree, including
 a tree assigned zero simulations. Their visits appear separately in each worker
 receipt. Root visits therefore equal completed simulations plus virtual visits.
