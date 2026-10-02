@@ -247,7 +247,7 @@ class ParallelMCTS:
                 deadline = start + 30
                 for _ in range(self.workers):
                     ready.get(timeout=max(0, deadline - time.perf_counter()))
-            except Exception:
+            except BaseException:
                 self.close()
                 raise
             finally:
@@ -320,9 +320,12 @@ class ParallelMCTS:
                     for _ in range(self.workers)]
             results = pool.map_async(_search, jobs).get(
                 timeout=time_budget_ms / 1000.0 * 3 + 20)
-        except Exception:
+        except BaseException as exc:
             # dead/hung pool: rebuild lazily next turn, answer now
             self.close()
+            if not isinstance(exc, Exception):
+                # A caller stop is not permission to begin a serial retry.
+                raise
             return self._search_single(root_state, time_budget_ms, priors)
         out, self.last_sims = merge_results(results, root_state)
         return out
@@ -339,7 +342,9 @@ class ParallelMCTS:
                 for i in range(self.workers)]
         receipts: dict[int, WorkerReceipt] = {}
         pending = {}
+        attempted: set[int] = set()
         failure = None
+        interruption = None
         try:
             for job in jobs:
                 # Zero work and terminal roots need no process. Applying the
@@ -348,29 +353,40 @@ class ParallelMCTS:
                         or state.is_terminal() or job.max_sims == 0
                         or (job.max_transitions is not None
                             and job.max_transitions < self.horizon)):
+                    attempted.add(job.worker_id)
                     receipts[job.worker_id] = _fixed_search(job)
                 else:
-                    pending[job.worker_id] = self._ensure_pool().apply_async(
-                        _fixed_search, (job,))
+                    pool = self._ensure_pool()
+                    # apply_async may enqueue work before an interrupt prevents
+                    # its result handle from reaching this process.
+                    attempted.add(job.worker_id)
+                    pending[job.worker_id] = pool.apply_async(_fixed_search, (job,))
             deadline = start + timeout
             for worker_id, result in pending.items():
                 receipts[worker_id] = result.get(
                     timeout=max(0, deadline - time.perf_counter()))
-        except Exception as exc:
+        except BaseException as exc:
             failure = type(exc).__name__
-            # Retain ready results without waiting again or replaying jobs.
-            for worker_id, result in pending.items():
-                if worker_id not in receipts and result.ready():
+            if not isinstance(exc, Exception):
+                interruption = exc
+            try:
+                # Retain ready results without waiting again or replaying jobs.
+                for worker_id, result in pending.items():
+                    if worker_id in receipts:
+                        continue
                     try:
-                        receipts[worker_id] = result.get(timeout=0)
-                    except Exception:
-                        pass
-            self.close()
+                        if result.ready():
+                            receipts[worker_id] = result.get(timeout=0)
+                    except BaseException as observed:
+                        if not isinstance(observed, Exception) and interruption is None:
+                            interruption = observed
+            finally:
+                self.close()
         legal = set(legal_actions(state)) if not state.is_terminal() else set()
         for job in jobs:
             record = receipts.get(job.worker_id)
             if record is None:
-                status = "unreported" if job.worker_id in pending else "not_started"
+                status = "unreported" if job.worker_id in attempted else "not_started"
                 receipts[job.worker_id] = _unreported(job, status, failure or status)
             else:
                 try:
@@ -394,6 +410,8 @@ class ParallelMCTS:
             (max_transitions - known_transitions
              if known and max_transitions is not None else None),
             time.perf_counter() - start, self.last_pool_startup_s)
+        if interruption is not None:
+            raise interruption
         if not complete:
             self.close()
             raise ParallelSearchError(self.last_report)

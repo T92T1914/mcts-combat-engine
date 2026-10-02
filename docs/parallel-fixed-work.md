@@ -120,9 +120,20 @@ counts without retrying the uncertain allowance.
 
 `worker_timeout_s` is an operational watchdog for dispatched process work. It is
 not a successful time mode result or a hard real time guarantee. A one worker
-search executes locally and has no process watchdog. Caller interrupts propagate.
-Time mode retains its existing serial fallback and cannot make the same fixed
-allowance guarantee.
+search executes locally and has no process watchdog. Caller interrupts during
+pool readiness, dispatch or result collection retire the owned pool before
+propagating. During fixed dispatch or result collection, valid ready receipts
+remain in `last_report` without waiting again.
+An attempted dispatch whose result handle was not returned has unknown work,
+because interruption can occur after enqueueing. Later unattempted jobs remain
+`not_started`. Interrupted inline work also remains unknown when no receipt was
+returned. None of these allowances is retried. If every receipt is already ready,
+the computational report can be complete while the interrupt still propagates
+instead of returning a recommendation. Time mode retains its serial fallback
+for ordinary worker failures, but a caller interrupt does not start that retry.
+Its work still cannot make the same fixed allowance guarantee. These cleanup
+guards do not cover later receipt validation or result merging. A second caller
+interrupt during termination or joining can also interrupt retirement itself.
 
 ## Bounded computational comparison
 
