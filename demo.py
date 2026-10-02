@@ -2,13 +2,13 @@
 
     python demo.py                      # default: the boss fight, 800 ms
     python demo.py gauntlet             # or: duel | gauntlet | boss
-    python demo.py boss --sims 10000    # pinned: the same table on any machine
+    python demo.py boss --sims 10000    # fixed simulation count and search seed
 
 A wall-clock budget stops at a machine-dependent simulation count, so two
-timed runs never agree exactly. ``--sims`` replaces the budget with a fixed
-count; together with the search seed (``--seed``, default 7, the same seed
-that deals the hand) that makes the printed table reproducible bit for bit,
-which is how the README's example was produced.
+timed runs never agree exactly. ``--sims`` disables clock stopping and uses a
+fixed count. Together with the search seed (``--seed``, default 7, the same
+seed that deals the hand), unchanged code and content reproduce the ranking
+table. Elapsed time and simulations per second still vary.
 """
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ def main() -> None:
     mcts = MCTS(horizon_rounds=args.horizon, rng=random.Random(args.seed))
     if args.sims is not None:
         mcts.max_sims = args.sims
-        budget_ms = 10 * 60 * 1000          # the count, not the clock, stops it
+        budget_ms = None
     else:
         mcts.max_sims = 1_000_000
         budget_ms = args.budget_ms
