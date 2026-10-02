@@ -206,6 +206,50 @@ def merge_results(results: Iterable[WorkerResult],
     return out, total
 
 
+def _validate_timed_results(results: list[WorkerResult], root_state: GameState,
+                            workers: int, priors: dict | None) -> None:
+    """Validate the entire returned batch before merging any timed statistics."""
+    if type(results) is not list or len(results) != workers:
+        raise ValueError("Invalid timed worker result batch")
+    legal = set(legal_actions(root_state))
+    virtual = 0
+    if priors:
+        for action in legal:
+            if action.card_idx is not None:
+                name = root_state.hand[action.card_idx].name
+                prior = priors.get(name) if name else None
+                if prior:
+                    virtual += min(30, 3 * prior[0])
+    for result in results:
+        if type(result) is not tuple or len(result) != 2:
+            raise ValueError("Invalid timed worker result")
+        statistics, sims = result
+        if type(statistics) is not list:
+            raise ValueError("Invalid timed worker result")
+        try:
+            _integer(sims, "timed worker simulations")
+            actions = set()
+            visits_total = 0
+            for row in statistics:
+                if type(row) is not tuple or len(row) != 3:
+                    raise ValueError("Invalid timed worker result")
+                action, visits, value_sum = row
+                if (not isinstance(action, Action)
+                        or not is_legal_action(root_state, action)
+                        or action not in legal or action in actions):
+                    raise ValueError("Invalid timed worker result")
+                _integer(visits, "timed worker visits")
+                _validate_nonnegative_finite(value_sum, "timed worker value sum")
+                if value_sum > visits:
+                    raise ValueError("Invalid timed worker result")
+                actions.add(action)
+                visits_total += visits
+            if visits_total != sims + virtual:
+                raise ValueError("Invalid timed worker result")
+        except (TypeError, ValueError, AttributeError, OverflowError) as error:
+            raise ValueError("Invalid timed worker result") from error
+
+
 class ParallelMCTS:
     """Root-parallel wrapper with the same ``search()`` shape as :class:`MCTS`.
 
@@ -359,6 +403,8 @@ class ParallelMCTS:
                     for _ in range(self.workers)]
             results = pool.map_async(_search, jobs).get(
                 timeout=time_budget_ms / 1000.0 * 3 + 20)
+            _validate_timed_results(results, root_state, self.workers, priors)
+            out, simulations = merge_results(results, root_state)
         except BaseException as exc:
             # dead/hung pool: rebuild lazily next turn, answer now
             retired = self._close_after_error(exc)
@@ -366,7 +412,7 @@ class ParallelMCTS:
                 # A caller stop is not permission to begin a serial retry.
                 raise
             return self._search_single(root_state, time_budget_ms, priors)
-        out, self.last_sims = merge_results(results, root_state)
+        self.last_sims = simulations
         return out
 
     def _search_fixed(self, state: GameState, max_sims: int,
