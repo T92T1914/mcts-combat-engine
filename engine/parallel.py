@@ -38,7 +38,7 @@ from .state import GameState
 WorkerResult = tuple[list[tuple[Action, int, float]], int]
 
 
-def _integer(value: int, name: str) -> None:
+def _integer(value: object, name: str) -> None:
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise ValueError(f"{name} must be a nonnegative integer")
 
@@ -407,6 +407,22 @@ class ParallelMCTS:
         """Do not accept malformed worker output as completed fixed work."""
         if not isinstance(record, WorkerReceipt):
             return False
+        if record.elapsed_s is None:
+            return False
+        try:
+            # Equal numeric aliases do not establish integer work identities.
+            for value, name in (
+                    (record.worker_id, "worker_id"), (record.seed, "seed"),
+                    (record.assigned_simulations, "assigned_simulations"),
+                    (record.unused_simulations, "unused_simulations")):
+                _integer(value, name)
+            if record.assigned_transitions is not None:
+                _integer(record.assigned_transitions, "assigned_transitions")
+            if record.unused_transitions is not None:
+                _integer(record.unused_transitions, "unused_transitions")
+            _validate_nonnegative_finite(record.elapsed_s, "elapsed_s")
+        except ValueError:
+            return False
         if (record.worker_id != job.worker_id or record.seed != job.seed
                 or record.assigned_simulations != job.max_sims
                 or record.assigned_transitions != job.max_transitions
@@ -424,9 +440,14 @@ class ParallelMCTS:
                      or record.unused_transitions
                      != job.max_transitions - transitions)):
             return False
+        if job.max_transitions is None and record.unused_transitions is not None:
+            return False
         if record.status == "failed":
-            return (not record.statistics and record.error is not None
+            return (not record.statistics and record.virtual_visits is None
+                    and isinstance(record.error, str) and bool(record.error)
                     and record.stop_reasons == ("worker_error",))
+        if record.error is not None:
+            return False
         reasons = []
         if not legal:
             reasons.append("terminal")
