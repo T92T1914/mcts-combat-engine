@@ -382,8 +382,12 @@ for (const mode of ['obscur','clair']) test(`${mode} process report keeps every 
     }
   }
   await page.getByRole('link', {name:'Decision explorer', exact:true}).click();
+  await page.waitForURL(base+'/index.html');
+  await page.locator('#parallel-study').waitFor();
   assert.equal(await page.locator('#parallel-study').count(), 1);
   await page.goBack();
+  await page.waitForURL(base+'/parallel-scaling.html');
+  await page.getByRole('heading', {name:'Fixed work process scaling', exact:true}).waitFor();
   assert.equal(await page.locator('h1').textContent(), 'Fixed work process scaling');
 });
 
