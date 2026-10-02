@@ -87,6 +87,13 @@ silently changes the configured worker count. A subsequent time search retains
 its serial fallback. A fixed search retains its requested allocation and failure
 contract. `close()` terminates and joins its owned workers.
 
+If termination or joining raises, the pool handle remains owned and new searches
+are refused until an explicit `close()` retry succeeds. A failed termination
+does not start a potentially blocking join. Timed search does not begin its
+serial fallback while retirement is unresolved. Cleanup errors do not replace
+the original caller stop, and fixed work still retains received counts and
+unknown allowances in `last_report`. Diagnostic notes are best effort.
+
 Fixed mode raises `ParallelSearchError` if a worker fails, times out or returns an
 invalid receipt. It never reruns that allowance serially. A caught worker error
 retains completed simulations and completed simulator calls. An interrupted
@@ -133,7 +140,10 @@ instead of returning a recommendation. Time mode retains its serial fallback
 for ordinary worker failures, but a caller interrupt does not start that retry.
 Its work still cannot make the same fixed allowance guarantee. These cleanup
 guards do not cover later receipt validation or result merging. A second caller
-interrupt during termination or joining can also interrupt retirement itself.
+interrupt during termination or joining can also leave retirement incomplete.
+The original failure remains primary, but retained ownership is not proof that
+the workers have physically exited. Cleanup can still block if an operating
+system call does not return, and an explicit retry has no hard time guarantee.
 
 ## Bounded computational comparison
 

@@ -43,6 +43,14 @@ def _integer(value: object, name: str) -> None:
         raise ValueError(f"{name} must be a nonnegative integer")
 
 
+def _cleanup_note(error: BaseException, cleanup: BaseException) -> None:
+    """Cleanup diagnostics must not replace the failure being reported."""
+    try:
+        error.add_note(f"Owned cleanup also raised {type(cleanup).__name__}.")
+    except BaseException:
+        pass
+
+
 def allocate(total: int, workers: int) -> tuple[int, ...]:
     """Give the first remainder worker IDs one extra unit, with no lost units."""
     _integer(total, "total")
@@ -216,6 +224,7 @@ class ParallelMCTS:
         self.workers = workers if workers is not None else max(1, min(10, cpu - 2))
         self.horizon = horizon_rounds
         self._pool: Pool | None = None
+        self._retirement_pending = False
         self._single = MCTS(horizon_rounds=horizon_rounds)
         self._single.max_sims = 1_000_000
         self._rng = random.Random()
@@ -237,30 +246,58 @@ class ParallelMCTS:
         return True
 
     def _ensure_pool(self) -> Pool:
+        if self._retirement_pending:
+            raise RuntimeError("Pool retirement is incomplete. Retry close() first.")
         if self._pool is None:
             ctx = mp.get_context("spawn")
             ready = ctx.Queue()
             start = time.perf_counter()
+            failure = None
             try:
                 self._pool = ctx.Pool(self.workers, initializer=_init,
                                       initargs=(self.horizon, ready))
                 deadline = start + 30
                 for _ in range(self.workers):
                     ready.get(timeout=max(0, deadline - time.perf_counter()))
-            except BaseException:
-                self.close()
+            except BaseException as exc:
+                failure = exc
+                self._close_after_error(exc)
                 raise
             finally:
                 self.last_pool_startup_s = time.perf_counter() - start
-                ready.close()
-                ready.join_thread()
+                try:
+                    ready.close()
+                    ready.join_thread()
+                except BaseException as cleanup:
+                    if failure is None:
+                        self._close_after_error(cleanup)
+                        raise
+                    _cleanup_note(failure, cleanup)
         return self._pool
 
     def close(self) -> None:
         if self._pool is not None:
+            # A failed terminate can leave live handlers. Joining that pool
+            # could block, so retain ownership for an explicit close retry.
+            self._retirement_pending = True
             self._pool.terminate()
             self._pool.join()
             self._pool = None
+            self._retirement_pending = False
+
+    def _close_after_error(self, error: BaseException) -> bool:
+        if self._retirement_pending:
+            try:
+                error.add_note("Pool retirement is incomplete. Retry close() first.")
+            except BaseException:
+                pass
+            return False
+        try:
+            self.close()
+        except BaseException as cleanup:
+            _cleanup_note(error, cleanup)
+            return False
+        return True
 
     def search(self, root_state: GameState, time_budget_ms: float | None = None,
                priors: dict | None = None, *, mode: str = "time",
@@ -281,6 +318,8 @@ class ParallelMCTS:
         This control does not replace the forest with one larger tree. Local
         execution has no process watchdog. Process execution remains the default.
         """
+        if self._retirement_pending:
+            raise RuntimeError("Pool retirement is incomplete. Retry close() first.")
         self.last_sims = 0
         self.last_report = None
         self.last_pool_startup_s = 0.0
@@ -322,8 +361,8 @@ class ParallelMCTS:
                 timeout=time_budget_ms / 1000.0 * 3 + 20)
         except BaseException as exc:
             # dead/hung pool: rebuild lazily next turn, answer now
-            self.close()
-            if not isinstance(exc, Exception):
+            retired = self._close_after_error(exc)
+            if not isinstance(exc, Exception) or not retired:
                 # A caller stop is not permission to begin a serial retry.
                 raise
             return self._search_single(root_state, time_budget_ms, priors)
@@ -344,7 +383,9 @@ class ParallelMCTS:
         pending = {}
         attempted: set[int] = set()
         failure = None
+        failure_error = None
         interruption = None
+        cleanup_error = None
         try:
             for job in jobs:
                 # Zero work and terminal roots need no process. Applying the
@@ -367,6 +408,7 @@ class ParallelMCTS:
                     timeout=max(0, deadline - time.perf_counter()))
         except BaseException as exc:
             failure = type(exc).__name__
+            failure_error = exc
             if not isinstance(exc, Exception):
                 interruption = exc
             try:
@@ -381,7 +423,11 @@ class ParallelMCTS:
                         if not isinstance(observed, Exception) and interruption is None:
                             interruption = observed
             finally:
-                self.close()
+                if not self._retirement_pending:
+                    try:
+                        self.close()
+                    except BaseException as cleanup:
+                        cleanup_error = cleanup
         legal = set(legal_actions(state)) if not state.is_terminal() else set()
         for job in jobs:
             record = receipts.get(job.worker_id)
@@ -411,10 +457,21 @@ class ParallelMCTS:
              if known and max_transitions is not None else None),
             time.perf_counter() - start, self.last_pool_startup_s)
         if interruption is not None:
+            if cleanup_error is not None:
+                _cleanup_note(interruption, cleanup_error)
             raise interruption
         if not complete:
-            self.close()
-            raise ParallelSearchError(self.last_report)
+            error = ParallelSearchError(self.last_report)
+            if cleanup_error is not None:
+                _cleanup_note(error, cleanup_error)
+            else:
+                self._close_after_error(error)
+            raise error
+        if cleanup_error is not None:
+            if failure_error is not None:
+                _cleanup_note(failure_error, cleanup_error)
+                raise failure_error
+            raise cleanup_error
         out, _ = merge_results(
             [(list(r.statistics), r.simulations or 0) for r in ordered], state)
         return out
