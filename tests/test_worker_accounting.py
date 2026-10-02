@@ -48,6 +48,24 @@ class OneUseTuple(tuple):
         return self.remaining
 
 
+class ChangingRow(tuple):
+    """A malformed row changes its visit count on the third unpack."""
+
+    def __new__(cls):
+        value = super().__new__(cls, (Action(None), 2, 1.0))
+        value.iterations = 0
+        return value
+
+    def __iter__(self):
+        self.iterations += 1
+        return iter((Action(None), 2, 1.0) if self.iterations <= 2
+                    else (Action(None), 0, 0.0))
+
+
+def changing_rows(_):
+    return (ChangingRow(),)
+
+
 class WorkerAccountingTests(unittest.TestCase):
     def setUp(self):
         self.root = position()
@@ -129,10 +147,21 @@ class WorkerAccountingTests(unittest.TestCase):
                     self.assertEqual(statistics.iterations, 0)
                 self.assertEqual(list(statistics), list(rows))
 
+    def test_statistic_rows_require_plain_triples_before_unpacking(self):
+        changing = ChangingRow()
+        for row in (changing, [], [Action(None), 2, 1.0], (),
+                    (Action(None), 2), (Action(None), 2, 1.0, 0)):
+            with self.subTest(kind=type(row).__name__, length=len(row)):
+                self.assertFalse(ParallelMCTS._valid_receipt(
+                    replace(self.receipt, statistics=(row,)),
+                    self.job, self.legal,
+                ))
+                self.assertEqual(changing.iterations, 0)
+
     def test_one_use_statistics_preserve_other_work_without_a_recommendation(self):
         original = self.root.clone()
         for execution in ("sequential", "process"):
-            for collection in (iter, OneUseTuple):
+            for collection in (iter, OneUseTuple, changing_rows):
                 with self.subTest(execution=execution, collection=collection.__name__):
                     engine = ParallelMCTS(horizon_rounds=2, workers=2)
                     rng_before = engine._rng.getstate()
@@ -174,7 +203,10 @@ class WorkerAccountingTests(unittest.TestCase):
                     self.assertEqual(self.root, original)
                     if isinstance(statistics, OneUseTuple):
                         self.assertEqual(statistics.iterations, 0)
-                    self.assertEqual(list(statistics), list(rows))
+                    if collection is changing_rows:
+                        self.assertEqual(statistics[0].iterations, 0)
+                    else:
+                        self.assertEqual(list(statistics), list(rows))
                     fallback.assert_not_called()
                     close.assert_called_once()
                     if execution == "process":
