@@ -407,7 +407,7 @@ class ParallelMCTS:
         """Do not accept malformed worker output as completed fixed work."""
         if not isinstance(record, WorkerReceipt):
             return False
-        if not isinstance(record.statistics, tuple):
+        if type(record.statistics) is not tuple:
             return False
         if record.elapsed_s is None:
             return False
