@@ -120,7 +120,7 @@ def enemy_act(state: GameState, enemy: Combatant, rng: random.Random) -> None:
         elif kind == "blade":
             enemy.blades.append(Charm(0.35, enemy.element))
         elif kind == "heal":
-            if enemy.pips + enemy.power_pips >= 2:
+            if enemy.effective_pips(enemy.element) >= 2:
                 enemy.spend_pips(2, enemy.element)
                 enemy.hp = min(enemy.max_hp,
                                enemy.hp + int(enemy.max_hp * 0.18))

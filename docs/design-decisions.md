@@ -177,6 +177,20 @@ provenance.
 **Where.** `game/stats.py`, `benchmark.py`, `tests/test_stats.py`,
 `tests/test_benchmark.py`.
 
+## 13. Policy healing uses elemental resource value
+
+An enemy policy's heal costs two pips in the enemy's own element. One power
+pip pays that cost, just as it does for a matching card. The affordability
+check uses the same resource value as payment. Previously, the policy
+counted that power pip as one and skipped an affordable heal.
+
+The regression uses a hand checked payment table and a one-round HP oracle.
+It also checks the heal cap, integer rounding, random draws and a one-simulation
+search result. The shipped scenarios do not set enemy policies, so this
+correction does not revise their retained study results.
+
+**Where.** `engine/simulator.py`, `enemy_act`; `tests/test_enemy_policy_heal.py`.
+
 ## Not done, on purpose or not yet
 
 * No sensitivity sweep of the exploration constant (1.2) or the two
