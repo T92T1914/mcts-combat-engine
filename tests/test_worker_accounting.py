@@ -102,6 +102,70 @@ class WorkerAccountingTests(unittest.TestCase):
         self.assertEqual(caught.exception.report.transitions, 3)
         self.assertEqual(caught.exception.report.workers[0], receipt)
 
+    def test_statistics_require_an_immutable_tuple_before_iteration(self):
+        rows = ((Action(None), 2, 1.0),)
+        for statistics in (list(rows), iter(rows), (row for row in rows)):
+            with self.subTest(kind=type(statistics).__name__):
+                self.assertFalse(ParallelMCTS._valid_receipt(
+                    replace(self.receipt, statistics=statistics),
+                    self.job, self.legal,
+                ))
+                self.assertEqual(list(statistics), list(rows))
+
+    def test_one_use_statistics_preserve_other_work_without_a_recommendation(self):
+        original = self.root.clone()
+        for execution in ("sequential", "process"):
+            with self.subTest(execution=execution):
+                engine = ParallelMCTS(horizon_rounds=2, workers=2)
+                rng_before = engine._rng.getstate()
+                jobs = [replace(self.job, worker_id=i, seed=worker_seed(4, i))
+                        for i in range(2)]
+                receipts = [completed(job) for job in jobs]
+                rows = ((Action(True, 0), 2, 1.0),)
+                statistics = iter(rows)
+                receipts[1] = replace(receipts[1], statistics=statistics)
+                handles = [Mock() for _ in jobs]
+                for handle, receipt in zip(handles, receipts, strict=True):
+                    handle.get.return_value = receipt
+                pool = Mock()
+                pool.apply_async.side_effect = handles
+                with (
+                    patch("engine.parallel._fixed_search", side_effect=receipts)
+                    as worker,
+                    patch.object(engine, "_ensure_pool", return_value=pool),
+                    patch.object(engine, "_search_single") as fallback,
+                    patch.object(engine, "close") as close,
+                    self.assertRaises(ParallelSearchError) as caught,
+                ):
+                    engine.search(self.root, mode="fixed", max_sims=4,
+                                  max_transitions=10, seed=4, execution=execution)
+                report = caught.exception.report
+                self.assertIs(report, engine.last_report)
+                self.assertFalse(report.complete)
+                self.assertEqual(report.known_simulations, 2)
+                self.assertEqual(report.known_transitions, 4)
+                self.assertIsNone(report.simulations)
+                self.assertIsNone(report.transitions)
+                self.assertIsNone(report.unused_simulations)
+                self.assertIsNone(report.unused_transitions)
+                self.assertEqual(report.workers[0], receipts[0])
+                self.assertEqual(report.workers[1].status, "unreported")
+                self.assertEqual(report.workers[1].error, "InvalidWorkerReceipt")
+                self.assertEqual(engine.last_sims, 2)
+                self.assertEqual(engine._rng.getstate(), rng_before)
+                self.assertEqual(self.root, original)
+                self.assertEqual(list(statistics), list(rows))
+                fallback.assert_not_called()
+                close.assert_called_once()
+                if execution == "process":
+                    worker.assert_not_called()
+                    self.assertEqual(pool.apply_async.call_count, 2)
+                    for handle in handles:
+                        handle.get.assert_called_once()
+                else:
+                    self.assertEqual(worker.call_count, 2)
+                    pool.apply_async.assert_not_called()
+
     def test_one_invalid_worker_preserves_other_work_in_both_execution_paths(self):
         original = self.root.clone()
         for execution in ("sequential", "process"):
