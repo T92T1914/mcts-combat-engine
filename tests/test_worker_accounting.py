@@ -34,6 +34,38 @@ def completed(job):
     )
 
 
+class OneUseTuple(tuple):
+    """A malformed tuple subclass can still hide a one-use iterator."""
+
+    def __new__(cls, rows):
+        value = super().__new__(cls, rows)
+        value.remaining = iter(rows)
+        value.iterations = 0
+        return value
+
+    def __iter__(self):
+        self.iterations += 1
+        return self.remaining
+
+
+class ChangingRow(tuple):
+    """A malformed row changes its visit count on the third unpack."""
+
+    def __new__(cls):
+        value = super().__new__(cls, (Action(None), 2, 1.0))
+        value.iterations = 0
+        return value
+
+    def __iter__(self):
+        self.iterations += 1
+        return iter((Action(None), 2, 1.0) if self.iterations <= 2
+                    else (Action(None), 0, 0.0))
+
+
+def changing_rows(_):
+    return (ChangingRow(),)
+
+
 class WorkerAccountingTests(unittest.TestCase):
     def setUp(self):
         self.root = position()
@@ -101,6 +133,90 @@ class WorkerAccountingTests(unittest.TestCase):
         self.assertEqual(caught.exception.report.simulations, 1)
         self.assertEqual(caught.exception.report.transitions, 3)
         self.assertEqual(caught.exception.report.workers[0], receipt)
+
+    def test_statistics_require_an_immutable_tuple_before_iteration(self):
+        rows = ((Action(None), 2, 1.0),)
+        for statistics in (list(rows), iter(rows), (row for row in rows),
+                           OneUseTuple(rows)):
+            with self.subTest(kind=type(statistics).__name__):
+                self.assertFalse(ParallelMCTS._valid_receipt(
+                    replace(self.receipt, statistics=statistics),
+                    self.job, self.legal,
+                ))
+                if isinstance(statistics, OneUseTuple):
+                    self.assertEqual(statistics.iterations, 0)
+                self.assertEqual(list(statistics), list(rows))
+
+    def test_statistic_rows_require_plain_triples_before_unpacking(self):
+        changing = ChangingRow()
+        for row in (changing, [], [Action(None), 2, 1.0], (),
+                    (Action(None), 2), (Action(None), 2, 1.0, 0)):
+            with self.subTest(kind=type(row).__name__, length=len(row)):
+                self.assertFalse(ParallelMCTS._valid_receipt(
+                    replace(self.receipt, statistics=(row,)),
+                    self.job, self.legal,
+                ))
+                self.assertEqual(changing.iterations, 0)
+
+    def test_one_use_statistics_preserve_other_work_without_a_recommendation(self):
+        original = self.root.clone()
+        for execution in ("sequential", "process"):
+            for collection in (iter, OneUseTuple, changing_rows):
+                with self.subTest(execution=execution, collection=collection.__name__):
+                    engine = ParallelMCTS(horizon_rounds=2, workers=2)
+                    rng_before = engine._rng.getstate()
+                    jobs = [replace(self.job, worker_id=i, seed=worker_seed(4, i))
+                            for i in range(2)]
+                    receipts = [completed(job) for job in jobs]
+                    rows = ((Action(True, 0), 2, 1.0),)
+                    statistics = collection(rows)
+                    receipts[1] = replace(receipts[1], statistics=statistics)
+                    handles = [Mock() for _ in jobs]
+                    for handle, receipt in zip(handles, receipts, strict=True):
+                        handle.get.return_value = receipt
+                    pool = Mock()
+                    pool.apply_async.side_effect = handles
+                    with (
+                        patch("engine.parallel._fixed_search", side_effect=receipts)
+                        as worker,
+                        patch.object(engine, "_ensure_pool", return_value=pool),
+                        patch.object(engine, "_search_single") as fallback,
+                        patch.object(engine, "close") as close,
+                        self.assertRaises(ParallelSearchError) as caught,
+                    ):
+                        engine.search(self.root, mode="fixed", max_sims=4,
+                                      max_transitions=10, seed=4, execution=execution)
+                    report = caught.exception.report
+                    self.assertIs(report, engine.last_report)
+                    self.assertFalse(report.complete)
+                    self.assertEqual(report.known_simulations, 2)
+                    self.assertEqual(report.known_transitions, 4)
+                    self.assertIsNone(report.simulations)
+                    self.assertIsNone(report.transitions)
+                    self.assertIsNone(report.unused_simulations)
+                    self.assertIsNone(report.unused_transitions)
+                    self.assertEqual(report.workers[0], receipts[0])
+                    self.assertEqual(report.workers[1].status, "unreported")
+                    self.assertEqual(report.workers[1].error, "InvalidWorkerReceipt")
+                    self.assertEqual(engine.last_sims, 2)
+                    self.assertEqual(engine._rng.getstate(), rng_before)
+                    self.assertEqual(self.root, original)
+                    if isinstance(statistics, OneUseTuple):
+                        self.assertEqual(statistics.iterations, 0)
+                    if collection is changing_rows:
+                        self.assertEqual(statistics[0].iterations, 0)
+                    else:
+                        self.assertEqual(list(statistics), list(rows))
+                    fallback.assert_not_called()
+                    close.assert_called_once()
+                    if execution == "process":
+                        worker.assert_not_called()
+                        self.assertEqual(pool.apply_async.call_count, 2)
+                        for handle in handles:
+                            handle.get.assert_called_once()
+                    else:
+                        self.assertEqual(worker.call_count, 2)
+                        pool.apply_async.assert_not_called()
 
     def test_one_invalid_worker_preserves_other_work_in_both_execution_paths(self):
         original = self.root.clone()
