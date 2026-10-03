@@ -178,7 +178,22 @@ JSON exports include per-game seeds, scores, terminal results and round counts,
 alongside their aggregates. A successor transition and a MCTS simulation are
 different work units, so the recorded counts do not establish efficiency.
 
-The one-round reference policy also exposes the values behind a decision:
+Run one reference decision from the checkout:
+
+```sh
+python demo.py gauntlet --one-round-samples 8 --seed 7
+```
+
+This prints every sampled legal action, its zero-based hand and target indexes,
+mean value and completed sample count. The fixed scenario seed is 7, while
+`--seed` controls the sampling stream. The selected action follows the existing
+policy's tie order. The command completes the requested samples without a clock
+limit, and elapsed time is only an observation. Choose this mode separately from
+`--sims`, `--budget-ms` and `--horizon`. Ordinary MCTS demo commands keep their
+behavior. The values share the simulator and heuristic with the search. They
+are not calibrated win probabilities or MCTS visit counts.
+
+The same one-round reference values are available to a Python caller:
 
 ```python
 import random
