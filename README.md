@@ -178,6 +178,38 @@ JSON exports include per-game seeds, scores, terminal results and round counts,
 alongside their aggregates. A successor transition and a MCTS simulation are
 different work units, so the recorded counts do not establish efficiency.
 
+The one-round reference policy also exposes the values behind a decision:
+
+```python
+import random
+from game.baselines import one_round_decider
+from game.content import SCENARIOS
+
+state, _ = SCENARIOS["duel"](random.Random(7))
+rankings = []
+choose = one_round_decider(8, on_ranking=rankings.append)
+action = choose(state, random.Random(7))
+for row in rankings[-1]:
+    print(row.action.describe(state), row.mean_value, row.samples, row.value_sum)
+```
+
+Each immutable row keeps its current hand index and target, completed sample
+count and raw value sum. The tuple follows the policy's ranking and stable tie
+break, so its first action is the chosen move. Higher values favor the player:
+terminal wins score one, losses zero, and ongoing successors use the HP and
+setup heuristic in `[0, 1]`. Descending raw sums break equal values by Pass first,
+then ascending hand and target indexes. Every action has the same sample count,
+so this also ranks their means. A transition allowance or time stop reports
+only complete sweeps. A clock limit reached during a sweep lets every candidate
+finish that sweep before stopping.
+Terminal roots report an empty tuple. A time stop before any complete sweep
+reports an empty tuple and still raises `ValueError`. An allowance too small for
+one sweep raises before evaluation and emits no ranking. These sampled values
+share the simulator and heuristic with MCTS. They are not independent ground
+truth, calibrated win probabilities or confidence intervals. Collecting the
+ranking with a passive callback adds no simulation or random draw, and does not
+change existing exports or retained study results.
+
 The separate [transition allowance study](docs/transition-comparison-results.md)
 gives both methods 300 simulated rounds per decision on five new environment
 seeds, repeated with search and policy bases 7, 42 and 99. MCTS won all five duels

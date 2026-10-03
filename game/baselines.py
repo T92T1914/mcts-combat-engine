@@ -9,11 +9,29 @@ from __future__ import annotations
 import random
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 
 from engine import Action, CardType, GameState, advance_round, legal_actions
 from engine.mcts import MCTS, _validate_nonnegative_finite
 from engine.parallel import ParallelMCTS
 from game.runner import Decider
+
+
+@dataclass(frozen=True)
+class OneRoundActionValue:
+    """One legal candidate's complete one-round samples.
+
+    Higher values favor the player. A terminal win scores one and a loss zero.
+    Ongoing successors use the shared HP and setup heuristic in [0, 1]. Their
+    mean is not a calibrated win probability, and samples are not MCTS visits.
+    """
+    action: Action
+    samples: int
+    value_sum: float
+
+    @property
+    def mean_value(self) -> float:
+        return self.value_sum / self.samples
 
 
 def random_decider(state: GameState, rng: random.Random) -> Action:
@@ -56,7 +74,10 @@ def one_round_decider(samples_per_action: int | None = None, *,
                        on_evaluation: Callable[[int], None] | None = None,
                        max_transitions: int | None = None,
                        time_budget_ms: float | None = None,
-                       on_work: Callable[[dict], None] | None = None) -> Decider:
+                       on_work: Callable[[dict], None] | None = None,
+                       on_ranking: Callable[
+                           [tuple[OneRoundActionValue, ...]], None] | None = None,
+                       ) -> Decider:
     """Enumerate legal actions and sample their one-round successor values.
 
     Each candidate uses the same starting sample seeds. Its actual draw path
@@ -68,6 +89,14 @@ def one_round_decider(samples_per_action: int | None = None, *,
     admits complete equal-sample sweeps over all legal actions. An optional time
     limit is checked between sweeps. A nonterminal decision without one complete
     sweep raises ValueError rather than choosing an unevaluated action.
+    ``on_ranking`` receives immutable candidate values in policy order, using
+    only completed sweeps. Descending accumulated values keep the policy's
+    stable tie break: Pass, then ascending hand index and target index. A time
+    limit reached during a sweep does not truncate that sweep. Terminal roots
+    and an expired limit before any sweep report an empty tuple. The latter
+    still raises after the existing work callbacks. An undersized transition
+    allowance raises before evaluation and emits no ranking. Passive reporting
+    changes neither the sampled work nor the random stream.
     """
     if max_transitions is not None:
         if (isinstance(max_transitions, bool)
@@ -92,6 +121,8 @@ def one_round_decider(samples_per_action: int | None = None, *,
                          "unused_transitions": max_transitions,
                          "actions": 0, "intended_sweeps": 0, "completed_sweeps": 0,
                          "stop_reasons": ["terminal"]})
+            if on_ranking is not None:
+                on_ranking(())
             return Action(card_idx=None)
         # A stable tie break also makes enumeration order irrelevant.
         actions = sorted(legal_actions(state), key=lambda action: (
@@ -135,6 +166,12 @@ def one_round_decider(samples_per_action: int | None = None, *,
                                             if max_transitions is not None else None),
                      "actions": len(actions), "intended_sweeps": sweeps,
                      "completed_sweeps": completed, "stop_reasons": reasons})
+        if on_ranking is not None:
+            on_ranking(tuple(
+                OneRoundActionValue(actions[index], completed, values[index])
+                for index in sorted(range(len(actions)),
+                                    key=lambda index: -values[index])
+            ) if completed else ())
         if completed == 0:
             raise ValueError("time limit stopped the comparator "
                              "before a complete sweep")
