@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "measurement_source_snapshot": {
+    "recorded_local_revision": "60bd4848427b2489e7bec4048170407b0c8f4e99",
+    "recorded_git_tree": "a65a176e3640c5ec8991a40231e5c550fc66a97a",
+    "public_equivalent_revision": "fb7addac28a6045fcb8f6cbaedc31c4808b4058a",
+    "public_git_tree": "a65a176e3640c5ec8991a40231e5c550fc66a97a",
+    "equivalence": "Complete Git tree with identical paths, modes and blobs",
+    "original_commit_identity_preserved": false,
+    "retained_receipt_revisions_rewritten": false,
+    "search_rerun_for_publication": false
+  },
+  "complete_attempt": {
+    "file": "same-forest-repeatability-public-receipts.json",
+    "bytes": 2810474,
+    "sha256": "4dfd39199cf55e61a53f527f055c562cdc4fc37598c80103749111786b8358e9",
+    "private_original_identity": {
+      "bytes": 2898540,
+      "sha256": "552342df0e7800d85a2b092f0a33f03d147323b91081e5e56d9f594329bb4160"
+    },
+    "measured_revision": "60bd4848427b2489e7bec4048170407b0c8f4e99",
+    "status": "complete",
+    "controller_exit_code": 0,
+    "owned_processes_after_retirement": 0,
+    "collection_wall_s": 222.9220000000205,
+    "outer_job_wall_s": 223.4220000000205,
+    "full_call_wall_s": 223.60999999998603,
+    "end_input_pins_unchanged": true,
+    "post_write_resource_gate_passed": true
+  },
+  "failed_attempt": {
+    "file": "same-forest-repeatability-public-failed-attempt.json",
+    "bytes": 19423,
+    "sha256": "3a9124175b9f25b8ef78bcceb154e87c9fbf823e873ec18f5f0127f76bc74014",
+    "private_original_identity": {
+      "bytes": 19193,
+      "sha256": "807583e64f0affd853ae4c34651e9250122aca24696edb28715613c656c74ffd"
+    },
+    "measured_revision": "600b962a69d5e46cfccdd0898a21b8e6750cd6e8",
+    "status": "incomplete",
+    "completed_cells": 1,
+    "controller_exit_code": 1,
+    "owned_processes_after_retirement": 0,
+    "outer_job_wall_s": 1.8130000000237487,
+    "full_call_wall_s": 2.0,
+    "end_input_pins_unchanged": true,
+    "performance_evidence": false,
+    "cause": "An in-memory dataclass tuple was passed to a validator for retained JSON arrays. The saved first cell itself validates as JSON."
+  },
+  "corrected_collection": {
+    "deciding_reason": "Correct the demonstrated producer and retained-JSON validator boundary defect",
+    "producer_correction_revision": "60bd4848427b2489e7bec4048170407b0c8f4e99",
+    "new_whole_attempt": true,
+    "partial_blocks_reused": false,
+    "protocol_controls_changed": false,
+    "budget_changed": false,
+    "outcome_based_tuning": false
+  },
+  "analysis": {
+    "validated_revision": "11e01adebd09046d7853c057f75183d4ce4b1675",
+    "source_verification": "Measured normalized source hashes checked against the committed measured-revision blobs. Current non-analyzer inputs also matched retained raw pins.",
+    "first_analysis_result": "Stopped at the nested raw-byte hash gate before producing a timing summary",
+    "demonstrated_cause": "The native Windows serializer wrote CRLF, while the analyzer initially reconstructed LF bytes.",
+    "correction": "Accept only the exact canonical serializer in LF or CRLF form. Preserve declared raw SHA256 and values. Reject arbitrary formatting and invalid receipts.",
+    "search_rerun_for_analysis": false,
+    "all_216_receipts_validated": true,
+    "six_retained_block_byte_hashes_validated": true,
+    "initial_failed_analysis_preserved_privately": true
+  },
+  "resource_bounds": {
+    "collection_wall_s": 300,
+    "full_call_wall_s": 330,
+    "job_committed_memory_bytes": 1073741824,
+    "maximum_search_workers": 4,
+    "whole_job_priority": "below-normal",
+    "owned_job_kill_on_close": true,
+    "foreground_used": false,
+    "user_applications_or_settings_changed": false
+  },
+  "scope": "Three fixed initial states, two forest sizes and one seed on one shared Windows workstation. Six controller-block means per comparison. No rebuild or cross-machine repetition. Individual approximate intervals, not simultaneous confidence across all 24 comparisons."
+}

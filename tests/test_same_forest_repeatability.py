@@ -15,6 +15,7 @@ from unittest.mock import patch
 from engine.parallel import FixedWorkReport, WorkerReceipt
 from tools import render_same_forest_repeatability as report
 from tools import run_same_forest_repeatability as study
+from tools.run_parallel_scaling import write_record
 from tools.run_same_forest import compare_condition
 
 
@@ -114,6 +115,54 @@ class RepeatabilityTests(unittest.TestCase):
             data = fixture()
             change(data)
             with self.assertRaises(ValueError):
+                report.validate(data, self.protocol)
+
+    def test_nested_records_validate_actual_producer_and_exact_lf_crlf_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for newline in (None, "\n", "\r\n"):
+                data = fixture()
+                for item in data["blocks"]:
+                    path = Path(directory) / f"block-{item['block']}.json"
+                    if newline is None:
+                        write_record(path, item["record"])
+                    else:
+                        with path.open("w", encoding="utf-8",
+                                       newline=newline) as stream:
+                            json.dump(item["record"], stream, indent=2, allow_nan=False)
+                            stream.write("\n")
+                    raw = path.read_bytes()
+                    item["record"] = json.loads(raw)
+                    item["record_sha256"] = hashlib.sha256(raw).hexdigest()
+                    identity = report.nested_record_encoding(item["record"],
+                                                             item["record_sha256"])
+                    self.assertEqual(identity["bytes"], len(raw))
+                    self.assertEqual(identity["sha256"],
+                                     hashlib.sha256(raw).hexdigest())
+                    self.assertEqual(identity["newline"],
+                                     "CRLF" if b"\r\n" in raw else "LF")
+                report.validate(data, self.protocol)
+                # Same values with arbitrary extra whitespace are not a declared format.
+                block = data["blocks"][0]
+                altered = (json.dumps(block["record"], indent=3) + "\n").encode()
+                block["record_sha256"] = hashlib.sha256(altered).hexdigest()
+                with self.assertRaisesRegex(ValueError, "nested record bytes differ"):
+                    report.validate(data, self.protocol)
+
+    def test_crlf_hash_cannot_hide_changed_fields_or_matching_invalid_reasons(self):
+        for reseal in (False, True):
+            data = fixture()
+            block = data["blocks"][0]
+            block["record"]["cells"][0]["report"]["workers"][0]["stop_reasons"] = [
+                "incorrect_reason"
+            ]
+            if reseal:
+                raw = (json.dumps(block["record"], indent=2) + "\n").encode()
+                block["record_sha256"] = hashlib.sha256(
+                    raw.replace(b"\n", b"\r\n")
+                ).hexdigest()
+            expected = ("stopping reasons differ" if reseal else
+                        "nested record bytes differ")
+            with self.assertRaisesRegex(ValueError, expected):
                 report.validate(data, self.protocol)
 
     def test_matching_invalid_work_and_cross_block_semantic_drift_rejected(self):

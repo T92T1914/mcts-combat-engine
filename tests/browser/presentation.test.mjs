@@ -79,6 +79,74 @@ async function fonts(page, selector) {
   } finally { await session.detach(); }
 }
 
+for (const mode of ['clair','obscur']) test(`${mode} repeated execution report preserves paired values and public downloads`, async t => {
+  const page = await fixture(t, {colorScheme:'dark'});
+  await ready(page);
+  await page.getByRole('link', {name:'Read the repeated execution report'}).click();
+  await page.locator('#appearance:not([disabled])').waitFor();
+  await page.locator('#appearance').selectOption(mode);
+  const data = JSON.parse(await readFile(path.join(root,'same-forest-repeatability-public-receipts.json'),'utf8'));
+  const table = page.getByRole('region',{name:'Paired ratios and individual intervals'});
+  const expected = [];
+  for (const scenario of ['duel','gauntlet','boss']) for (const roots of [2,4])
+    for (const metric of ['elapsed_s','complete_call_s']) for (const phase of ['cold','warm']) {
+      const means = data.blocks.map(block => {
+        const logs = [0,1].map(iteration => {
+          const cells = Object.fromEntries(block.record.cells.filter(c => c.scenario === scenario && c.roots === roots && c.iteration === iteration).map(c => [c.phase,c]));
+          return Math.log(cells.sequential[metric]/cells[phase][metric]);
+        });
+        return (logs[0]+logs[1])/2;
+      });
+      const mean = means.reduce((sum,value) => sum+value,0)/6;
+      const variance = means.reduce((sum,value) => sum+(value-mean)**2,0)/5;
+      const half = 2.571*Math.sqrt(variance/6);
+      const low = Math.exp(mean-half), high = Math.exp(mean+half);
+      expected.push([scenario,String(roots),metric,phase,Math.exp(mean).toFixed(3),`${low.toFixed(3)} to ${high.toFixed(3)}`,low>1?'bounded advantage':high<1?'bounded disadvantage':'inconclusive']);
+    }
+  assert.deepEqual(await table.locator('tbody tr').evaluateAll(rows => rows.map(row => [...row.cells].map(cell => cell.textContent))),expected);
+  const before = await table.textContent();
+  assert.equal(await page.getByRole('img').count(),2);
+  for (const image of await page.getByRole('img').all()) {
+    await image.scrollIntoViewIfNeeded();
+    await image.evaluate(async e => { if (!e.complete || !e.naturalWidth) await e.decode(); });
+    assert.equal(await image.evaluate(e => e.naturalWidth),1000);
+  }
+  const names = ['same-forest-repeatability-public-receipts.json','same-forest-repeatability-public-failed-attempt.json','same-forest-repeatability-public-fields.json','same-forest-repeatability-provenance.json','same-forest-repeatability-results.md','same-forest-repeatability-protocol.json','same-forest-repeatability-figure.json'];
+  for (const name of names) {
+    const response = await page.request.get(base+'/'+name);
+    assert.equal(response.status(),200);
+    assert.deepEqual(await response.body(),await readFile(path.join(root,name)));
+  }
+  const [download] = await Promise.all([page.waitForEvent('download'),page.getByRole('link',{name:'Download public receipts',exact:true}).click()]);
+  assert.equal(download.suggestedFilename(),'same-forest-repeatability-public-receipts.json');
+  assert.deepEqual(await readFile(await download.path()),await readFile(path.join(root,download.suggestedFilename())));
+  await capture(page,`${mode}-repeatability-wide`, 'main');
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true);
+  await table.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => document.querySelector('.table-wrap').scrollLeft > 0);
+  assert.equal(await table.evaluate(e => getComputedStyle(e).outlineStyle),'solid');
+  await capture(page,`${mode}-repeatability-narrow-table`, '.table-wrap');
+  await page.addStyleTag({content:'html{font-size:200% !important}'});
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true);
+  assert.equal(await table.textContent(),before);
+  await page.locator('#appearance').selectOption(mode==='clair'?'obscur':'clair');
+  assert.equal(await table.textContent(),before);
+  await page.reload();
+  assert.equal(await page.locator('#appearance').inputValue(),mode==='clair'?'obscur':'clair');
+  await page.getByRole('link',{name:'Original control',exact:true}).click();
+  assert.equal(new URL(page.url()).pathname,'/same-forest.html');
+  await page.goBack();
+  assert.equal(await table.textContent(),before);
+  const noScript = await fixture(t,{javaScriptEnabled:false,colorScheme:mode==='obscur'?'dark':'light',hasTouch:true,viewport:{width:390,height:844}});
+  await noScript.goto(base+'/same-forest-repeatability.html');
+  assert.equal(await noScript.locator('tbody tr').count(),24);
+  assert.equal(await noScript.getByRole('img').count(),2);
+  assert.equal(await noScript.getByRole('link',{name:'Download public receipts',exact:true}).count(),1);
+  assert.equal(await noScript.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true);
+});
+
 for (const mode of ['obscur','clair']) test(`${mode} same forest report preserves identity, timings and downloads`, async t => {
   const page = await fixture(t, {colorScheme:'dark'});
   await ready(page);
