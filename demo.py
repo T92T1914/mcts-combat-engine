@@ -82,6 +82,13 @@ def main() -> None:
             args.budget_ms is not None or args.horizon is not None):
         ap.error("--budget-ms and --horizon apply only to MCTS, "
                  "not --one-round-samples")
+    if args.sims is not None and args.sims < 0:
+        ap.error("--sims must be nonnegative")
+    if args.horizon is not None and args.horizon < 1:
+        ap.error("--horizon must be positive")
+    # Fixed-count mode ignores the clock option, as it did before validation.
+    if args.sims is None and args.budget_ms is not None and args.budget_ms < 0:
+        ap.error("--budget-ms must be nonnegative")
 
     rng = random.Random(7)                  # deals the hand; fixed on purpose
     state, _ = SCENARIOS[args.scenario](rng)
