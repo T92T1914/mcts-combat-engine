@@ -1,0 +1,437 @@
+{
+  "schema_version": 1,
+  "evidence": {
+    "measured_revision": "60bd4848427b2489e7bec4048170407b0c8f4e99",
+    "public_receipts_sha256": "4dfd39199cf55e61a53f527f055c562cdc4fc37598c80103749111786b8358e9",
+    "original_private_sha256": "552342df0e7800d85a2b092f0a33f03d147323b91081e5e56d9f594329bb4160",
+    "search_rerun": false,
+    "x_axis": [
+      0.5,
+      5.0
+    ],
+    "ratio": "sequential wall time / process wall time",
+    "baseline": 1,
+    "phase_markers": {
+      "cold": "circle",
+      "warm": "square"
+    },
+    "series_roles": {
+      "cold": "accent",
+      "warm": "warning"
+    },
+    "interval": "Individual approximate 95-percent Student-t intervals on six controller-block log-ratio means, df 5",
+    "values": [
+      {
+        "scenario": "duel",
+        "roots": 2,
+        "metric": "elapsed_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 1.5980759436632375,
+        "approximate_95_interval": [
+          1.4529365641339624,
+          1.7577138498385807
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "duel",
+        "roots": 2,
+        "metric": "elapsed_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 2.0953527561744574,
+        "approximate_95_interval": [
+          1.8535085648887502,
+          2.3687525679555836
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "duel",
+        "roots": 2,
+        "metric": "complete_call_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 1.59088862850116,
+        "approximate_95_interval": [
+          1.446152995828953,
+          1.7501098677623272
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "duel",
+        "roots": 2,
+        "metric": "complete_call_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 1.5892719831900524,
+        "approximate_95_interval": [
+          1.408080385243983,
+          1.7937792920218762
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "duel",
+        "roots": 4,
+        "metric": "elapsed_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 2.349949109378973,
+        "approximate_95_interval": [
+          2.0735940637492063,
+          2.663134946811328
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "duel",
+        "roots": 4,
+        "metric": "elapsed_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 3.791706341091629,
+        "approximate_95_interval": [
+          3.2561426973389493,
+          4.415358389797832
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "duel",
+        "roots": 4,
+        "metric": "complete_call_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 2.3321360516208807,
+        "approximate_95_interval": [
+          2.058929048473764,
+          2.641595914779836
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "duel",
+        "roots": 4,
+        "metric": "complete_call_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 2.2542751254446296,
+        "approximate_95_interval": [
+          1.9716107241878396,
+          2.577464343673478
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 2,
+        "metric": "elapsed_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 1.7069869936696278,
+        "approximate_95_interval": [
+          1.546852252250874,
+          1.883699359339138
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 2,
+        "metric": "elapsed_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 2.1451412597918673,
+        "approximate_95_interval": [
+          1.73172023878999,
+          2.6572600593250275
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 2,
+        "metric": "complete_call_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 1.7013966898525295,
+        "approximate_95_interval": [
+          1.5416541972781626,
+          1.8776913145320884
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 2,
+        "metric": "complete_call_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 1.7616755620855449,
+        "approximate_95_interval": [
+          1.4273481698500483,
+          2.1743123728357476
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 4,
+        "metric": "elapsed_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 2.4791037992227016,
+        "approximate_95_interval": [
+          2.2739390725252075,
+          2.7027793847155963
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 4,
+        "metric": "elapsed_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 3.6006072529925786,
+        "approximate_95_interval": [
+          3.139413404941286,
+          4.129552536756536
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 4,
+        "metric": "complete_call_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 2.463548260193932,
+        "approximate_95_interval": [
+          2.2595837603275384,
+          2.6859239019423673
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "gauntlet",
+        "roots": 4,
+        "metric": "complete_call_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 2.4183989234836947,
+        "approximate_95_interval": [
+          2.143533706602509,
+          2.7285100929796817
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 2,
+        "metric": "elapsed_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 1.6711615928255679,
+        "approximate_95_interval": [
+          1.4680068796269081,
+          1.9024305049885535
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 2,
+        "metric": "elapsed_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 2.0898333673182483,
+        "approximate_95_interval": [
+          1.9138440711438882,
+          2.282005921488875
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 2,
+        "metric": "complete_call_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 1.664155781712887,
+        "approximate_95_interval": [
+          1.4620464718708999,
+          1.8942041303684163
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 2,
+        "metric": "complete_call_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 1.620779019897194,
+        "approximate_95_interval": [
+          1.4815586855840808,
+          1.7730817259549096
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 4,
+        "metric": "elapsed_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 2.275133875709157,
+        "approximate_95_interval": [
+          2.074704086870777,
+          2.4949264741684445
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 4,
+        "metric": "elapsed_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 3.7186648075291,
+        "approximate_95_interval": [
+          3.347724886970052,
+          4.130706201270698
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 4,
+        "metric": "complete_call_s",
+        "phase": "cold",
+        "geometric_mean_ratio": 2.2540835788482196,
+        "approximate_95_interval": [
+          2.0519616962300287,
+          2.4761148269814584
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      },
+      {
+        "scenario": "boss",
+        "roots": 4,
+        "metric": "complete_call_s",
+        "phase": "warm",
+        "geometric_mean_ratio": 2.2328161893481115,
+        "approximate_95_interval": [
+          1.9753392739540407,
+          2.5238541050396877
+        ],
+        "sampling_units": 6,
+        "degrees_of_freedom": 5
+      }
+    ]
+  },
+  "renderer": {
+    "matplotlib": "3.11.1",
+    "backend": "Agg"
+  },
+  "layout": {
+    "elapsed_s-clair": {
+      "width": 1000,
+      "height": 1160,
+      "labels_within_canvas": 14,
+      "minimum_font_points": 11.8,
+      "condition_count": 6
+    },
+    "elapsed_s-obscur": {
+      "width": 1000,
+      "height": 1160,
+      "labels_within_canvas": 14,
+      "minimum_font_points": 11.8,
+      "condition_count": 6
+    },
+    "complete_call_s-clair": {
+      "width": 1000,
+      "height": 1160,
+      "labels_within_canvas": 14,
+      "minimum_font_points": 11.8,
+      "condition_count": 6
+    },
+    "complete_call_s-obscur": {
+      "width": 1000,
+      "height": 1160,
+      "labels_within_canvas": 14,
+      "minimum_font_points": 11.8,
+      "condition_count": 6
+    }
+  },
+  "typography": {
+    "files": {
+      "Regular": {
+        "sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+        "postscript": "Inter-Regular",
+        "weight": 400,
+        "italic": false
+      },
+      "SemiBold": {
+        "sha256": "78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3",
+        "postscript": "Inter-SemiBold",
+        "weight": 600,
+        "italic": false
+      },
+      "Bold": {
+        "sha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f",
+        "postscript": "Inter-Bold",
+        "weight": 700,
+        "italic": false
+      },
+      "Italic": {
+        "sha256": "bbc051dd204b5019a1aa0bc0ae2aa8a05ab13e7a3f979fa357631dc7feb6833a",
+        "postscript": "Inter-Italic",
+        "weight": 400,
+        "italic": true
+      },
+      "SemiBoldItalic": {
+        "sha256": "eff2930c3d3b35d3fcf5f76252b6baef4c3e907d9d2fde1d16cf5d417f8deef4",
+        "postscript": "Inter-SemiBoldItalic",
+        "weight": 600,
+        "italic": true
+      },
+      "BoldItalic": {
+        "sha256": "948405a16cdc62701da5f4005ed068ca5f4d27061d98f7974ccfc37831d9581d",
+        "postscript": "Inter-BoldItalic",
+        "weight": 700,
+        "italic": true
+      }
+    },
+    "painted_faces": [
+      "Regular",
+      "SemiBold",
+      "Bold",
+      "Italic"
+    ],
+    "png": "Glyphs rasterized from explicit Inter files",
+    "svg": "Labels outlined from the same Inter files. Selectable tables accompany the plots"
+  },
+  "inputs_sha256": {
+    "docs/same-forest-repeatability-public-receipts.json": "4dfd39199cf55e61a53f527f055c562cdc4fc37598c80103749111786b8358e9",
+    "docs/same-forest-repeatability-protocol.json": "aedc86e3107e65a99dbf5c20f33d408a350742df07400f23f45adf25ea16a143",
+    "presentation/tokens.json": "96a3b9d2e35e074069b7a70213327b1f79ca898454c6e64906899e5d59ae0feb",
+    "tools/render_same_forest_repeatability.py": "415cb22a83d6fb9724ebe81adb28e1e262ddeca069f37561943b315c4ea53e3e",
+    "tools/render_same_forest_repeatability_figure.py": "a57865ae48cf81b108cfdb8c513b7c2b5d4cfb2e886dace68720c7e61c324f88"
+  },
+  "outputs_sha256": {
+    "docs/same-forest-repeatability-complete-clair.png": "d59d6375d4ac380c93d5c3dc44f9a1a66b1cebb4ac582c35c0f6e6dadc1b2299",
+    "docs/same-forest-repeatability-complete-clair.svg": "4291d80c06c360b2c858e3c80122933b9819b19543c56dc9062dcaf1b86e0833",
+    "docs/same-forest-repeatability-complete-obscur.png": "c5975eb227328356d3e726c11de65cb9049faaa82cfd3c7010cbc3514c5f21be",
+    "docs/same-forest-repeatability-complete-obscur.svg": "9eeec805ad35ca2079831208d659e50223af385b2aa25d362d5aea0393cc8769",
+    "docs/same-forest-repeatability-search-clair.png": "4110703bda3d3cf3c47cef6f78e141322ffebd7472e16378e9e272631221c80b",
+    "docs/same-forest-repeatability-search-clair.svg": "a01cc090bf1ecd8892778e16a0549ad640f73262d076fb0f6cdd3476ea0c3544",
+    "docs/same-forest-repeatability-search-obscur.png": "fa5bbe5e996b244a1cd4e26218d1813b976a93511a23a966afe7f28b3b394a0d",
+    "docs/same-forest-repeatability-search-obscur.svg": "b689a181a1a84e288f69ad5e571cb26f10c609f07cdc649969a50d02cc02cc37"
+  }
+}

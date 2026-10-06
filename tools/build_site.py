@@ -46,6 +46,22 @@ FILES = {
     "docs/same-forest-results.json": "same-forest-results.json",
     "docs/same-forest-protocol.json": "same-forest-protocol.json",
     "docs/same-forest-results.md": "same-forest-results.md",
+    "site/same-forest-repeatability.html": "same-forest-repeatability.html",
+    **{
+        "docs/" + name: name
+        for name in (
+            "same-forest-repeatability-public-receipts.json",
+            "same-forest-repeatability-public-failed-attempt.json",
+            "same-forest-repeatability-public-fields.json",
+            "same-forest-repeatability-protocol.json",
+            "same-forest-repeatability-provenance.json",
+            "same-forest-repeatability-results.md",
+            "same-forest-repeatability-figure.json",
+            *(f"same-forest-repeatability-{metric}-{mode}.{extension}"
+              for metric in ("search", "complete") for mode in ("clair", "obscur")
+              for extension in ("png", "svg")),
+        )
+    },
 }
 GENERATED = {"appearance.css", "presentation.json"}
 
@@ -72,6 +88,9 @@ def provenance(data):
         "same_forest_source_revision": json.loads(
             (ROOT / "docs/same-forest-results.json").read_text()
         )["source"]["revision"],
+        "same_forest_repeatability_source_revision": json.loads(
+            (ROOT / "docs/same-forest-repeatability-public-receipts.json").read_text()
+        )["source"]["revision"],
         "tokens": load_tokens()["source"],
         "files": {
             target: hashlib.sha256((OUT / target).read_bytes()).hexdigest()
@@ -81,6 +100,9 @@ def provenance(data):
 
 
 def main():
+    from tools.render_same_forest_repeatability_figure import (
+        check_outputs as check_repeatability_figure,
+    )
     from tools.render_share_preview import check as check_share_preview
 
     check_share_preview()
@@ -89,6 +111,7 @@ def main():
         raise ValueError("Example data must retain its source revision.")
     check_outputs()
     check_execution_report()
+    check_repeatability_figure()
     OUT.mkdir(exist_ok=True)
     unexpected = {p.name for p in OUT.iterdir()} - set(FILES.values()) - GENERATED
     if unexpected:

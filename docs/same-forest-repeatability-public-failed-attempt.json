@@ -1,0 +1,528 @@
+{
+  "schema_version": 1,
+  "protocol": "same-forest-repeatability-v1",
+  "protocol_sha256": "aedc86e3107e65a99dbf5c20f33d408a350742df07400f23f45adf25ea16a143",
+  "source": {
+    "revision": "600b962a69d5e46cfccdd0898a21b8e6750cd6e8",
+    "worktree_clean": true,
+    "hash_method": "UTF-8 text normalized to LF without BOM",
+    "sha256": {
+      "docs/same-forest-protocol.json": "7261776708d2de2cf3fdbb1bb9f3ecae2962e6e5a267c2d7916b6de0166ca32e",
+      "tools/run_same_forest.py": "56d9ffac483b83a48bec312a368c2a8b3d15def25380771081663972ab65eb25",
+      "tools/run_parallel_scaling.py": "b5d2a34c9370d174e6b70f9d7b83b8e6d9ec95eff562bc4eb4070215d2806039",
+      "tools/render_parallel_scaling.py": "45d618402686bfb22fb513e224eb53d90255cdb8051707c4900bcd248e784beb",
+      "engine/__init__.py": "f241ae0f309145d2594c91fdaedecf6183d05a18da41b4a968bc8b890baa3c01",
+      "engine/actions.py": "468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618",
+      "engine/mcts.py": "86902c63ed6a2f5bb8acb26413167947dbf2687bf4e7dfb911743851be35c04d",
+      "engine/parallel.py": "69769589192e740edaab83252766fb4dfb3d36a1d159571b4d415f2759d9f64b",
+      "engine/rules.py": "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b",
+      "engine/simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
+      "engine/state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
+      "game/__init__.py": "735978f2d5b6b3d98ccd18a95cb4d7507b1b698d6daa16c1732f1a6e878bc22f",
+      "game/baselines.py": "79e42bbf3f8b05a10652d205418a5fe6dd8d4f742d0908069275b0011a854ec6",
+      "game/content.py": "46969faf37663cbcf9ceadb0aa0cb0f84a2dfdd9e369fffdbb96d80537a4aabc",
+      "game/loader.py": "787ada9c715e0d6745b41470810ef3dfab18f3f40b51335ca82b3bab210c1266",
+      "game/runner.py": "192227008dcfd44259e74db54b6ec0528ac3d02dddb039da72f25db782bc5de6",
+      "game/stats.py": "cdc86beb41a03d27025faa10bdf6b5ff65e8fbf9cd10136d0c6dab1cf402d2b3",
+      "data/cards.json": "38ced8d0b83104610f421fb340679c9f0facfde46d95def33430ec1155656e20",
+      "data/scenarios.json": "7b1b7b7d882c94ade7f1448bc71703758aa367230ae361ec77b985b7c2f9a378",
+      "docs/same-forest-repeatability-protocol.json": "aedc86e3107e65a99dbf5c20f33d408a350742df07400f23f45adf25ea16a143",
+      "tools/run_same_forest_repeatability.py": "bd1a564c3504dcd184ccfd99e8b8069b40f247a9b35cc32c742d834e7f3fb026",
+      "tools/render_same_forest.py": "aee1805b06c0c9f5c11de62d8de4aa672e193c83f27cba410f4bfac0946f70d2",
+      "tools/render_same_forest_repeatability.py": "eaddc4c8f862daebd920295a12f5e87977d393897fc17b69d6d81d073cf308a5"
+    },
+    "retained_first_attempt_sha256": "eba0584f93cc9ca6be21980cf0d48124e00aaf2ab602fa4f2aa1647070e3fba3"
+  },
+  "environment": {
+    "python": "3.11.8",
+    "platform": "Windows",
+    "logical_cpus": 16,
+    "start_method": "spawn",
+    "conditions": "Shared Windows workstation. The coordinator paused competing owned benchmarks, browser checks, compilers and renderers for this collection. Ordinary user applications and settings were unchanged. No exclusive-machine access claimed."
+  },
+  "process_tree_bound": "Existing owned Job: below-normal whole-tree priority, 1 GiB committed-memory ceiling, 300-second child wall ceiling, 330-second full-call ceiling, bounded retirement and output checks",
+  "started_utc": "2026-10-06T11:51:29.023870+00:00",
+  "status": "incomplete",
+  "blocks": [
+    {
+      "block": 0,
+      "status": "incomplete",
+      "returncode": 1,
+      "controller_wall_s": 1.4673289000056684,
+      "record": {
+        "schema_version": 1,
+        "protocol": "same-forest-repeatability-v1",
+        "protocol_sha256": "aedc86e3107e65a99dbf5c20f33d408a350742df07400f23f45adf25ea16a143",
+        "source": {
+          "revision": "600b962a69d5e46cfccdd0898a21b8e6750cd6e8",
+          "worktree_clean": true,
+          "hash_method": "UTF-8 text normalized to LF without BOM",
+          "sha256": {
+            "docs/same-forest-protocol.json": "7261776708d2de2cf3fdbb1bb9f3ecae2962e6e5a267c2d7916b6de0166ca32e",
+            "tools/run_same_forest.py": "56d9ffac483b83a48bec312a368c2a8b3d15def25380771081663972ab65eb25",
+            "tools/run_parallel_scaling.py": "b5d2a34c9370d174e6b70f9d7b83b8e6d9ec95eff562bc4eb4070215d2806039",
+            "tools/render_parallel_scaling.py": "45d618402686bfb22fb513e224eb53d90255cdb8051707c4900bcd248e784beb",
+            "engine/__init__.py": "f241ae0f309145d2594c91fdaedecf6183d05a18da41b4a968bc8b890baa3c01",
+            "engine/actions.py": "468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618",
+            "engine/mcts.py": "86902c63ed6a2f5bb8acb26413167947dbf2687bf4e7dfb911743851be35c04d",
+            "engine/parallel.py": "69769589192e740edaab83252766fb4dfb3d36a1d159571b4d415f2759d9f64b",
+            "engine/rules.py": "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b",
+            "engine/simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
+            "engine/state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
+            "game/__init__.py": "735978f2d5b6b3d98ccd18a95cb4d7507b1b698d6daa16c1732f1a6e878bc22f",
+            "game/baselines.py": "79e42bbf3f8b05a10652d205418a5fe6dd8d4f742d0908069275b0011a854ec6",
+            "game/content.py": "46969faf37663cbcf9ceadb0aa0cb0f84a2dfdd9e369fffdbb96d80537a4aabc",
+            "game/loader.py": "787ada9c715e0d6745b41470810ef3dfab18f3f40b51335ca82b3bab210c1266",
+            "game/runner.py": "192227008dcfd44259e74db54b6ec0528ac3d02dddb039da72f25db782bc5de6",
+            "game/stats.py": "cdc86beb41a03d27025faa10bdf6b5ff65e8fbf9cd10136d0c6dab1cf402d2b3",
+            "data/cards.json": "38ced8d0b83104610f421fb340679c9f0facfde46d95def33430ec1155656e20",
+            "data/scenarios.json": "7b1b7b7d882c94ade7f1448bc71703758aa367230ae361ec77b985b7c2f9a378",
+            "docs/same-forest-repeatability-protocol.json": "aedc86e3107e65a99dbf5c20f33d408a350742df07400f23f45adf25ea16a143",
+            "tools/run_same_forest_repeatability.py": "bd1a564c3504dcd184ccfd99e8b8069b40f247a9b35cc32c742d834e7f3fb026",
+            "tools/render_same_forest.py": "aee1805b06c0c9f5c11de62d8de4aa672e193c83f27cba410f4bfac0946f70d2",
+            "tools/render_same_forest_repeatability.py": "eaddc4c8f862daebd920295a12f5e87977d393897fc17b69d6d81d073cf308a5"
+          },
+          "retained_first_attempt_sha256": "eba0584f93cc9ca6be21980cf0d48124e00aaf2ab602fa4f2aa1647070e3fba3"
+        },
+        "block": 0,
+        "schedule": [
+          {
+            "iteration": 0,
+            "scenario": "duel",
+            "roots": 2,
+            "order": [
+              "sequential",
+              "cold",
+              "warm"
+            ]
+          },
+          {
+            "iteration": 0,
+            "scenario": "duel",
+            "roots": 4,
+            "order": [
+              "cold",
+              "warm",
+              "sequential"
+            ]
+          },
+          {
+            "iteration": 0,
+            "scenario": "gauntlet",
+            "roots": 2,
+            "order": [
+              "warm",
+              "sequential",
+              "cold"
+            ]
+          },
+          {
+            "iteration": 0,
+            "scenario": "gauntlet",
+            "roots": 4,
+            "order": [
+              "sequential",
+              "warm",
+              "cold"
+            ]
+          },
+          {
+            "iteration": 0,
+            "scenario": "boss",
+            "roots": 2,
+            "order": [
+              "warm",
+              "cold",
+              "sequential"
+            ]
+          },
+          {
+            "iteration": 0,
+            "scenario": "boss",
+            "roots": 4,
+            "order": [
+              "cold",
+              "sequential",
+              "warm"
+            ]
+          },
+          {
+            "iteration": 1,
+            "scenario": "duel",
+            "roots": 4,
+            "order": [
+              "warm",
+              "sequential",
+              "cold"
+            ]
+          },
+          {
+            "iteration": 1,
+            "scenario": "gauntlet",
+            "roots": 2,
+            "order": [
+              "sequential",
+              "warm",
+              "cold"
+            ]
+          },
+          {
+            "iteration": 1,
+            "scenario": "gauntlet",
+            "roots": 4,
+            "order": [
+              "warm",
+              "cold",
+              "sequential"
+            ]
+          },
+          {
+            "iteration": 1,
+            "scenario": "boss",
+            "roots": 2,
+            "order": [
+              "cold",
+              "sequential",
+              "warm"
+            ]
+          },
+          {
+            "iteration": 1,
+            "scenario": "boss",
+            "roots": 4,
+            "order": [
+              "sequential",
+              "cold",
+              "warm"
+            ]
+          },
+          {
+            "iteration": 1,
+            "scenario": "duel",
+            "roots": 2,
+            "order": [
+              "cold",
+              "warm",
+              "sequential"
+            ]
+          }
+        ],
+        "started_utc": "2026-10-06T11:51:29.295151+00:00",
+        "status": "interrupted",
+        "cells": [
+          {
+            "scenario": "duel",
+            "roots": 2,
+            "phase": "sequential",
+            "search_seed": 42,
+            "environment_seed": 300,
+            "root_pickle_sha256": "23659f243253035bc167eb6a673172abf0bca6d3fef9a558565be0ca8f771fba",
+            "status": "completed",
+            "error": null,
+            "report": {
+              "seed": 42,
+              "max_simulations": 12000,
+              "max_transitions": 60000,
+              "workers": [
+                {
+                  "worker_id": 0,
+                  "seed": 402185745336299419,
+                  "assigned_simulations": 6000,
+                  "assigned_transitions": 30000,
+                  "status": "completed",
+                  "simulations": 6000,
+                  "transitions": 30000,
+                  "unused_simulations": 0,
+                  "unused_transitions": 0,
+                  "virtual_visits": 0,
+                  "stop_reasons": [
+                    "transition_allowance",
+                    "simulation_cap"
+                  ],
+                  "statistics": [
+                    [
+                      {
+                        "card_idx": 5,
+                        "target_idx": null
+                      },
+                      596,
+                      356.9958261576155
+                    ],
+                    [
+                      {
+                        "card_idx": 1,
+                        "target_idx": null
+                      },
+                      643,
+                      388.57933218888985
+                    ],
+                    [
+                      {
+                        "card_idx": null,
+                        "target_idx": null
+                      },
+                      581,
+                      346.73883810765227
+                    ],
+                    [
+                      {
+                        "card_idx": 3,
+                        "target_idx": null
+                      },
+                      839,
+                      521.6567105956645
+                    ],
+                    [
+                      {
+                        "card_idx": 2,
+                        "target_idx": 0
+                      },
+                      1377,
+                      893.1592887710955
+                    ],
+                    [
+                      {
+                        "card_idx": 6,
+                        "target_idx": 0
+                      },
+                      644,
+                      389.187765363179
+                    ],
+                    [
+                      {
+                        "card_idx": 4,
+                        "target_idx": null
+                      },
+                      647,
+                      391.29700575144125
+                    ],
+                    [
+                      {
+                        "card_idx": 0,
+                        "target_idx": null
+                      },
+                      673,
+                      408.8070080507413
+                    ]
+                  ],
+                  "elapsed_s": 0.5589217999950051,
+                  "error": null
+                },
+                {
+                  "worker_id": 1,
+                  "seed": 13080041716267968860,
+                  "assigned_simulations": 6000,
+                  "assigned_transitions": 30000,
+                  "status": "completed",
+                  "simulations": 6000,
+                  "transitions": 30000,
+                  "unused_simulations": 0,
+                  "unused_transitions": 0,
+                  "virtual_visits": 0,
+                  "stop_reasons": [
+                    "transition_allowance",
+                    "simulation_cap"
+                  ],
+                  "statistics": [
+                    [
+                      {
+                        "card_idx": 3,
+                        "target_idx": null
+                      },
+                      853,
+                      531.0658422502914
+                    ],
+                    [
+                      {
+                        "card_idx": 5,
+                        "target_idx": null
+                      },
+                      553,
+                      328.06442057206596
+                    ],
+                    [
+                      {
+                        "card_idx": 0,
+                        "target_idx": null
+                      },
+                      675,
+                      409.9407490327481
+                    ],
+                    [
+                      {
+                        "card_idx": 4,
+                        "target_idx": null
+                      },
+                      682,
+                      414.7329115041184
+                    ],
+                    [
+                      {
+                        "card_idx": 2,
+                        "target_idx": 0
+                      },
+                      1363,
+                      883.1844578613328
+                    ],
+                    [
+                      {
+                        "card_idx": 6,
+                        "target_idx": 0
+                      },
+                      659,
+                      399.3167466229645
+                    ],
+                    [
+                      {
+                        "card_idx": 1,
+                        "target_idx": null
+                      },
+                      647,
+                      391.0796034131631
+                    ],
+                    [
+                      {
+                        "card_idx": null,
+                        "target_idx": null
+                      },
+                      568,
+                      338.115703844277
+                    ]
+                  ],
+                  "elapsed_s": 0.570509499986656,
+                  "error": null
+                }
+              ],
+              "complete": true,
+              "simulations": 12000,
+              "transitions": 60000,
+              "known_simulations": 12000,
+              "known_transitions": 60000,
+              "unused_simulations": 0,
+              "unused_transitions": 0,
+              "elapsed_s": 1.1295389999868348,
+              "pool_startup_s": 0.0
+            },
+            "ranked": [
+              {
+                "action": {
+                  "card_idx": 2,
+                  "target_idx": 0
+                },
+                "label": "Spark -> Frost Warden",
+                "win_rate": 0.6483006374570907,
+                "visits": 2740
+              },
+              {
+                "action": {
+                  "card_idx": 3,
+                  "target_idx": null
+                },
+                "label": "Stone Ward",
+                "win_rate": 0.6221764496725508,
+                "visits": 1692
+              },
+              {
+                "action": {
+                  "card_idx": 0,
+                  "target_idx": null
+                },
+                "label": "Ember Blade",
+                "win_rate": 0.6073796417533305,
+                "visits": 1348
+              },
+              {
+                "action": {
+                  "card_idx": 4,
+                  "target_idx": null
+                },
+                "label": "Ember Blade",
+                "win_rate": 0.6064935419530171,
+                "visits": 1329
+              },
+              {
+                "action": {
+                  "card_idx": 6,
+                  "target_idx": 0
+                },
+                "label": "Weakness Mark -> Frost Warden",
+                "win_rate": 0.6051454428136174,
+                "visits": 1303
+              },
+              {
+                "action": {
+                  "card_idx": 1,
+                  "target_idx": null
+                },
+                "label": "Ember Blade",
+                "win_rate": 0.6043867717845371,
+                "visits": 1290
+              },
+              {
+                "action": {
+                  "card_idx": 5,
+                  "target_idx": null
+                },
+                "label": "Mend",
+                "win_rate": 0.5962230171711762,
+                "visits": 1149
+              },
+              {
+                "action": {
+                  "card_idx": null,
+                  "target_idx": null
+                },
+                "label": "Pass",
+                "win_rate": 0.5960439877736547,
+                "visits": 1149
+              }
+            ],
+            "elapsed_s": 1.1296097000013106,
+            "preparation_s": 0.0,
+            "prepared_pool_startup_s": 0.0,
+            "block": 0,
+            "iteration": 0,
+            "complete_call_s": 1.1298275000299327
+          }
+        ],
+        "comparisons": [],
+        "interruption": "ValueError",
+        "source_unchanged_at_end": true,
+        "ended_utc": "2026-10-06T11:51:30.469781+00:00"
+      },
+      "log_sha256": "bfc5a9f017baae47747012e6a2d57f0a6d1a3fc74a36789de674bb804d576a55",
+      "record_sha256": "414b360b6905527f126830be2de909aa1a09e43405ecf0778d4e9c7ed41a8327",
+      "record_hash_kind": "public derivative canonical LF bytes"
+    }
+  ],
+  "source_unchanged_at_end": true,
+  "collection_wall_s": 1.5310000000172295,
+  "ended_utc": "2026-10-06T11:51:30.532656+00:00",
+  "publication_derivative": {
+    "format": "same-forest-public-receipts-v1",
+    "original_private_identity": {
+      "bytes": 19193,
+      "sha256": "807583e64f0affd853ae4c34651e9250122aca24696edb28715613c656c74ffd"
+    },
+    "changed_fields": [
+      {
+        "path": "environment.python",
+        "operation": "retain parsed major.minor.patch"
+      },
+      {
+        "path": "environment.platform",
+        "operation": "replace exact OS build with Windows"
+      },
+      {
+        "path": "environment.interpreter_sha256",
+        "operation": "remove binary fingerprint"
+      },
+      {
+        "path": "blocks[*].record.pid",
+        "operation": "remove operating-system process IDs"
+      }
+    ],
+    "nested_hashes": "Public derivative canonical LF bytes, not original raw blocks",
+    "computational_receipts_timers_controls_schedules_changed": false
+  }
+}

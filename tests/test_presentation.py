@@ -61,6 +61,8 @@ class PresentationTests(unittest.TestCase):
             self.assertEqual(manifest["recorded_source_revision"], "a82e1a6")
             self.assertEqual(manifest["same_forest_source_revision"],
                              "3adf64e618c277721d7ea36629cc934d0145a3ac")
+            self.assertEqual(manifest["same_forest_repeatability_source_revision"],
+                             "60bd4848427b2489e7bec4048170407b0c8f4e99")
             self.assertRegex(manifest["presentation_revision"], r"^[a-f0-9]{40}$")
             self.assertEqual(
                 set(manifest["files"]),
