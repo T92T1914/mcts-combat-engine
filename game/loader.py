@@ -8,6 +8,7 @@ objects, so swapping content means editing JSON, not code.
 Validation is deliberately loud: every error names the offending card,
 scenario, or field. Content errors caught at load time are cheap; the same
 errors surfacing as weird simulation behavior are expensive.
+JSON booleans are accepted only for flags, not numeric combat fields.
 """
 from __future__ import annotations
 
@@ -78,8 +79,12 @@ def parse_card(raw: dict, context: str) -> Card:
     if unknown:
         _fail(context, f"unknown fields {sorted(unknown)}")
     for field, expected in _CARD_FIELDS.items():
-        if field in raw and not isinstance(raw[field], expected):
-            _fail(context, f"field {field!r} must be {expected}")
+        if field in raw:
+            value = raw[field]
+            # JSON booleans are flags, even though bool subclasses int in Python.
+            if (not isinstance(value, expected)
+                    or (isinstance(value, bool) and expected is not bool)):
+                _fail(context, f"field {field!r} must be {expected}")
 
     element = _parse_element(raw["element"], context)
     try:
@@ -133,7 +138,8 @@ def _parse_resist(raw: dict, context: str) -> dict[Element, float]:
     out = {}
     for element_name, value in raw.items():
         element = _parse_element(element_name, context)
-        if not isinstance(value, (int, float)) or not -1.0 <= value <= 1.0:
+        if (not isinstance(value, (int, float)) or isinstance(value, bool)
+                or not -1.0 <= value <= 1.0):
             _fail(context, f"resist/boost for {element_name!r} must be in [-1, 1]")
         out[element] = float(value)
     return out
@@ -146,7 +152,7 @@ def _parse_combatant(raw: dict, context: str) -> tuple[Combatant, list]:
     for field in ("name", "element", "hp"):
         if field not in raw:
             _fail(context, f"missing required field {field!r}")
-    if not isinstance(raw["hp"], int) or raw["hp"] <= 0:
+    if not _positive_int(raw["hp"]):
         _fail(context, "hp must be a positive integer")
 
     rules = []
