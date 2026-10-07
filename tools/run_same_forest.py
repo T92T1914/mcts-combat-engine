@@ -180,9 +180,14 @@ def root_digest(root):
 
 
 def execute(root, protocol, cell):
-    """One execution, with owned pool cleanup even on caller interruption."""
+    """Execute once and retain a caller interruption if owned cleanup also fails.
+
+    The cell records the secondary cleanup error. Without an earlier caller
+    interruption, cleanup errors propagate and invalidate a completed cell.
+    """
     engine = None
     start = None
+    interruption = None
     phase = cell["phase"]
     try:
         preparation_start = time.perf_counter()
@@ -227,6 +232,7 @@ def execute(root, protocol, cell):
         if isinstance(exc, ParallelSearchError):
             cell["report"] = dataclasses.asdict(exc.report)
     except BaseException as exc:
+        interruption = exc
         cell["status"] = "interrupted"
         cell["error"] = type(exc).__name__
         raise
@@ -238,7 +244,24 @@ def execute(root, protocol, cell):
         if engine is not None:
             if engine.last_report is not None:
                 cell["report"] = dataclasses.asdict(engine.last_report)
-            engine.close()
+            try:
+                engine.close()
+            except BaseException as cleanup:
+                cell["cleanup_error"] = type(cleanup).__name__
+                if interruption is None:
+                    if cell["status"] == "completed":
+                        cell["status"] = (
+                            "failed" if isinstance(cleanup, Exception)
+                            else "interrupted"
+                        )
+                        cell["error"] = type(cleanup).__name__
+                    raise
+                try:
+                    interruption.add_note(
+                        f"Owned cleanup also raised {type(cleanup).__name__}."
+                    )
+                except BaseException:
+                    pass
 
 
 def new_cell(condition, phase, protocol, root):
