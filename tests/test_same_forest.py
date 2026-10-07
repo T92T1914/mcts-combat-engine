@@ -11,7 +11,12 @@ from collections import Counter
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from engine.parallel import ParallelMCTS, ParallelSearchError, _fixed_search
+from engine.parallel import (
+    FixedWorkReport,
+    ParallelMCTS,
+    ParallelSearchError,
+    _fixed_search,
+)
 from game.content import SCENARIOS
 from tools import run_same_forest as study
 
@@ -373,6 +378,191 @@ class SameForestStudyTests(unittest.TestCase):
             self.assertRaises(ValueError),
         ):
             study.source_identity()
+
+
+class SameForestCleanupTests(unittest.TestCase):
+    """Mocked caller failures retain evidence without running a study or pool."""
+
+    def setUp(self):
+        self.protocol = json.loads(study.PROTOCOL.read_text(encoding="utf-8"))
+        self.root = root_state()
+
+    def report(self, complete=False):
+        return FixedWorkReport(
+            seed=42, max_simulations=self.protocol["max_simulations"],
+            max_transitions=self.protocol["max_transitions"], workers=(),
+            complete=complete,
+            simulations=self.protocol["max_simulations"] if complete else None,
+            transitions=self.protocol["max_transitions"] if complete else None,
+            known_simulations=self.protocol["max_simulations"] if complete else 0,
+            known_transitions=self.protocol["max_transitions"] if complete else 0,
+            unused_simulations=0 if complete else None,
+            unused_transitions=0 if complete else None,
+            elapsed_s=0.01, pool_startup_s=0.0,
+        )
+
+    def engine(self, report):
+        engine = Mock()
+        engine.last_report = report
+        engine.last_pool_startup_s = 0.0
+        engine.warmup.return_value = True
+        engine.search.return_value = []
+        return engine
+
+    def cell(self, phase="cold"):
+        return study.new_cell(
+            self.protocol["conditions"][0], phase, self.protocol, self.root
+        )
+
+    def test_search_interruption_survives_cleanup_failure_with_partial_report(self):
+        for stop_type in (KeyboardInterrupt, SystemExit):
+            for phase in ("sequential", "cold", "warm"):
+                with self.subTest(stop=stop_type.__name__, phase=phase):
+                    stop = stop_type("caller interruption")
+                    report = self.report()
+                    engine = self.engine(report)
+                    engine.search.side_effect = stop
+                    engine.close.side_effect = OSError("owned cleanup")
+                    cell = self.cell(phase)
+                    with (
+                        patch.object(study, "ParallelMCTS", return_value=engine),
+                        self.assertRaises(stop_type) as caught,
+                    ):
+                        study.execute(self.root, self.protocol, cell)
+                    self.assertIs(caught.exception, stop)
+                    self.assertEqual(cell["status"], "interrupted")
+                    self.assertEqual(cell["error"], stop_type.__name__)
+                    self.assertEqual(cell["report"], dataclasses.asdict(report))
+                    self.assertIsNone(cell["report"]["simulations"])
+                    self.assertEqual(cell["cleanup_error"], "OSError")
+                    self.assertTrue(any("OSError" in note for note in stop.__notes__))
+                    engine.search.assert_called_once()
+                    engine.close.assert_called_once()
+
+    def test_warmup_interruption_survives_cleanup_failure_without_search(self):
+        stop = KeyboardInterrupt("startup interruption")
+        engine = self.engine(None)
+        engine.warmup.side_effect = stop
+        engine.close.side_effect = OSError("owned cleanup")
+        cell = self.cell("warm")
+        with (
+            patch.object(study, "ParallelMCTS", return_value=engine),
+            self.assertRaises(KeyboardInterrupt) as caught,
+        ):
+            study.execute(self.root, self.protocol, cell)
+        self.assertIs(caught.exception, stop)
+        self.assertEqual(cell["error"], "KeyboardInterrupt")
+        self.assertEqual(cell["cleanup_error"], "OSError")
+        self.assertIsNone(cell["elapsed_s"])
+        self.assertIsNone(cell["report"])
+        engine.search.assert_not_called()
+        engine.close.assert_called_once()
+
+    def test_diagnostic_note_failure_does_not_replace_the_original_interruption(self):
+        class UnnotableInterrupt(KeyboardInterrupt):
+            def add_note(self, note):
+                raise RuntimeError("note rejected")
+
+        stop = UnnotableInterrupt("caller interruption")
+        engine = self.engine(self.report())
+        engine.search.side_effect = stop
+        engine.close.side_effect = OSError("owned cleanup")
+        cell = self.cell()
+        with (
+            patch.object(study, "ParallelMCTS", return_value=engine),
+            self.assertRaises(UnnotableInterrupt) as caught,
+        ):
+            study.execute(self.root, self.protocol, cell)
+        self.assertIs(caught.exception, stop)
+        self.assertEqual(cell["cleanup_error"], "OSError")
+        engine.search.assert_called_once()
+        engine.close.assert_called_once()
+
+    def test_cleanup_error_after_success_propagates_and_rejects_completed_cell(self):
+        cleanup = OSError("owned cleanup")
+        report = self.report(complete=True)
+        engine = self.engine(report)
+        engine.close.side_effect = cleanup
+        cell = self.cell()
+        with (
+            patch.object(study, "ParallelMCTS", return_value=engine),
+            self.assertRaises(OSError) as caught,
+        ):
+            study.execute(self.root, self.protocol, cell)
+        self.assertIs(caught.exception, cleanup)
+        self.assertEqual(cell["status"], "failed")
+        self.assertEqual(cell["error"], "OSError")
+        self.assertEqual(cell["cleanup_error"], "OSError")
+        self.assertEqual(cell["report"], dataclasses.asdict(report))
+        engine.search.assert_called_once()
+        engine.close.assert_called_once()
+        with self.assertRaises(ValueError):
+            study.compare_condition([
+                cell | {"phase": phase} for phase in ("sequential", "cold", "warm")
+            ])
+
+    def test_cleanup_error_after_failed_search_propagates_with_both_failures(self):
+        report = self.report()
+        engine = self.engine(report)
+        engine.search.side_effect = ParallelSearchError(report)
+        cleanup = OSError("owned cleanup")
+        engine.close.side_effect = cleanup
+        cell = self.cell()
+        with (
+            patch.object(study, "ParallelMCTS", return_value=engine),
+            self.assertRaises(OSError) as caught,
+        ):
+            study.execute(self.root, self.protocol, cell)
+        self.assertIs(caught.exception, cleanup)
+        self.assertEqual(cell["status"], "failed")
+        self.assertEqual(cell["error"], "ParallelSearchError")
+        self.assertEqual(cell["cleanup_error"], "OSError")
+        self.assertEqual(cell["report"], dataclasses.asdict(report))
+        engine.search.assert_called_once()
+        engine.close.assert_called_once()
+
+    def test_success_keeps_existing_receipt_shape(self):
+        engine = self.engine(self.report(complete=True))
+        cell = self.cell()
+        with patch.object(study, "ParallelMCTS", return_value=engine):
+            study.execute(self.root, self.protocol, cell)
+        self.assertEqual(cell["status"], "completed")
+        self.assertIsNone(cell["error"])
+        self.assertNotIn("cleanup_error", cell)
+        engine.search.assert_called_once()
+        engine.close.assert_called_once()
+
+    def test_actual_runner_checkpoints_original_stop_and_cleanup_failure(self):
+        for stop_type in (KeyboardInterrupt, SystemExit):
+            with self.subTest(stop=stop_type.__name__):
+                stop = stop_type("caller interruption")
+                report = self.report()
+                engine = self.engine(report)
+                engine.search.side_effect = stop
+                engine.close.side_effect = OSError("owned cleanup")
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "interrupted.json"
+                    with (
+                        patch.object(study, "source_identity", return_value={}),
+                        patch.object(study.os, "cpu_count", return_value=8),
+                        patch.object(study, "ParallelMCTS", return_value=engine),
+                        self.assertRaises(stop_type) as caught,
+                    ):
+                        study.run(path, "Mocked failure fixture. No study measured.")
+                    self.assertIs(caught.exception, stop)
+                    saved = json.loads(path.read_text())
+                self.assertEqual(saved["status"], "interrupted")
+                self.assertEqual(saved["interruption"], stop_type.__name__)
+                self.assertEqual(saved["comparisons"], [])
+                self.assertEqual(len(saved["cells"]), 1)
+                cell = saved["cells"][0]
+                self.assertEqual(cell["error"], stop_type.__name__)
+                self.assertEqual(cell["cleanup_error"], "OSError")
+                self.assertEqual(
+                    cell["report"], json.loads(json.dumps(dataclasses.asdict(report)))
+                )
+                engine.search.assert_called_once()
+                engine.close.assert_called_once()
 
 
 if __name__ == "__main__":
