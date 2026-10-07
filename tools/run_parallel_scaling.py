@@ -97,6 +97,7 @@ def write_record(path, record):
 
 
 def run(path, conditions):
+    """Preserve a primary failure if owned cleanup also fails; retry no search."""
     if path.exists() or path.with_name(path.name + ".tmp").exists():
         raise ValueError("Refusing to replace a retained study or interrupted write")
     protocol = json.loads(PROTOCOL.read_text())
@@ -121,6 +122,7 @@ def run(path, conditions):
             for index, seed in enumerate(protocol["search_seeds"]):
                 for workers in protocol["worker_orders"][index]:
                     engine = None
+                    failure = None
                     try:
                         for phase in protocol["pool_phases"]:
                             probe = serialization_probe(root, protocol, workers, seed)
@@ -159,9 +161,24 @@ def run(path, conditions):
                             if error:
                                 # A replacement pool is not the warm condition.
                                 break
+                    except BaseException as exc:
+                        failure = exc
+                        raise
                     finally:
                         if engine is not None:
-                            engine.close()
+                            try:
+                                engine.close()
+                            except BaseException as cleanup:
+                                record["cleanup_error"] = type(cleanup).__name__
+                                if failure is None:
+                                    raise
+                                try:
+                                    failure.add_note(
+                                        "Owned cleanup also raised "
+                                        f"{type(cleanup).__name__}."
+                                    )
+                                except BaseException:
+                                    pass
         record["status"] = ("complete" if len(record["cells"]) == 54
                             and all(c["error"] is None and
                                     c["report"]["simulations"] == 12000
