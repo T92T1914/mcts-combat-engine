@@ -3,15 +3,20 @@
 import hashlib
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
 try:
+    from .build_episode_examples import OUTPUT_NAMES
+    from .build_episode_examples import _git as source_git
+    from .build_episode_examples import build as build_episode_examples
     from .presentation import appearance_css, load_tokens
     from .render_decision_figure import check_outputs
     from .render_same_forest import check_outputs as check_execution_report
 except ImportError:
+    from build_episode_examples import OUTPUT_NAMES
+    from build_episode_examples import _git as source_git
+    from build_episode_examples import build as build_episode_examples
     from render_decision_figure import check_outputs
     from render_same_forest import check_outputs as check_execution_report
 
@@ -63,19 +68,13 @@ FILES = {
         )
     },
 }
-GENERATED = {"appearance.css", "presentation.json"}
+GENERATED = {"appearance.css", "presentation.json"} | OUTPUT_NAMES
 
 
 def provenance(data):
     """Rendering a saved decision does not collect another experiment."""
-    revision = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
-    ).strip()
-    dirty = bool(
-        subprocess.check_output(
-            ["git", "status", "--porcelain"], cwd=ROOT, text=True
-        ).strip()
-    )
+    revision = source_git(ROOT, "rev-parse", "HEAD").decode("ascii").strip()
+    dirty = bool(source_git(ROOT, "status", "--porcelain").strip())
     return {
         "schema_version": 1,
         "presentation_revision": revision,
@@ -94,7 +93,8 @@ def provenance(data):
         "tokens": load_tokens()["source"],
         "files": {
             target: hashlib.sha256((OUT / target).read_bytes()).hexdigest()
-            for target in sorted(set(FILES.values()) | {"appearance.css"})
+            for target in sorted(set(FILES.values()) | {"appearance.css"} |
+                                 OUTPUT_NAMES)
         },
     }
 
@@ -122,6 +122,7 @@ def main():
             raise ValueError("Expected a regular source file: " + source)
         shutil.copyfile(path, OUT / target)
     (OUT / "appearance.css").write_text(appearance_css(load_tokens()), encoding="utf-8")
+    build_episode_examples(ROOT)
     (OUT / "presentation.json").write_text(
         json.dumps(provenance(data), indent=2) + "\n", encoding="utf-8"
     )
