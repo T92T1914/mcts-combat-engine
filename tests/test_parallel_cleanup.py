@@ -75,7 +75,7 @@ class CleanupPrecedenceTests(unittest.TestCase):
         engine = ParallelMCTS(workers=2)
         engine._pool = pool
         observed = Mock()
-        with patch("game.baselines.ParallelMCTS", return_value=engine):
+        with patch("engine.decider.ParallelMCTS", return_value=engine):
             decide = mcts_decider(parallel=True, workers=2, on_search=observed)
         with self.assertRaises(TimeoutError) as caught:
             decide(state(), random.Random(1))

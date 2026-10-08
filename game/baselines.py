@@ -11,9 +11,17 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from engine import Action, CardType, GameState, advance_round, legal_actions
-from engine.mcts import MCTS, _validate_nonnegative_finite
-from engine.parallel import ParallelMCTS
+from engine import (
+    Action,
+    CardType,
+    GameState,
+    advance_round,
+    legal_actions,
+)
+from engine import (
+    mcts_decider as mcts_decider,
+)
+from engine.mcts import _validate_nonnegative_finite
 from game.runner import Decider
 
 
@@ -176,58 +184,5 @@ def one_round_decider(samples_per_action: int | None = None, *,
             raise ValueError("time limit stopped the comparator "
                              "before a complete sweep")
         return actions[max(range(len(actions)), key=lambda index: values[index])]
-
-    return decide
-
-
-def mcts_decider(budget_ms: int = 300, horizon: int = 5,
-                 parallel: bool = False, workers: int | None = None,
-                 seed: int | None = None,
-                 max_sims: int | None = None, *,
-                 on_search: Callable[[int], None] | None = None,
-                 max_transitions: int | None = None,
-                 on_work: Callable[[dict], None] | None = None) -> Decider:
-    """Build an MCTS decider. Single-process by default so it is safe to call
-    from anywhere; pass ``parallel=True`` for the root-parallel engine.
-
-    For deterministic single-process tests, pass BOTH ``seed`` and ``max_sims``.
-    Parallel mode is timed only and rejects either control, even with one
-    worker. A seed alone
-    is not enough, because a wall-clock budget stops at a machine-dependent
-    simulation count. ``on_search`` receives the actual simulation count
-    after each decision, including a search stopped by its time limit.
-    ``max_transitions`` and its ``on_work`` telemetry are serial-only. A capped
-    nonterminal call that cannot finish a simulation raises instead of falling
-    back to pass. Omitting the allowance preserves the existing search policy.
-    """
-    if parallel and (seed is not None or max_sims is not None
-                     or max_transitions is not None or on_work is not None):
-        raise ValueError("seed, max_sims, max_transitions and on_work "
-                         "require single-process search "
-                         "(parallel=False)")
-    engine = (ParallelMCTS(horizon_rounds=horizon, workers=workers)
-              if parallel else MCTS(horizon_rounds=horizon,
-                                    max_transitions=max_transitions))
-    if max_transitions is not None and max_transitions < horizon:
-        raise ValueError("transition allowance must fund at least one complete horizon")
-    if isinstance(engine, MCTS):
-        engine.max_sims = max_sims if max_sims is not None else 1_000_000
-        if seed is not None:
-            engine.rng = random.Random(seed)
-
-    def decide(state: GameState, rng: random.Random) -> Action:
-        ranked = engine.search(state, time_budget_ms=budget_ms)
-        if on_search is not None:
-            on_search(engine.last_sims)
-        if on_work is not None:
-            assert isinstance(engine, MCTS)
-            on_work({"max_transitions": max_transitions,
-                     "transitions": engine.last_transitions,
-                     "unused_transitions": engine.last_unused_transitions,
-                     "simulations": engine.last_sims,
-                     "stop_reasons": list(engine.last_stop_reasons)})
-        if max_transitions is not None and not ranked and not state.is_terminal():
-            raise ValueError("search stopped before a complete simulation")
-        return ranked[0].action if ranked else Action(card_idx=None)
 
     return decide
