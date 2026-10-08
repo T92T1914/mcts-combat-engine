@@ -1,5 +1,6 @@
 """A parallel Monte Carlo Tree Search engine for turn-based combat."""
 from .actions import Action, legal_actions
+from .decider import MCTSDecider, mcts_decider
 from .mcts import MCTS, RankedAction
 from .parallel import FixedWorkReport, ParallelMCTS, ParallelSearchError, WorkerReceipt
 from .simulator import advance_round
@@ -10,4 +11,5 @@ __all__ = [
     "advance_round", "Card", "CardType", "Charm", "Combatant", "DoT",
     "Element", "GameState",
     "FixedWorkReport", "ParallelSearchError", "WorkerReceipt",
+    "MCTSDecider", "mcts_decider",
 ]

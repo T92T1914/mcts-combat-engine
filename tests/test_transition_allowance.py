@@ -138,7 +138,7 @@ class TestTransitionSearch(unittest.TestCase):
 
     def test_wrapper_rejects_unsupported_and_no_sample_controls(self):
         for controls in ({"max_transitions": 10}, {"on_work": lambda work: None}):
-            with (mock.patch("game.baselines.ParallelMCTS") as factory,
+            with (mock.patch("engine.decider.ParallelMCTS") as factory,
                   self.assertRaisesRegex(ValueError, "single-process")):
                 mcts_decider(parallel=True, **controls)
             factory.assert_not_called()

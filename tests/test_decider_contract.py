@@ -15,7 +15,7 @@ class TestDeciderContract(unittest.TestCase):
             for controls in ({"seed": 0}, {"max_sims": 0},
                              {"seed": 7, "max_sims": 10}):
                 with self.subTest(workers=workers, controls=controls):
-                    with (mock.patch("game.baselines.ParallelMCTS") as factory,
+                    with (mock.patch("engine.decider.ParallelMCTS") as factory,
                           self.assertRaisesRegex(ValueError, "single-process")):
                         mcts_decider(parallel=True, workers=workers, **controls)
                     factory.assert_not_called()
@@ -51,7 +51,7 @@ class TestDeciderContract(unittest.TestCase):
                 counts = []
                 owned_workers = []
                 try:
-                    with mock.patch("game.baselines.ParallelMCTS", return_value=engine):
+                    with mock.patch("engine.decider.ParallelMCTS", return_value=engine):
                         decider = mcts_decider(parallel=True, workers=workers,
                                                horizon=2, budget_ms=150,
                                                on_search=counts.append)
