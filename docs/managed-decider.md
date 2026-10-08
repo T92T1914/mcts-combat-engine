@@ -32,10 +32,76 @@ including when `max_sims` is supplied. Existing transition allowances and
 For a timed parallel policy, use `parallel=True, workers=2`. On Windows,
 construct and call it inside a `main()` guarded by
 `if __name__ == "__main__":`, and execute the file. The owned pool is reused
-between decisions until retirement. Parallel mode rejects `seed`, `max_sims`,
-`max_transitions` and `on_work`, including with one worker. For reproducible
-fixed parallel work, continue to use `ParallelMCTS` directly as described in
+between decisions until retirement. The default `mode="time"` retains its
+rejection of `seed`, `max_sims`, `max_transitions` and `on_work` in parallel
+mode, including with one worker.
+
+## Managed fixed work
+
+Select `parallel=True, mode="fixed", budget_ms=None` and supply nonnegative
+integer `seed` and `max_sims` values. Optional `max_transitions` is another
+nonnegative total ceiling per decision. Fixed mode refuses a clock budget and
+does not select serial search. It uses the existing independent-root allocation,
+receipt validation and failure behavior from
 [the fixed work contract](parallel-fixed-work.md).
+
+```python
+with mcts_decider(
+    parallel=True, workers=2, horizon=2, mode="fixed", budget_ms=None,
+    seed=7, max_sims=12, max_transitions=24,
+) as choose:
+    first = choose(state, random.Random(99))
+    receipt = choose.last_report
+    repeated = choose(state, random.Random(99))
+    selected_seed = choose.decide(state, seed=23)
+    default_seed_again = choose.decide(state)
+```
+
+On Windows run this inside a guarded `main()` in a file. The complete
+[installed-package example](../examples/managed_fixed.py) constructs its own
+state, prints actions and receipts, and shows refusal after context exit.
+It needs only the installed engine and standard library.
+
+Every decision starts fresh trees with a fresh allowance. Ordinary policy calls
+reuse seed 7 in this example. `decide(state, seed=23)` selects only that call's
+seed. It never changes the configured default or advances a hidden sequence,
+whether the call succeeds or fails. Callers who want an advancing sequence
+must choose each seed themselves. The policy RNG remains unused.
+
+For a fixed state, seed, worker count, implementation and verified runtime,
+repeated computational receipts agree. Elapsed and startup durations can
+change. Another worker count changes the forest and may change the action.
+Independent trees do not reproduce one larger serial tree. Fixed work does
+not establish a production wall-clock deadline. The lower-level process
+watchdog remains 60 seconds, and local work with one worker has no process
+watchdog.
+
+`last_report` exposes the immutable `FixedWorkReport` from the latest fixed
+attempt. Open admission clears it before per-call seed validation or search.
+A rejected seed or an attempt that produces no report therefore leaves `None`.
+Closed or retirement-pending refusal preserves the previous receipt, as does
+successful close. Timed and serial policies have no fixed-work receipt.
+
+In fixed mode `on_work` receives `dataclasses.asdict(last_report)`, a detached
+dictionary, whenever an attempt produces a report. This includes an incomplete
+worker batch or caller interrupt. Worker statistics contain dictionaries for
+their `Action` fields. Unknown work retains `None`, never an invented zero.
+After a successful fixed search, `on_work` runs before `on_search`, so a failing
+count observer cannot hide the work notification. Serial callback order and
+dictionary shape are unchanged. `on_search` is not called for a failed search.
+
+If a search error or caller interrupt and the work callback both raise, the
+search error remains primary. A best-effort note names the callback error's
+class. A callback failure after a successful search propagates normally, with
+the receipt still available. Callbacks do not retry search or advance seeds.
+
+An incomplete fixed batch raises `ParallelSearchError` and returns no action.
+Its report retains known counts and unknown totals. No failed allowance is
+rerun serially. Zero or below-horizon ceilings are valid accounting requests.
+If they fund no complete simulation at a nonterminal root, the policy raises
+`ValueError` after reporting the complete zero-work receipt instead of choosing
+Pass. A terminal root retains Pass with zero work. Pool reuse and explicit
+cleanup follow the same managed contract below.
 
 ## Closing and recovery
 
@@ -70,7 +136,7 @@ explicit ownership.
 
 ## Search behavior
 
-The managed policy preserves the existing action selection, search budgets,
+Timed mode preserves the existing action selection, search budgets,
 random streams and callbacks. A terminal root and an uncapped empty result
 retain the existing Pass action. A transition-capped nonterminal search without
 a complete simulation still raises `ValueError`. Mean shaped search values
