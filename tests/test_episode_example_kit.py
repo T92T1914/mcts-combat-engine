@@ -390,6 +390,39 @@ class ExampleKitTests(unittest.TestCase):
             kit.build(self.root)
         self.assertTrue(collision.is_dir())
 
+    def test_owned_external_destination_preserves_exact_outputs_and_source(
+        self,
+    ) -> None:
+        temporary = tempfile.TemporaryDirectory(prefix="mcts-example-kit-output-")
+        destination = Path(temporary.name).absolute()
+        try:
+            self.assertEqual(destination.parent, self.temp_parent)
+            names = self.git("ls-files", "-z").decode().split("\0")
+            before = {name: self.root.joinpath(*name.split("/")).read_bytes()
+                      for name in names if name}
+            archive, sidecar, manifest = kit.prepare(self.root)
+            sentinel = destination / "unrelated.txt"
+            sentinel.write_bytes(b"preserve unrelated output\n")
+            result = kit.build(self.root, output_directory=destination)
+            self.assertEqual(result["manifest"], manifest)
+            self.assertEqual((destination / kit.ZIP_NAME).read_bytes(), archive)
+            self.assertEqual((destination / kit.SIDECAR_NAME).read_bytes(), sidecar)
+            self.assertEqual(sentinel.read_bytes(), b"preserve unrelated output\n")
+            self.assertEqual({path.name for path in destination.iterdir()},
+                             kit.OUTPUT_NAMES | {"unrelated.txt"})
+            self.assert_no_outputs()
+            for name, body in before.items():
+                self.assertEqual(self.root.joinpath(*name.split("/")).read_bytes(),
+                                 body)
+            self.assertEqual(self.git("status", "--porcelain"), b"")
+        finally:
+            # Verify the actual recursive cleanup target before removing it.
+            resolved = Path(temporary.name).resolve()
+            self.assertEqual(resolved, destination)
+            self.assertEqual(resolved.parent, self.temp_parent)
+            self.assertTrue(resolved.name.startswith("mcts-example-kit-output-"))
+            temporary.cleanup()
+
     def test_actual_cli_refusal_is_contextual_with_empty_stdout(self) -> None:
         (self.root / "untracked.txt").write_bytes(b"untracked\n")
         result = subprocess.run(

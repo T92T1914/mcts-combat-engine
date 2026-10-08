@@ -308,13 +308,20 @@ def prepare(root: Path) -> tuple[bytes, bytes, dict]:
         raise KitError("source could not be captured: " + str(error)) from error
 
 
-def _output_directory(root: Path) -> Path:
-    output = root.resolve() / "_site"
-    if output.exists() or output.is_symlink():
-        require(_ordinary(output.lstat(), directory=True),
-                "kit output directory must be ordinary _site")
-    else:
+def _output_directory(root: Path, destination: Path | None) -> Path:
+    requested = root.resolve() / "_site" if destination is None else destination
+    output = requested.absolute()
+    require(".." not in output.parts, "kit output directory must not contain ..")
+    for parent in reversed(output.parents):
+        require(_ordinary(parent.lstat(), directory=True),
+                "kit output ancestor must be an ordinary directory")
+    try:
+        info = output.lstat()
+    except FileNotFoundError:
         output.mkdir()
+        info = output.lstat()
+    require(_ordinary(info, directory=True),
+            "kit output directory must be ordinary")
     for name in OUTPUT_NAMES:
         path = output / name
         if path.exists() or path.is_symlink():
@@ -324,11 +331,11 @@ def _output_directory(root: Path) -> Path:
     return output
 
 
-def build(root: Path = ROOT) -> dict:
+def build(root: Path = ROOT, *, output_directory: Path | None = None) -> dict:
     """Write only the ZIP and sidecar; failure of either write propagates."""
     archive, sidecar, manifest = prepare(root)
     try:
-        output = _output_directory(root)
+        output = _output_directory(root, output_directory)
         for name, data in ((ZIP_NAME, archive), (SIDECAR_NAME, sidecar)):
             with (output / name).open("wb") as stream:
                 written = stream.write(data)

@@ -122,7 +122,7 @@ def main():
             raise ValueError("Expected a regular source file: " + source)
         shutil.copyfile(path, OUT / target)
     (OUT / "appearance.css").write_text(appearance_css(load_tokens()), encoding="utf-8")
-    build_episode_examples(ROOT)
+    build_episode_examples(ROOT, output_directory=OUT)
     (OUT / "presentation.json").write_text(
         json.dumps(provenance(data), indent=2) + "\n", encoding="utf-8"
     )
