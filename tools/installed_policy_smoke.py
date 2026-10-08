@@ -13,6 +13,7 @@ import json
 import multiprocessing as mp
 import random
 import sysconfig
+from dataclasses import asdict
 from pathlib import Path
 
 import engine
@@ -87,6 +88,49 @@ def main() -> None:
             "Workers not retired")
     require(not mp.active_children(), "Consumer retained a child after context exit")
     require_closed(parallel, state)
+
+    fixed_counts: list[int] = []
+    fixed_work: list[dict] = []
+    fixed = mcts_decider(
+        parallel=True, workers=2, horizon=1, mode="fixed", budget_ms=None,
+        seed=7, max_sims=12, max_transitions=12,
+        on_search=fixed_counts.append, on_work=fixed_work.append,
+    )
+    with fixed as choose:
+        actions = []
+        computational = []
+        for seed in (None, None, 23, None):
+            action = choose.decide(state, seed=seed)
+            require(action in legal_actions(state), "Illegal fixed action")
+            actions.append(action)
+            report = choose.last_report
+            require(report is not None and report.complete, "Incomplete fixed receipt")
+            require(report.simulations == 12 and report.transitions == 12,
+                    "Fixed allowance was not accounted")
+            record = asdict(report)
+            record.pop("elapsed_s")
+            record.pop("pool_startup_s")
+            for worker in record["workers"]:
+                worker.pop("elapsed_s")
+            computational.append(record)
+            if len(actions) == 1:
+                fixed_workers = set(mp.active_children())
+                require(len(fixed_workers) == 2, "Two fixed workers not present")
+            require(set(mp.active_children()) == fixed_workers,
+                    "Fixed policy did not reuse its workers")
+            require(all(p.is_alive() for p in fixed_workers),
+                    "Fixed worker exited early")
+        require(actions[0] == actions[1] == actions[3], "Default action did not repeat")
+        require(computational[0] == computational[1] == computational[3],
+                "Default computational receipt did not repeat")
+        require([row["seed"] for row in fixed_work] == [7, 7, 23, 7],
+                "Decision seeds advanced or override changed default")
+        require(fixed_counts == [12] * 4,
+                "Fixed count callback did not repeat allowance")
+    require(all(not p.is_alive() and p.exitcode is not None for p in fixed_workers),
+            "Fixed workers not retired")
+    require(not mp.active_children(), "Fixed consumer retained a child after exit")
+    require_closed(fixed, state)
     print(json.dumps({
         "status": "passed",
         "package_version": importlib.metadata.version("mcts-combat-engine"),
@@ -96,6 +140,11 @@ def main() -> None:
         "workers_reused": 2,
         "worker_exitcodes": sorted(p.exitcode for p in first),
         "post_close_refused": True,
+        "fixed_simulations": fixed_counts,
+        "fixed_seeds": [row["seed"] for row in fixed_work],
+        "fixed_receipts_repeat": True,
+        "fixed_workers_reused": 2,
+        "fixed_worker_exitcodes": sorted(p.exitcode for p in fixed_workers),
         "active_children_after": 0,
     }, sort_keys=True))
 

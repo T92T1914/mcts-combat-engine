@@ -45,7 +45,7 @@ class ManagedPolicyTests(unittest.TestCase):
         self.assertIs(game_mcts_decider, mcts_decider)
         self.assertEqual(list(inspect.signature(mcts_decider).parameters), [
             "budget_ms", "horizon", "parallel", "workers", "seed", "max_sims",
-            "on_search", "max_transitions", "on_work"])
+            "on_search", "max_transitions", "on_work", "mode"])
         choose = game_mcts_decider(60_000, 2, False, None, 7, 3)
         self.assertIsInstance(choose, MCTSDecider)
         self.assertIsInstance(choose._engine, MCTS)

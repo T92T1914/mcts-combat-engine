@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
+from dataclasses import asdict
 from types import TracebackType
 
 from .actions import Action
 from .mcts import MCTS
-from .parallel import ParallelMCTS, _cleanup_note
+from .parallel import FixedWorkReport, ParallelMCTS, _cleanup_note, _integer
 from .state import GameState
 
 
@@ -28,22 +29,37 @@ class MCTSDecider:
     engine's operating-system limits and no hard completion deadline.
     """
 
-    def __init__(self, budget_ms: int = 300, horizon: int = 5,
+    def __init__(self, budget_ms: int | None = 300, horizon: int = 5,
                  parallel: bool = False, workers: int | None = None,
                  seed: int | None = None, max_sims: int | None = None, *,
                  on_search: Callable[[int], None] | None = None,
                  max_transitions: int | None = None,
-                 on_work: Callable[[dict], None] | None = None) -> None:
-        if parallel and (seed is not None or max_sims is not None
+                 on_work: Callable[[dict], None] | None = None,
+                 mode: str = "time") -> None:
+        if mode not in ("time", "fixed"):
+            raise ValueError("mode must be 'time' or 'fixed'")
+        if mode == "fixed":
+            if not parallel:
+                raise ValueError("managed fixed mode requires parallel=True")
+            if budget_ms is not None:
+                raise ValueError("fixed mode requires budget_ms=None")
+            if seed is None or max_sims is None:
+                raise ValueError("fixed mode requires seed and max_sims")
+            _integer(seed, "seed")
+            _integer(max_sims, "max_sims")
+            if max_transitions is not None:
+                _integer(max_transitions, "max_transitions")
+        elif parallel and (seed is not None or max_sims is not None
                          or max_transitions is not None or on_work is not None):
             raise ValueError("seed, max_sims, max_transitions and on_work "
                              "require single-process search "
-                             "(parallel=False)")
+                             "(parallel=False) or explicit mode='fixed'")
         engine: MCTS | ParallelMCTS = (
             ParallelMCTS(horizon_rounds=horizon, workers=workers)
             if parallel else MCTS(horizon_rounds=horizon,
                                   max_transitions=max_transitions))
-        if max_transitions is not None and max_transitions < horizon:
+        if (mode == "time" and max_transitions is not None
+                and max_transitions < horizon):
             raise ValueError("transition allowance must fund at least "
                              "one complete horizon")
         if isinstance(engine, MCTS):
@@ -52,6 +68,10 @@ class MCTSDecider:
                 engine.rng = random.Random(seed)
         self._engine = engine
         self._budget_ms = budget_ms
+        self._mode = mode
+        self._seed = seed
+        self._max_sims = max_sims
+        self._last_report: FixedWorkReport | None = None
         self._max_transitions = max_transitions
         self._on_search = on_search
         self._on_work = on_work
@@ -71,19 +91,70 @@ class MCTSDecider:
                                "Retry close() first.")
 
     def __call__(self, state: GameState, rng: random.Random) -> Action:
+        return self.decide(state)
+
+    @property
+    def last_report(self) -> FixedWorkReport | None:
+        """Receipt from the latest admitted fixed attempt, retained after close.
+
+        Open admission clears it before per-call validation or searching.
+        Closed or retirement-pending admission preserves the previous receipt.
+        Timed and serial policies have no fixed-work report.
+        """
+        return self._last_report
+
+    def _report_fixed_work(self) -> None:
+        if self._on_work is not None and self._last_report is not None:
+            self._on_work(asdict(self._last_report))
+
+    def decide(self, state: GameState, *, seed: int | None = None) -> Action:
+        """Choose an action, optionally selecting this fixed decision's seed.
+
+        Ordinary policy calls reuse the configured fixed seed. An override
+        never changes that default, including after failure. No seed sequence
+        is advanced. Per-call seeds require explicit fixed mode.
+        """
         self._require_open()
+        if self._mode == "fixed":
+            self._last_report = None
+        if seed is not None:
+            if self._mode != "fixed":
+                raise ValueError("per-call seed requires mode='fixed'")
+            _integer(seed, "seed")
         engine = self._engine
-        ranked = engine.search(state, time_budget_ms=self._budget_ms)
+        if self._mode == "fixed":
+            assert isinstance(engine, ParallelMCTS)
+            try:
+                ranked = engine.search(
+                    state, mode="fixed", max_sims=self._max_sims,
+                    max_transitions=self._max_transitions,
+                    seed=self._seed if seed is None else seed)
+            except BaseException as error:
+                self._last_report = engine.last_report
+                try:
+                    self._report_fixed_work()
+                except BaseException as callback_error:
+                    try:
+                        error.add_note("Work callback also raised "
+                                       f"{type(callback_error).__name__}.")
+                    except BaseException:
+                        pass
+                raise
+            self._last_report = engine.last_report
+        else:
+            ranked = engine.search(state, time_budget_ms=self._budget_ms)
+        if self._mode == "fixed":
+            self._report_fixed_work()
         if self._on_search is not None:
             self._on_search(engine.last_sims)
-        if self._on_work is not None:
+        if self._mode != "fixed" and self._on_work is not None:
             assert isinstance(engine, MCTS)
             self._on_work({"max_transitions": self._max_transitions,
                            "transitions": engine.last_transitions,
                            "unused_transitions": engine.last_unused_transitions,
                            "simulations": engine.last_sims,
                            "stop_reasons": list(engine.last_stop_reasons)})
-        if (self._max_transitions is not None and not ranked
+        if ((self._mode == "fixed" or self._max_transitions is not None) and not ranked
                 and not state.is_terminal()):
             raise ValueError("search stopped before a complete simulation")
         return ranked[0].action if ranked else Action(card_idx=None)
@@ -127,21 +198,27 @@ class MCTSDecider:
             _cleanup_note(exc_value, cleanup)
 
 
-def mcts_decider(budget_ms: int = 300, horizon: int = 5,
+def mcts_decider(budget_ms: int | None = 300, horizon: int = 5,
                  parallel: bool = False, workers: int | None = None,
                  seed: int | None = None, max_sims: int | None = None, *,
                  on_search: Callable[[int], None] | None = None,
                  max_transitions: int | None = None,
-                 on_work: Callable[[dict], None] | None = None) -> MCTSDecider:
+                 on_work: Callable[[dict], None] | None = None,
+                 mode: str = "time") -> MCTSDecider:
     """Build a managed MCTS policy. Serial search is the default.
 
     For deterministic serial work, pass both ``seed`` and ``max_sims`` with
     a time allowance sufficient to finish. A seed alone cannot fix a count
-    stopped by the clock. Parallel mode remains timed only and rejects seed,
-    simulation and transition controls, even with one worker. ``on_search``
+    stopped by the clock. Timed parallel mode rejects fixed controls, even
+    with one worker. Explicit ``parallel=True, mode="fixed", budget_ms=None``
+    requires ``seed`` and ``max_sims`` and reuses the fixed seed each call.
+    ``decide(state, seed=...)`` overrides it for one decision. ``last_report``
+    exposes complete or partial fixed accounting. Fixed ``on_work`` receives
+    a detached report dictionary, including after a failed search.
+    ``on_search``
     receives completed simulations after each successful search, including
-    one stopped by its time limit. ``on_work`` and transition allowances are
-    serial only. A capped nonterminal call without a complete simulation
+    one stopped by its time limit. A fixed or transition-capped nonterminal
+    call without a complete simulation
     raises instead of choosing Pass. Other empty results retain Pass.
 
     Use ``with mcts_decider(...) as choose`` or explicitly call ``close()``.
@@ -151,4 +228,5 @@ def mcts_decider(budget_ms: int = 300, horizon: int = 5,
     """
     return MCTSDecider(
         budget_ms, horizon, parallel, workers, seed, max_sims,
-        on_search=on_search, max_transitions=max_transitions, on_work=on_work)
+        on_search=on_search, max_transitions=max_transitions, on_work=on_work,
+        mode=mode)

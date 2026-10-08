@@ -41,9 +41,13 @@ for the simulation ceiling. Time mode rejects these fixed controls instead of
 silently ignoring them. The serial `MCTS.search(..., time_budget_ms=None)` path
 also disables its clock while retaining its simulation and transition ceilings.
 
-The current `mcts_decider` episode wrapper still offers timed parallel searches
-only. Call `ParallelMCTS` directly for this fixed work contract. The existing
-episode benchmark and its saved studies keep their original interfaces and data.
+The installed `mcts_decider` policy also supports this fixed work contract with
+`parallel=True, mode="fixed", budget_ms=None, seed=7, max_sims=101`. It reuses
+the configured seed each decision and exposes `last_report`. Call
+`choose.decide(state, seed=23)` to select a seed for one decision without
+changing that default. See [the managed policy](managed-decider.md) for callbacks
+and ownership. The existing episode benchmark and saved studies retain their
+original interfaces and data.
 
 ## What repeats and what changes
 
