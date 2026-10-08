@@ -66,12 +66,18 @@ class PresentationTests(unittest.TestCase):
             self.assertRegex(manifest["presentation_revision"], r"^[a-f0-9]{40}$")
             self.assertEqual(
                 set(manifest["files"]),
-                set(build_site.FILES.values()) | {"appearance.css"},
+                set(build_site.FILES.values()) | {"appearance.css"}
+                | build_site.OUTPUT_NAMES,
             )
             for name, digest in manifest["files"].items():
                 self.assertEqual(
                     hashlib.sha256((out / name).read_bytes()).hexdigest(), digest
                 )
+            zip_digest = hashlib.sha256((out / "episode-examples.zip").read_bytes())
+            self.assertEqual(
+                (out / "episode-examples.zip.sha256").read_bytes(),
+                (zip_digest.hexdigest() + "  episode-examples.zip\n").encode("ascii"),
+            )
 
     def test_unlisted_output_is_refused_before_replacing_files(self):
         with tempfile.TemporaryDirectory() as directory:
