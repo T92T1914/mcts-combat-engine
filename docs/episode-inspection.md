@@ -137,6 +137,70 @@ These are representation bounds, not a new engine resource guarantee. Complete
 HTML uses the same fixed editions, local fonts, escaping, 64 MiB output bound and
 failure behavior described below.
 
+
+## Compare two saved decision reports
+
+Select pair mode explicitly:
+
+```text
+python inspect_episode.py left.json --decision-report --compare-report right.json > comparison.html
+```
+
+`--compare-report` requires `--decision-report`. Neither input is guessed to be an
+episode. Both files must pass the same supported report validator. Existing
+single-report and episode commands keep their output behavior.
+
+For the complete [example kit](episode-example-kit.md), extract all files into a
+fresh directory, then move that whole directory if needed. Keep both entries and
+the complete `game/` together. Use the Python executable for your selected
+installed engine. Do not add a local `engine/`. From an unrelated working
+directory, supply two external report paths:
+
+```powershell
+& 'C:\work\engine-env\Scripts\python.exe' 'C:\work\moved-kit\inspect_episode.py' 'C:\records\left.json' --decision-report --compare-report 'C:\records\right.json' --appearance clair > comparison-clair.html 2> comparison-errors.txt
+```
+
+Substitute your paths and use fresh output names. PowerShell 7.4+ preserves native
+stdout bytes. A POSIX shell also supports byte-preserving redirection. Older
+Windows PowerShell can change the encoding. Keep stderr separate. Redirection
+can create or overwrite its file even when the command fails. No Git, original
+episode/content, checkout `PYTHONPATH` or matching saved runtime is needed.
+
+Open the HTML anywhere without companion assets. It contains both reports' full
+modeled data and saved runtime labels, so choose deliberately whether to share it.
+The caller's filenames and paths are omitted.
+
+Each role is captured once, including when both paths name the same file. These
+are independent reads, not a simultaneous snapshot. Actual capture hashes
+identify those bytes. Claimed original episode hashes and provenance remain
+unauthenticated saved values.
+
+The document shows selected state, declared configuration, reward meaning and
+provenance before statistics. Each of eighteen branches has a typed same/different
+result and its first differing report pointer. Thirty-six expandable fragments
+retain both complete inputs, including integer/float distinctions, negative zero,
+nulls and ordered lists. Parsed fragments do not preserve original whitespace or
+number spelling.
+
+Raw choice indices align only when the reports declare identical selected state,
+literal value semantics, method and `horizon_rounds`. Otherwise lists remain
+separate. References use each report's own stored slots, including duplicate,
+dead and unresolved entries. Labels are literal. An absent row, an unvisited row,
+a nullable mean, a Pass object and a null recommendation are distinct.
+
+Matching declared conditions do not authenticate producers, recompute legality or
+establish a controlled experiment. Different seeds, allowances and counts stay
+visible. Saved shaped rewards are not win probabilities. No score improvement,
+causal effect or policy quality is inferred.
+
+Pair mode retains an aggregate 8 MiB captured-byte allowance and 200,000 values
+across both inputs, sixteen container levels per input and 64 MiB total HTML.
+Each input also retains its existing schema limits. Two individually valid files
+can exceed the pair allowance. These are content bounds, not memory or timing
+guarantees. Both admissions and complete rendering precede HTML stdout. Input
+refusals exit 2, rendering/output failures 1 and interruption 130, with the same
+sink and shell limitations described below.
+
 ## Appearance and limits
 
 Obscur is the fixed default. `--appearance clair` changes only presentation. Print

@@ -942,5 +942,493 @@ runpy.run_path({str(entry)!r}, run_name="__main__")
         self.assertNotIn(b"Traceback", result.stderr)
 
 
+
+
+class PairArtifact(Artifact):
+    def __init__(self, data):
+        self.comparisons = {}
+        self.alignment = None
+        self.indexed = []
+        self.separate = []
+        super().__init__(data)
+
+    def handle_starttag(self, tag, attrs):
+        super().handle_starttag(tag, attrs)
+        attributes = dict(attrs)
+        if "data-comparison-field" in attributes:
+            field = attributes["data-comparison-field"]
+            if field in self.comparisons:
+                raise AssertionError("duplicate comparison branch")
+            self.comparisons[field] = (
+                attributes["data-comparison-status"],
+                attributes["data-first-difference"],
+            )
+        if "data-choice-alignment" in attributes:
+            self.alignment = attributes["data-choice-alignment"]
+        if "data-indexed-comparison" in attributes:
+            self.indexed.append(attributes["data-indexed-comparison"])
+        if "data-separate-alternative" in attributes:
+            self.separate.append(attributes["data-separate-alternative"])
+
+
+class DecisionComparisonTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="mcts-pair-inspection-test-")
+        self.addCleanup(temporary.cleanup)
+        self.directory = Path(temporary.name)
+        self.left_path = self.directory / "caller-left-private.json"
+        self.right_path = self.directory / "caller-right-private.json"
+        self.left = synthetic_decision_report()
+        self.right = copy.deepcopy(self.left)
+        self.save()
+
+    cli = InspectionTests.cli
+
+    def save(self):
+        for path, value in ((self.left_path, self.left), (self.right_path, self.right)):
+            path.write_bytes(json.dumps(value, ensure_ascii=True, indent=1,
+                                        allow_nan=False).encode("utf-8"))
+
+    def pair_cli(self, *arguments):
+        return self.cli(str(self.left_path), "--decision-report", "--compare-report",
+                        str(self.right_path), *arguments)
+
+    def typed(self, expected, actual):
+        self.assertIs(type(actual), type(expected))
+        if isinstance(expected, dict):
+            self.assertEqual(set(actual), set(expected))
+            for name in expected:
+                self.typed(expected[name], actual[name])
+        elif isinstance(expected, list):
+            self.assertEqual(len(actual), len(expected))
+            for left, right in zip(expected, actual, strict=True):
+                self.typed(left, right)
+        elif isinstance(expected, float):
+            self.assertEqual(actual.hex(), expected.hex())
+        else:
+            self.assertEqual(actual, expected)
+
+    def test_complete_pair_fragments_in_both_editions_preserve_types_and_inputs(self):
+        self.right = synthetic_decision_report(zero=True)
+        self.save()
+        before = {
+            path: (path.read_bytes(), path.stat().st_mtime_ns)
+            for path in (self.left_path, self.right_path)
+        }
+        for appearance in ("obscur", "clair"):
+            with self.subTest(appearance=appearance):
+                output = inspection.decision_comparison_html(
+                    self.left_path, self.right_path, appearance=appearance)
+                artifact = PairArtifact(output)
+                self.assertEqual(set(artifact.fragments), {
+                    f"/{side}/{name}" for side in ("left", "right")
+                    for name in inspection.DECISION_FIELDS
+                })
+                self.assertEqual(len(artifact.order), 36)
+                for side, value in (("left", self.left), ("right", self.right)):
+                    self.typed(value, {
+                        name: artifact.fragments[f"/{side}/{name}"]
+                        for name in inspection.DECISION_FIELDS
+                    })
+                self.assertIn(str(10**60 + 7).encode(), output)
+                self.assertIn(b"-0.0", output)
+                self.assertIn(b"Unvisited: no sampled mean", output)
+                self.assertEqual(artifact.alignment, "available")
+                for path, (raw, _) in before.items():
+                    self.assertIn(hashlib.sha256(raw).hexdigest().encode(), output)
+                    self.assertNotIn(path.name.encode(), output)
+                self.assertNotIn(str(self.directory).encode(), output)
+                self.assertTrue(output.endswith(b"</html>\n"))
+                self.assertNotIn(b"\r\n", output)
+        for path, (raw, mtime) in before.items():
+            self.assertEqual((path.read_bytes(), path.stat().st_mtime_ns), (raw, mtime))
+
+    def test_same_report_has_eighteen_typed_branch_decisions_in_grouped_order(self):
+        artifact = PairArtifact(inspection.decision_comparison_html(
+            self.left_path, self.right_path))
+        expected = [
+            "format", "schema_version", "status", "search_performed", "source_record",
+            "selection", "selected_state", "configuration", "value_semantics",
+            "stored_action", "stored_provenance", "implementation",
+            "identity_comparisons", "work", "elapsed_seconds", "legal_actions",
+            "ranking", "recommendation",
+        ]
+        self.assertEqual(list(artifact.comparisons), expected)
+        self.assertEqual(list(artifact.comparisons.values()), [("same", "")] * 18)
+        self.assertEqual(artifact.alignment, "available")
+        self.assertEqual(len(artifact.indexed), len(self.left["legal_actions"]))
+        self.assertFalse(artifact.separate)
+
+    def test_capture_parse_validation_and_differences_have_no_work(self):
+        denied = (
+            "load_content", "load_snapshot", "observed_identity",
+            "implementation_identity", "_record_owner", "record_episode",
+            "replay_episode", "play_game", "is_legal_action", "legal_actions",
+            "normalized", "rng_digest",
+        )
+        captured = [self.left_path.read_bytes(), self.right_path.read_bytes()]
+        with contextlib.ExitStack() as stack:
+            for name in denied:
+                stack.enter_context(patch.object(records, name, forbidden))
+            for name in ("Action", "Card", "Combatant", "GameState", "Charm", "DoT"):
+                stack.enter_context(patch.object(getattr(records, name), "__init__",
+                                                forbidden))
+            stack.enter_context(patch.object(records.random, "Random", forbidden))
+            stack.enter_context(patch.dict(
+                sys.modules, {"game.episode_decision": None}))
+            read = stack.enter_context(patch.object(records, "_read",
+                                                    wraps=records._read))
+            parse = stack.enter_context(patch.object(records, "_parse",
+                                                     wraps=records._parse))
+            validate = stack.enter_context(patch.object(
+                inspection, "validate_decision_report",
+                wraps=inspection.validate_decision_report))
+            difference = stack.enter_context(patch.object(
+                records, "first_difference", wraps=records.first_difference))
+            output = inspection.decision_comparison_html(
+                self.left_path, self.right_path)
+        self.assertEqual([call.args for call in read.call_args_list], [
+            (self.left_path, "Left decision report", records.RECORD_BYTES),
+            (self.right_path, "Right decision report",
+             records.RECORD_BYTES - len(captured[0])),
+        ])
+        self.assertEqual([call.args for call in parse.call_args_list], [
+            (captured[0], "Left decision report", 200_000, 10**300),
+            (captured[1], "Right decision report", 200_000, 10**300),
+        ])
+        self.assertEqual(validate.call_count, 2)
+        self.assertEqual(difference.call_count, 18)
+        self.assertEqual([call.args[2] for call in difference.call_args_list],
+                         ["/" + name for name in inspection.DECISION_FIELDS])
+        self.assertEqual(len(PairArtifact(output).fragments), 36)
+
+    def test_captured_buffers_own_identity_after_both_paths_change(self):
+        original_read = records._read
+        captured = {
+            self.left_path: self.left_path.read_bytes(),
+            self.right_path: self.right_path.read_bytes(),
+        }
+
+        def capture_then_change(path, role, limit):
+            result = original_read(path, role, limit)
+            path.write_bytes(b"changed after its capture")
+            return result
+
+        with patch.object(records, "_read", side_effect=capture_then_change) as read:
+            output = inspection.decision_comparison_html(
+                self.left_path, self.right_path)
+        self.assertEqual(read.call_count, 2)
+        artifact = PairArtifact(output)
+        for side, path, expected in (
+            ("left", self.left_path, self.left),
+            ("right", self.right_path, self.right),
+        ):
+            self.assertIn(hashlib.sha256(captured[path]).hexdigest().encode(), output)
+            self.typed(expected, {
+                name: artifact.fragments[f"/{side}/{name}"]
+                for name in inspection.DECISION_FIELDS
+            })
+
+    def test_same_path_is_two_independent_captures_without_a_cache(self):
+        self.right["selected_state"]["player"]["hp"] = 89
+        second = json.dumps(self.right, allow_nan=False).encode()
+        first = self.left_path.read_bytes()
+        with patch.object(records, "_read", side_effect=[first, second]) as read:
+            output = inspection.decision_comparison_html(self.left_path, self.left_path)
+        self.assertEqual(read.call_count, 2)
+        artifact = PairArtifact(output)
+        self.assertEqual(artifact.alignment, "unavailable")
+        self.assertEqual(artifact.comparisons["selected_state"],
+                         ("different", "/selected_state/player/hp"))
+        self.assertIn(hashlib.sha256(first).hexdigest().encode(), output)
+        self.assertIn(hashlib.sha256(second).hexdigest().encode(), output)
+
+    def test_explicit_mode_and_appearance_refuse_before_any_input_read(self):
+        with patch.object(records, "_read", forbidden):
+            status, out, err = self.cli(str(self.left_path), "--compare-report",
+                                       str(self.right_path))
+            self.assertEqual((status, out), (2, b""))
+            self.assertIn("--compare-report requires --decision-report", err)
+            with self.assertRaisesRegex(records.EpisodeInputError, "appearance"):
+                inspection.decision_comparison_html(
+                    self.left_path, self.right_path, appearance="auto")
+            status, out, _ = self.pair_cli("--appearance", "auto")
+            self.assertEqual((status, out), (2, b""))
+
+    def test_aggregate_bytes_are_inclusive_and_second_gets_remaining_allowance(self):
+        total = len(self.left_path.read_bytes()) + len(self.right_path.read_bytes())
+        with patch.object(records, "RECORD_BYTES", total):
+            self.assertEqual(self.pair_cli()[0], 0)
+        with patch.object(records, "RECORD_BYTES", total - 1):
+            status, out, err = self.pair_cli()
+        self.assertEqual((status, out), (2, b""))
+        self.assertIn("Right decision report", err)
+        self.assertIn("exceeds", err)
+        with patch.object(records, "RECORD_BYTES", 8), \
+                patch.object(records, "_parse", forbidden):
+            status, out, err = self.pair_cli()
+        self.assertEqual((status, out), (2, b""))
+        self.assertIn("Left decision report", err)
+
+    def test_aggregate_values_do_not_invent_a_container_level(self):
+        def count(value):
+            if isinstance(value, dict):
+                return 1 + sum(count(item) for item in value.values())
+            if isinstance(value, list):
+                return 1 + sum(count(item) for item in value)
+            return 1
+
+        total = count(self.left) + count(self.right)
+        with patch.object(inspection, "PAIR_VALUE_LIMIT", total):
+            self.assertEqual(self.pair_cli()[0], 0)
+        with patch.object(inspection, "PAIR_VALUE_LIMIT", total - 1), \
+                patch.object(inspection, "_render_pair", forbidden):
+            status, out, err = self.pair_cli()
+        self.assertEqual((status, out), (2, b""))
+        self.assertIn("aggregate values", err)
+        deep = records._parse(b"[" * 16 + b"0" + b"]" * 16,
+                              "literal depth witness", 200_000, 10**300)
+        with patch.object(inspection, "PAIR_VALUE_LIMIT", 34):
+            inspection._pair_values(deep, deep)
+        with patch.object(inspection, "PAIR_VALUE_LIMIT", 33):
+            with self.assertRaisesRegex(records.EpisodeInputError, "aggregate"):
+                inspection._pair_values(deep, deep)
+        with self.assertRaises(records.EpisodeInputError):
+            records._parse(b"[" * 17 + b"0" + b"]" * 17,
+                           "literal depth refusal", 200_000, 10**300)
+
+
+    def test_first_paths_keep_numeric_kinds_signed_zero_and_pointer_escaping(self):
+        self.right["selected_state"]["player"]["boost"]["ember"] = 0.0
+        self.right["legal_actions"][0]["value_sum"] = 0.0
+        self.right["legal_actions"][0]["mean_shaped_reward"] = 0.0
+        self.right["implementation"]["engine_files_sha256"] = {
+            "engine/a~b/c.py": "a" * 64,
+        }
+        self.right["identity_comparisons"]["example_files_equal"] = False
+        self.save()
+        artifact = PairArtifact(inspection.decision_comparison_html(
+            self.left_path, self.right_path))
+        self.assertEqual(artifact.comparisons["selected_state"],
+                         ("different", "/selected_state/player/boost/ember"))
+        self.assertEqual(
+            artifact.comparisons["legal_actions"],
+            ("different", "/legal_actions/0/mean_shaped_reward"),
+        )
+        self.assertEqual(
+            artifact.comparisons["implementation"],
+            ("different", "/implementation/engine_files_sha256/engine~1a~0b~1c.py"),
+        )
+        self.assertEqual(
+            artifact.comparisons["identity_comparisons"],
+            ("different", "/identity_comparisons/example_files_equal"),
+        )
+        self.assertEqual(
+            artifact.fragments["/left/legal_actions"][0]["value_sum"].hex(),
+            "-0x0.0p+0",
+        )
+        self.assertEqual(
+            artifact.fragments["/right/legal_actions"][0]["value_sum"].hex(),
+            "0x0.0p+0",
+        )
+
+    def test_each_alignment_condition_has_an_admitted_separate_list_witness(self):
+        changed_state = copy.deepcopy(self.left)
+        changed_state["selected_state"]["player"]["hp"] = 89
+        changed_semantics = copy.deepcopy(self.left)
+        changed_semantics["value_semantics"] = "Different saved reward meaning."
+        changed_horizon = copy.deepcopy(self.left)
+        changed_horizon["configuration"]["horizon_rounds"] = 3
+        changed_horizon["configuration"]["max_transitions"] = 12
+        changed_horizon["work"]["unused_transitions"] = 4
+        changed_horizon["work"]["stop_reasons"] = ["simulation_cap"]
+        for value, condition in (
+            (changed_state, "/selected_state"),
+            (changed_semantics, "/value_semantics"),
+            (changed_horizon, "/configuration/horizon_rounds"),
+        ):
+            with self.subTest(condition=condition):
+                self.right = value
+                self.save()
+                output = inspection.decision_comparison_html(
+                    self.left_path, self.right_path)
+                artifact = PairArtifact(output)
+                self.assertEqual(artifact.alignment, "unavailable")
+                self.assertFalse(artifact.indexed)
+                self.assertEqual(len(artifact.separate), 16)
+                self.assertIn(condition.encode(), output)
+                self.assertEqual(artifact.fragments["/right/configuration"],
+                                 value["configuration"])
+        self.assertEqual(artifact.comparisons["configuration"],
+                         ("different", "/configuration/horizon_rounds"))
+
+    def test_aligned_union_keeps_absent_unvisited_labels_and_unresolved_slots(self):
+        self.right["configuration"]["seed"] = 20
+        del self.right["legal_actions"][1]
+        self.right["legal_actions"].append({
+            "card_idx": 6, "target_idx": 7, "label": "Right unresolved slot",
+            "status": "unvisited", "visits": 0, "value_sum": 0,
+            "mean_shaped_reward": None,
+        })
+        self.right["legal_actions"][0]["label"] = "Right literal Pass"
+        self.save()
+        output = inspection.decision_comparison_html(self.left_path, self.right_path)
+        artifact = PairArtifact(output)
+        self.assertEqual(artifact.alignment, "available")
+        self.assertEqual(len(artifact.indexed), 9)
+        self.assertFalse(artifact.separate)
+        self.assertEqual(output.count(b"Absent from this report."), 2)
+        self.assertIn(b"Right literal Pass", output)
+        self.assertIn(b"Literal Pass label", output)
+        self.assertIn(b"Unvisited: no sampled mean", output)
+        self.assertIn(b"unresolved", output)
+        self.assertIn(b"Retained dead slot", output)
+        self.assertEqual(artifact.fragments["/left/ranking"], self.left["ranking"])
+        self.assertEqual(artifact.fragments["/right/ranking"], self.right["ranking"])
+        self.assertEqual(artifact.comparisons["configuration"],
+                         ("different", "/configuration/seed"))
+
+    def test_second_input_refusals_are_contextual_without_html_or_fallback(self):
+        malformed = (
+            b'{"format":1,"format":2}', b"\xff", b"{", b'{"x":NaN}',
+            b'{"x":1e309}', json.dumps(synthetic_record()).encode(),
+        )
+        for raw in malformed:
+            with self.subTest(raw=raw), patch.object(
+                    records, "first_difference", forbidden):
+                self.right_path.write_bytes(raw)
+                status, out, err = self.pair_cli()
+            self.assertEqual((status, out), (2, b""))
+            self.assertIn("Right decision report", err)
+            self.assertNotIn("Traceback", err)
+        self.right = copy.deepcopy(self.left)
+        self.right["configuration"]["horizon"] = 2
+        self.save()
+        status, out, err = self.pair_cli()
+        self.assertEqual((status, out), (2, b""))
+        self.assertIn("Right decision report", err)
+        self.assertIn("/configuration", err)
+        self.left_path.write_bytes(b"{")
+        with patch.object(inspection, "_render_pair", forbidden), \
+                patch.object(records, "_read", wraps=records._read) as read:
+            status, out, err = self.pair_cli()
+        self.assertEqual((status, out), (2, b""))
+        self.assertIn("Left decision report", err)
+        self.assertEqual(read.call_count, 1)
+
+    def test_hostile_saved_strings_remain_text_and_navigation_is_local(self):
+        hostile = '<img src="https://example.invalid/a" onerror="alert(1)">\x00'
+        self.right["value_semantics"] = hostile
+        self.right["selected_state"]["hand"][0]["name"] = hostile[:128]
+        self.save()
+        output = inspection.decision_comparison_html(self.left_path, self.right_path)
+        artifact = PairArtifact(output)
+        self.assertNotIn("img", artifact.tags)
+        self.assertNotIn("script", artifact.tags)
+        self.assertTrue(all(link.startswith("#") and link[1:] in artifact.ids
+                            for link in artifact.links))
+        self.assertEqual(len(artifact.ids), len(set(artifact.ids)))
+        self.assertFalse(any(name.startswith("on") or name in ("src", "srcdoc")
+                             for name, _ in artifact.attributes))
+        self.assertIn(b"\\u0000", output)
+        self.assertNotIn(b"url(", output)
+        self.assertIn(b"font-synthesis:none", output)
+        self.assertEqual(artifact.fragments["/right/value_semantics"], hostile)
+        self.assertIn(b"not origin authentication", output)
+        self.assertIn(b"not a simultaneous snapshot", output)
+
+    def test_complete_output_bound_and_comparison_error_fail_before_stdout(self):
+        output = inspection.decision_comparison_html(self.left_path, self.right_path)
+        with patch.object(inspection, "HTML_BYTES", len(output)):
+            self.assertEqual(inspection.decision_comparison_html(
+                self.left_path, self.right_path), output)
+        with patch.object(inspection, "HTML_BYTES", len(output) - 1):
+            status, out, err = self.pair_cli()
+        self.assertEqual((status, out), (1, b""))
+        self.assertIn("including final LF", err)
+        with patch.object(records, "first_difference",
+                          side_effect=records.EpisodeRuntimeError("fixture traversal")):
+            status, out, err = self.pair_cli()
+        self.assertEqual((status, out), (1, b""))
+        self.assertIn("admitted decision comparison cannot be compared", err)
+        self.assertIn("fixture traversal", err)
+        self.assertNotIn("Traceback", err)
+
+    def test_pair_dispatch_retains_old_modes_and_sink_failure_phases(self):
+        for arguments, function in (
+            ([str(self.left_path)], "inspection_html"),
+            ([str(self.left_path), "--decision-report"], "decision_inspection_html"),
+        ):
+            with self.subTest(function=function), patch.object(
+                    inspect_episode, function,
+                    return_value=b"literal old route\n") as old:
+                status, out, err = self.cli(*arguments)
+            self.assertEqual((status, out, err), (0, b"literal old route\n", ""))
+            old.assert_called_once_with(self.left_path, appearance="obscur")
+
+        class Sink:
+            def __init__(self, short):
+                self.buffer = self
+                self.short = short
+
+            def write(self, data):
+                return len(data) - 1 if self.short else len(data)
+
+            def flush(self):
+                if self.short:
+                    raise AssertionError("short writes must not reach flush")
+                raise OSError("fixture paired flush refusal")
+
+            def close(self):
+                raise AssertionError("programmatic main must retain caller stdout")
+
+        for short in (True, False):
+            err = io.StringIO()
+            with self.subTest(short=short), contextlib.redirect_stdout(Sink(short)), \
+                    contextlib.redirect_stderr(err):
+                status = inspect_episode.main([
+                    str(self.left_path), "--decision-report", "--compare-report",
+                    str(self.right_path),
+                ])
+            self.assertEqual(status, 1)
+            self.assertIn("incomplete document" if short else "paired flush refusal",
+                          err.getvalue())
+        for failure, expected in ((MemoryError("fixture pair resource"), 1),
+                                  (KeyboardInterrupt(), 130)):
+            with self.subTest(status=expected), patch.object(
+                    inspect_episode, "decision_comparison_html", side_effect=failure):
+                status, out, err = self.pair_cli()
+            self.assertEqual((status, out), (expected, b""))
+            self.assertIn("episode inspection:", err)
+
+    def test_actual_paired_flush_failure_retires_failed_buffer_at_shutdown(self):
+        self.right = synthetic_decision_report(zero=True)
+        self.save()
+        entry = ROOT / "inspect_episode.py"
+        program = f"""
+import io
+import runpy
+import sys
+import tempfile
+class RefusedFlush(io.BufferedWriter):
+    def flush(self):
+        raise OSError("fixture paired stdout flush refusal")
+stream = tempfile.TemporaryFile()
+sys.stdout = io.TextIOWrapper(RefusedFlush(stream), encoding="utf-8")
+sys.argv = [{str(entry)!r}, {str(self.left_path)!r}, "--decision-report",
+            "--compare-report", {str(self.right_path)!r}]
+runpy.run_path({str(entry)!r}, run_name="__main__")
+"""
+        result = subprocess.run(
+            [sys.executable, "-B", "-c", program], cwd=ROOT,
+            capture_output=True, timeout=10, check=False,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, b"")
+        self.assertIn(b"fixture paired stdout flush refusal", result.stderr)
+        self.assertNotIn(b"Exception ignored", result.stderr)
+        self.assertNotIn(b"Traceback", result.stderr)
+
 if __name__ == "__main__":
     unittest.main()
