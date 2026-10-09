@@ -907,7 +907,10 @@ def _render_pair(left: dict, right: dict, left_bytes: bytes, right_bytes: bytes,
     document.add('<!doctype html><html lang="en"><head><meta charset="utf-8">'
                  '<meta name="viewport" content="width=device-width,initial-scale=1">'
                  "<title>Saved decision report comparison</title><style>"
-                 + _css(appearance) + "</style></head><body><main>")
+                 + _css(appearance)
+                 + 'nav[aria-label="Comparison sections"] a{min-width:0;'
+                 'max-width:100%;overflow-wrap:anywhere}'
+                 + "</style></head><body><main>")
     document.add(
         '<header id="overview"><h1>Saved decision report comparison</h1>'
         "<p><strong>Inputs and declared meaning before reported statistics.</strong> "
