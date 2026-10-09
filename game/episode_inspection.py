@@ -751,3 +751,258 @@ def decision_inspection_html(record_path: Path, *, appearance: str = "obscur") -
     except (ValueError, TypeError, OverflowError, RecursionError) as exc:
         raise InspectionRuntimeError(
             "admitted decision report cannot be rendered") from exc
+
+
+# Pair mode adds aggregate admission and composition without changing old renderers.
+PAIR_VALUE_LIMIT = 200_000
+_PAIR_GROUPS = (
+    ("pair-inputs", "Captured reports and saved status",
+     ("format", "schema_version", "status", "search_performed", "source_record")),
+    ("pair-state", "Selected pre-action boundaries", ("selection", "selected_state")),
+    ("pair-configuration", "Declared configuration and value meaning",
+     ("configuration", "value_semantics")),
+    ("pair-provenance", "Retained action and saved provenance",
+     ("stored_action", "stored_provenance", "implementation", "identity_comparisons")),
+    ("pair-work", "Reported work", ("work", "elapsed_seconds")),
+    ("pair-choices", "Reported alternatives and recommendations",
+     ("legal_actions", "ranking", "recommendation")),
+)
+
+
+def _pair_capture(path: Path, role: str, limit: int) -> tuple[dict, bytes]:
+    captured = records._read(path, role, limit)
+    parsed = records._parse(captured, role, 200_000, 10**300)
+    try:
+        return validate_decision_report(parsed), captured
+    except records.EpisodeInputError as exc:
+        raise records.EpisodeInputError(f"{role}: {exc}") from exc
+
+
+def _pair_values(left: Any, right: Any) -> None:
+    # Count admitted roots separately, without inventing another container level.
+    pending: list[Any] = [right, left]
+    visited = 0
+    while pending:
+        value = pending.pop()
+        visited += 1
+        if visited > PAIR_VALUE_LIMIT:
+            raise records.EpisodeInputError(
+                f"paired decision reports: exceeds {PAIR_VALUE_LIMIT} aggregate values")
+        if isinstance(value, dict):
+            pending.extend(value.values())
+        elif isinstance(value, list):
+            pending.extend(value)
+
+
+def _pair_alignment(left: dict, right: dict) -> list[str]:
+    failed = [
+        "/" + name for name in ("selected_state", "value_semantics")
+        if records.canonical(left[name]) != records.canonical(right[name])
+    ]
+    for name in ("method", "horizon_rounds"):
+        if (records.canonical(left["configuration"][name])
+                != records.canonical(right["configuration"][name])):
+            failed.append("/configuration/" + name)
+    return failed
+
+
+def _pair_branch(document: _Document, name: str, difference: str | None,
+                 left: dict, right: dict) -> None:
+    status = "same" if difference is None else "different"
+    location = "" if difference is None else difference
+    document.add(
+        f'<article id="comparison-{name}" data-comparison-field="{name}" '
+        f'data-comparison-status="{status}" '
+        f'data-first-difference="{escape(location, quote=True)}">'
+        f"<h3>{name.replace('_', ' ').capitalize()}</h3>")
+    _facts(document, [
+        ("Typed branch comparison", status),
+        ("First differing report pointer", difference),
+    ])
+    for side, record in (("left", left), ("right", right)):
+        title = side.capitalize()
+        document.add(f"<h4>{title}</h4>")
+        if name == "selected_state":
+            _boundary(document, record[name])
+        elif name == "stored_action":
+            _report_references(document, record[name], record["selected_state"])
+        _fragment(document, record[name], f"/{side}/{name}",
+                  f"{title}: complete {name.replace('_', ' ')}")
+    document.add("</article>")
+
+
+def _pair_choice(document: _Document, side: str, row: dict | None,
+                 state: dict) -> None:
+    document.add(f"<h4>{side}</h4>")
+    if row is None:
+        document.add("<p>Absent from this report. No statistic is supplied.</p>")
+        return
+    _report_references(document, row, state)
+    _facts(document, [
+        ("Saved sampling status", row["status"]),
+        ("Visits", row["visits"]),
+        ("Raw shaped-reward sum", row["value_sum"]),
+        ("Mean shaped reward", row["mean_shaped_reward"]),
+    ])
+    if row["status"] == "unvisited":
+        document.add("<p>Unvisited: no sampled mean. This is not a zero-valued "
+                     "recommendation.</p>")
+
+
+def _pair_choices(document: _Document, left: dict, right: dict,
+                  failed: list[str]) -> None:
+    available = not failed
+    document.add('<div data-choice-alignment="'
+                 + ("available" if available else "unavailable") + '">')
+    if available:
+        document.add(
+            "<h3>Indexed alignment available under saved claims</h3>"
+            "<p>Both reports declare the same complete selected state, literal "
+            "value semantics, method and horizon. This permits raw index "
+            "correlation, not authentication, legality or a controlled experiment. "
+            "Different seeds, work allowances and counts remain visible. No "
+            "cause, score improvement or probability is inferred.</p>")
+        rows = [
+            {(row["card_idx"], row["target_idx"]): row
+             for row in record["legal_actions"]}
+            for record in (left, right)
+        ]
+        identities = list(rows[0])
+        identities.extend(identity for identity in rows[1] if identity not in rows[0])
+        for index, identity in enumerate(identities):
+            document.add(f'<article data-indexed-comparison="{index}">'
+                         f"<h3>Raw indexed choice {index}</h3>")
+            _facts(document, [
+                ("Raw index pair [card_idx, target_idx]", list(identity))])
+            _pair_choice(document, "Left", rows[0].get(identity),
+                         left["selected_state"])
+            _pair_choice(document, "Right", rows[1].get(identity),
+                         right["selected_state"])
+            document.add("</article>")
+    else:
+        document.add(
+            "<h3>Indexed alignment unavailable</h3>"
+            "<p>A required declared condition differs. The ordered alternatives "
+            "are shown separately, with references into each report's own state. "
+            "No shared statistical rows or numerical deltas are supplied.</p>")
+        _facts(document, [("Failed alignment conditions", failed)])
+        for side, record in (("Left", left), ("Right", right)):
+            document.add(f"<h3>{side}: separate ordered alternatives</h3>")
+            for index, row in enumerate(record["legal_actions"]):
+                document.add(
+                    f'<article data-separate-alternative="{side.lower()}-{index}">'
+                    f"<h4>{side} alternative {index}</h4>")
+                _pair_choice(document, side, row, record["selected_state"])
+                document.add("</article>")
+    document.add(
+        "<p>Labels are literal and can differ for one raw identity. A Pass object "
+        "has two null indices. A null recommendation records no recommendation. "
+        "Missing alternatives, unvisited rows and nullable means remain distinct. "
+        "Ranking retains each report's supplied order and is not endorsed.</p></div>")
+
+
+def _render_pair(left: dict, right: dict, left_bytes: bytes, right_bytes: bytes,
+                 appearance: str, differences: dict[str, str | None]) -> bytes:
+    document = _Document()
+    document.add('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+                 '<meta name="viewport" content="width=device-width,initial-scale=1">'
+                 "<title>Saved decision report comparison</title><style>"
+                 + _css(appearance)
+                 + 'nav[aria-label="Comparison sections"] a{min-width:0;'
+                 'max-width:100%;overflow-wrap:anywhere}'
+                 + "</style></head><body><main>")
+    document.add(
+        '<header id="overview"><h1>Saved decision report comparison</h1>'
+        "<p><strong>Inputs and declared meaning before reported statistics.</strong> "
+        "This passive reader admits two saved representations. It does not "
+        "establish that search occurred, choices are legal or complete, counters "
+        "are honest or values are accurate. No state reconstruction, environment, "
+        "replay, search or RNG runs here.</p>"
+        "<p><em>Recording, report-producer and actual passive capture are separate "
+        "roles.</em> Matching hashes or fields establish representation agreement, "
+        "not origin authentication or policy quality.</p></header>")
+    _facts(document, [
+        ("Left captured bytes", len(left_bytes)),
+        ("Left captured SHA-256", hashlib.sha256(left_bytes).hexdigest()),
+        ("Right captured bytes", len(right_bytes)),
+        ("Right captured SHA-256", hashlib.sha256(right_bytes).hexdigest()),
+        ("Screen edition", appearance),
+    ])
+    document.add(
+        "<p>Left and Right were each captured once. These are independent reads, "
+        "not a simultaneous snapshot, even when both paths name the same file. "
+        "Caller paths and filenames are omitted. Captured hashes cover lexical "
+        "bytes. Complete fragments preserve parsed types and values, not original "
+        "whitespace, object key order or numeric spelling.</p>"
+        '<nav aria-label="Comparison sections"><a href="#overview">Overview</a>')
+    for anchor, title, _ in _PAIR_GROUPS:
+        document.add(f'<a href="#{anchor}">{title}</a>')
+    document.add("</nav>")
+    failed = _pair_alignment(left, right)
+    for anchor, title, names in _PAIR_GROUPS:
+        document.add(f'<section id="{anchor}"><h2>{title}</h2>')
+        if anchor == "pair-state":
+            document.add(
+                "<p>Each selection claims an original episode pre-action boundary "
+                "after refill. Its /steps/N/state pointer is plain saved text, not "
+                "an array in either report or a resource opened here. Hand and "
+                "enemy slots stay ordered, including duplicates and dead entries. "
+                "Missing indexed entries stay unresolved.</p>")
+        elif anchor == "pair-configuration":
+            document.add(
+                "<p>Configuration and the literal saved reward explanation are "
+                "compared before choices. Shaped rewards are not calibrated win "
+                "probabilities. Different allowances or seeds prevent causal "
+                "and equal-budget conclusions.</p>")
+        elif anchor == "pair-provenance":
+            document.add(
+                "<p>The retained old action is distinct from the current saved "
+                "recommendation. Original episode identities, recording/runtime "
+                "maps, report-producer identities and equality booleans are "
+                "unauthenticated saved claims. Names and hashes are plain text "
+                "and are never opened. RNG digests are not restored states.</p>")
+        elif anchor == "pair-work":
+            document.add(
+                "<p>Reported counts, stopping reasons and elapsed time are "
+                "admitted for elementary consistency. They do not prove "
+                "execution, equal budgets, speed or value accuracy.</p>")
+        for name in names:
+            _pair_branch(document, name, differences[name], left, right)
+        if anchor == "pair-choices":
+            _pair_choices(document, left, right, failed)
+        document.add("</section>")
+    document.add(
+        "<footer><p>Body typography uses local Inter when its declared faces are "
+        "available, with Arial and the browser's sans-serif fallback otherwise. "
+        "JSON intentionally uses monospace. No font is bundled or downloaded. "
+        "Screen appearance is fixed for this document. Print uses Clair.</p>"
+        "<p>Pinned Clair/Obscur roles, MIT. Revision "
+        + PRESENTATION_SOURCE["revision"] + ". Original normalized token SHA-256 "
+        + PRESENTATION_SOURCE["sha256"] + ".</p></footer></main></body></html>")
+    return document.finish()
+
+
+def decision_comparison_html(left: Path, right: Path, *,
+                             appearance: str = "obscur") -> bytes:
+    """Capture two decision reports and return passive, input-first comparison HTML."""
+    if not isinstance(appearance, str) or appearance not in THEMES:
+        raise records.EpisodeInputError("appearance: choose obscur or clair")
+    left_record, left_bytes = _pair_capture(left, "Left decision report",
+                                           records.RECORD_BYTES)
+    right_record, right_bytes = _pair_capture(
+        right, "Right decision report", records.RECORD_BYTES - len(left_bytes))
+    _pair_values(left_record, right_record)
+    try:
+        differences = {
+            name: records.first_difference(left_record[name], right_record[name],
+                                           "/" + name)
+            for name in DECISION_FIELDS
+        }
+        return _render_pair(left_record, right_record, left_bytes, right_bytes,
+                            appearance, differences)
+    except records.EpisodeRuntimeError as exc:
+        raise InspectionRuntimeError(
+            f"admitted decision comparison cannot be compared: {exc}") from exc
+    except (ValueError, TypeError, OverflowError, RecursionError) as exc:
+        raise InspectionRuntimeError(
+            "admitted decision comparison cannot be rendered") from exc

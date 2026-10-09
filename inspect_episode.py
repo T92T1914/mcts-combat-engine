@@ -7,6 +7,7 @@ from pathlib import Path
 
 from game.episode_inspection import (
     InspectionRuntimeError,
+    decision_comparison_html,
     decision_inspection_html,
     inspection_html,
 )
@@ -22,10 +23,19 @@ def main(argv: list[str] | None = None) -> int:
                         help="fixed output appearance (default: obscur)")
     parser.add_argument("--decision-report", action="store_true",
                         help="read mcts-episode-decision-report schema 1 explicitly")
+    parser.add_argument("--compare-report", type=Path, metavar="RIGHT",
+                        help="compare a second saved report with --decision-report")
     args = parser.parse_args(argv)
+    if args.compare_report is not None and not args.decision_report:
+        parser.error("--compare-report requires --decision-report")
     try:
-        render = decision_inspection_html if args.decision_report else inspection_html
-        rendered = render(args.record, appearance=args.appearance)
+        if args.compare_report is not None:
+            rendered = decision_comparison_html(args.record, args.compare_report,
+                                                appearance=args.appearance)
+        else:
+            render = (decision_inspection_html if args.decision_report
+                      else inspection_html)
+            rendered = render(args.record, appearance=args.appearance)
         written = sys.stdout.buffer.write(rendered)
         if written != len(rendered):
             raise InspectionRuntimeError("output sink accepted an incomplete document")
