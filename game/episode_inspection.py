@@ -311,3 +311,443 @@ def inspection_html(record_path: Path, *, appearance: str = "obscur") -> bytes:
         return _render(record, captured, appearance)
     except (ValueError, TypeError, OverflowError, RecursionError) as exc:
         raise InspectionRuntimeError("admitted record cannot be rendered") from exc
+
+
+# This format has its own passive boundary. The episode renderer above is unchanged.
+DECISION_FIELDS = (
+    "format", "schema_version", "status", "search_performed", "source_record",
+    "selection", "selected_state", "stored_action", "stored_provenance",
+    "implementation", "identity_comparisons", "value_semantics", "configuration",
+    "work", "elapsed_seconds", "legal_actions", "ranking", "recommendation",
+)
+
+
+def _report_implementation(value: Any, location: str) -> None:
+    """Admit the report producer's role without observing this reader's runtime."""
+    obj = records._object(value, location, {
+        "python", "python_implementation", "platform", "engine_import_kind",
+        "distribution_version", "distribution_matches_import",
+        "engine_files_sha256", "example_files_sha256", "entrypoint_files_sha256",
+        "machine", "pointer_bits", "python_full_version", "python_build",
+        "python_cache_tag", "rng_state_version",
+    })
+    for name in ("python", "python_implementation", "platform", "machine"):
+        records._string(obj[name], f"{location}/{name}")
+    records._string(obj["python_full_version"], f"{location}/python_full_version",
+                    high=2048)
+    for index, item in enumerate(records._array(
+            obj["python_build"], f"{location}/python_build", 2, 2)):
+        records._string(item, f"{location}/python_build/{index}", low=0, high=2048)
+    for name in ("python_cache_tag", "distribution_version"):
+        if obj[name] is not None:
+            records._string(obj[name], f"{location}/{name}")
+    records.integer(obj["pointer_bits"], f"{location}/pointer_bits", 32, 64)
+    if obj["pointer_bits"] not in (32, 64):
+        records._error(f"{location}/pointer_bits", "must be 32 or 64")
+    records.integer(obj["rng_state_version"], f"{location}/rng_state_version", 3, 3)
+    records._choice(obj["engine_import_kind"], f"{location}/engine_import_kind",
+                    {"source", "site-packages"})
+    records._boolean(obj["distribution_matches_import"],
+                     f"{location}/distribution_matches_import")
+    for name in ("engine_files_sha256", "example_files_sha256",
+                 "entrypoint_files_sha256"):
+        records._hash_map(obj[name], f"{location}/{name}")
+    if any(not name.startswith("game/") for name in obj["example_files_sha256"]):
+        records._error(f"{location}/example_files_sha256",
+                       "comparison names must begin game/")
+    if set(obj["entrypoint_files_sha256"]) != {"decide_episode.py"}:
+        records._error(f"{location}/entrypoint_files_sha256",
+                       "must identify decide_episode.py")
+
+
+def _stored_provenance(value: Any) -> dict:
+    location = "/stored_provenance"
+    obj = records._object(value, location, {
+        "content", "scenario", "configuration", "implementation", "environment_rng",
+    })
+    for name, validator in (
+        ("content", records._content_identity),
+        ("implementation", records._implementation),
+    ):
+        try:
+            validator(obj[name])
+        except records.EpisodeInputError as exc:
+            raise records.EpisodeInputError(f"{location}/{name}: {exc}") from exc
+    scenario = records._object(obj["scenario"], f"{location}/scenario",
+                               {"name", "environment_seed", "deck"})
+    records._string(scenario["name"], f"{location}/scenario/name")
+    records.integer(scenario["environment_seed"],
+                    f"{location}/scenario/environment_seed",
+                    records.SEED_MIN, records.SEED_MAX)
+    for index, card in enumerate(records._array(
+            scenario["deck"], f"{location}/scenario/deck", 1, 128)):
+        records._card(card, f"{location}/scenario/deck/{index}")
+    config = records._object(obj["configuration"], f"{location}/configuration", {
+        "method", "mode", "search_seed", "search_rng_mode", "max_rounds",
+        "max_sims_per_decision", "horizon_rounds", "max_transitions_per_decision",
+        "exploration", "time_budget_ms", "parallel", "workers", "priors",
+        "policy_rng",
+    })
+    try:
+        expected = records._configuration(
+            config["max_rounds"], config["max_sims_per_decision"],
+            config["horizon_rounds"], config["search_seed"])
+    except records.EpisodeInputError as exc:
+        raise records.EpisodeInputError(
+            f"{location}/configuration: {exc}") from exc
+    if not records._equal(config, expected):
+        records._error(f"{location}/configuration",
+                       "unsupported recording policy/configuration")
+    rng = records._object(obj["environment_rng"], f"{location}/environment_rng", {
+        "checkpoint_scheme", "state_version", "after_scenario_sha256", "final_sha256",
+    })
+    records._choice(rng["checkpoint_scheme"],
+                    f"{location}/environment_rng/checkpoint_scheme",
+                    {"python-random-getstate-json-v1"})
+    records.integer(rng["state_version"], f"{location}/environment_rng/state_version",
+                    3, 3)
+    for name in ("after_scenario_sha256", "final_sha256"):
+        records._digest(rng[name], f"{location}/environment_rng/{name}")
+    return obj
+
+
+def _report_configuration(value: Any) -> dict:
+    location = "/configuration"
+    obj = records._object(value, location, {
+        "method", "mode", "seed", "search_rng_mode", "max_sims", "horizon_rounds",
+        "max_transitions", "exploration", "time_budget_ms", "priors", "parallel",
+        "workers",
+    })
+    for name, expected in (
+        ("method", "mcts"), ("mode", "serial_clockless"),
+        ("search_rng_mode", "new_seed_per_decision"),
+    ):
+        records._choice(obj[name], f"{location}/{name}", {expected})
+    records.integer(obj["seed"], f"{location}/seed", records.SEED_MIN,
+                    records.SEED_MAX)
+    sims = records.integer(obj["max_sims"], f"{location}/max_sims", 0, 64)
+    horizon = records.integer(obj["horizon_rounds"],
+                              f"{location}/horizon_rounds", 1, 8)
+    records.integer(obj["max_transitions"], f"{location}/max_transitions",
+                    sims * horizon, sims * horizon)
+    records._number(obj["exploration"], f"{location}/exploration", 1.2, 1.2)
+    for name in ("time_budget_ms", "priors", "workers"):
+        if obj[name] is not None:
+            records._error(f"{location}/{name}", "must be null")
+    if obj["parallel"] is not False:
+        records._error(f"{location}/parallel", "must be false")
+    return obj
+
+
+def _report_action(value: Any, location: str, *, label: bool = False,
+                   stored: bool = False) -> tuple[int | None, int | None]:
+    keys = {"card_idx", "target_idx"} | ({"label"} if label else set())
+    obj = records._object(value, location, keys)
+    for name, high in (("card_idx", 6), ("target_idx", 7)):
+        if obj[name] is not None:
+            records.integer(obj[name], f"{location}/{name}", 0, high)
+    if not stored and obj["card_idx"] is None and obj["target_idx"] is not None:
+        records._error(location, "a Pass identity requires both indices null")
+    if label:
+        records._string(obj["label"], f"{location}/label", high=260)
+    return obj["card_idx"], obj["target_idx"]
+
+
+def _report_statistics(obj: dict, config: dict) -> None:
+    location = "/work"
+    work = records._object(obj["work"], location, {
+        "simulations", "transitions", "unused_transitions", "stop_reasons",
+    })
+    records.integer(work["simulations"], f"{location}/simulations", 0, 64)
+    for name in ("transitions", "unused_transitions"):
+        records.integer(work[name], f"{location}/{name}", 0, 512)
+    reasons = records._array(work["stop_reasons"], f"{location}/stop_reasons", 0, 2)
+    allowed = {"zero_requested_simulations"} if not config["max_sims"] else {
+        "simulation_cap", "transition_allowance"}
+    for index, reason in enumerate(reasons):
+        records._choice(reason, f"{location}/stop_reasons/{index}", allowed)
+    if len(set(reasons)) != len(reasons):
+        records._error(f"{location}/stop_reasons", "reasons must be unique")
+    rows: dict[tuple[int | None, int | None], dict[str, Any]] = {}
+    for index, row in enumerate(records._array(
+            obj["legal_actions"], "/legal_actions", 1, 57)):
+        path = f"/legal_actions/{index}"
+        row = records._object(row, path, {
+            "card_idx", "target_idx", "label", "status", "visits", "value_sum",
+            "mean_shaped_reward",
+        })
+        identity = _report_action(
+            {name: row[name] for name in ("card_idx", "target_idx", "label")},
+            path, label=True)
+        if identity in rows:
+            records._error(path, "duplicate raw action identity")
+        rows[identity] = row
+        records._choice(row["status"], f"{path}/status", {"sampled", "unvisited"})
+        visits = records.integer(row["visits"], f"{path}/visits", 0, 64)
+        records._number(row["value_sum"], f"{path}/value_sum", -10**300, 10**300)
+        mean = row["mean_shaped_reward"]
+        if row["status"] == "unvisited":
+            if visits != 0 or row["value_sum"] != 0 or mean is not None:
+                records._error(path, "unvisited requires zero visits/sum and null mean")
+        else:
+            if visits == 0 or mean is None:
+                records._error(path, "sampled requires positive visits and a mean")
+            records._number(mean, f"{path}/mean_shaped_reward", -10**300, 10**300)
+            if mean != row["value_sum"] / visits:
+                records._error(f"{path}/mean_shaped_reward",
+                               "must equal the saved value sum divided by visits")
+    ranking: list[tuple[int | None, int | None]] = []
+    for index, action in enumerate(records._array(obj["ranking"], "/ranking", 0, 57)):
+        identity = _report_action(action, f"/ranking/{index}")
+        if identity in ranking:
+            records._error(f"/ranking/{index}", "duplicate raw action identity")
+        ranking.append(identity)
+    sampled = {identity for identity, row in rows.items()
+               if row["status"] == "sampled"}
+    if set(ranking) != sampled:
+        records._error("/ranking", "must contain each sampled row exactly once")
+    if sum(row["visits"] for row in rows.values()) != work["simulations"]:
+        records._error("/work/simulations", "must equal the saved visits sum")
+    recommendation = obj["recommendation"]
+    if ranking:
+        identity = _report_action(recommendation, "/recommendation", label=True)
+        if (identity != ranking[0]
+                or recommendation["label"] != rows[ranking[0]]["label"]):
+            records._error("/recommendation",
+                           "must match the first ranking identity and its saved label")
+    elif recommendation is not None:
+        records._error("/recommendation", "empty ranking requires null")
+    if config["max_sims"]:
+        if obj["status"] != "decision" or obj["search_performed"] is not True:
+            records._error("/status", "positive requested work requires decision/true")
+        if (work["simulations"] != config["max_sims"]
+                or work["transitions"] > config["max_transitions"]
+                or work["unused_transitions"] != (
+                    config["max_transitions"] - work["transitions"])
+                or not ranking):
+            records._error("/work", "counts must agree with positive requested work")
+    elif (obj["status"] != "no_work" or obj["search_performed"] is not False
+          or obj["elapsed_seconds"] != 0 or work["simulations"] != 0
+          or work["transitions"] != 0 or work["unused_transitions"] != 0
+          or reasons != ["zero_requested_simulations"] or ranking
+          or recommendation is not None or sampled):
+        records._error("/work",
+                       "zero requested work requires a complete no-work report")
+
+
+def validate_decision_report(value: Any) -> dict:
+    """Admit stored representation only, without reconstruction or model calls."""
+    records._envelope(value, 200_000, 10**300)
+    obj = records._object(value, "/report", set(DECISION_FIELDS))
+    records._choice(obj["format"], "/format", {"mcts-episode-decision-report"})
+    records.integer(obj["schema_version"], "/schema_version", 1, 1)
+    records._choice(obj["status"], "/status", {"decision", "no_work"})
+    records._boolean(obj["search_performed"], "/search_performed")
+    source = records._object(obj["source_record"], "/source_record",
+                             {"bytes", "sha256"})
+    records.integer(source["bytes"], "/source_record/bytes", 1, records.RECORD_BYTES)
+    records._digest(source["sha256"], "/source_record/sha256")
+    selected = records._object(obj["selection"], "/selection",
+                               {"step_index", "round_num", "state_pointer"})
+    step = records.integer(selected["step_index"], "/selection/step_index", 0, 29)
+    records.integer(selected["round_num"], "/selection/round_num", step + 1, step + 1)
+    if selected["state_pointer"] != f"/steps/{step}/state":
+        records._error("/selection/state_pointer",
+                       "must name the selected episode state")
+    records._state(obj["selected_state"], "/selected_state")
+    if obj["selected_state"]["round_num"] != selected["round_num"]:
+        records._error("/selected_state/round_num", "must agree with selection")
+    _report_action(obj["stored_action"], "/stored_action", label=True, stored=True)
+    old = _stored_provenance(obj["stored_provenance"])
+    if selected["round_num"] > old["configuration"]["max_rounds"]:
+        records._error("/selection/round_num", "exceeds the stored recording round cap")
+    _report_implementation(obj["implementation"], "/implementation")
+    claims = records._object(obj["identity_comparisons"], "/identity_comparisons", {
+        "engine_files_equal", "example_files_equal", "runtime_fields_equal",
+        "entrypoint_roles",
+    })
+    for name in ("engine_files_equal", "example_files_equal", "runtime_fields_equal"):
+        records._boolean(claims[name], f"/identity_comparisons/{name}")
+    roles = records._object(claims["entrypoint_roles"],
+                            "/identity_comparisons/entrypoint_roles",
+                            {"recorded", "current", "same_role"})
+    for name, expected in (
+        ("recorded", "episode.py"), ("current", "decide_episode.py"),
+    ):
+        records._choice(roles[name], f"/identity_comparisons/entrypoint_roles/{name}",
+                        {expected})
+    if roles["same_role"] is not False:
+        records._error("/identity_comparisons/entrypoint_roles/same_role",
+                       "the saved entrypoint roles must remain distinct")
+    records._string(obj["value_semantics"], "/value_semantics", high=2048)
+    records._number(obj["elapsed_seconds"], "/elapsed_seconds", 0, 10**300)
+    config = _report_configuration(obj["configuration"])
+    _report_statistics(obj, config)
+    return obj
+
+
+def _report_references(document: _Document, action: dict, state: dict) -> None:
+    _facts(document, [("Saved label", action["label"]),
+                      ("Raw index pair [card_idx, target_idx]",
+                       [action["card_idx"], action["target_idx"]])])
+    document.add("<dl>")
+    _reference(document, "Card reference", action["card_idx"], state["hand"], "hand")
+    _reference(document, "Enemy reference", action["target_idx"],
+               state["enemies"], "enemy slots")
+    document.add("</dl>")
+
+
+def _render_decision(record: dict, captured: bytes, appearance: str) -> bytes:
+    document = _Document()
+    document.add('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+                 '<meta name="viewport" content="width=device-width,initial-scale=1">'
+                 "<title>Saved decision report inspection</title><style>"
+                 + _css(appearance) + "</style></head><body><main>")
+    document.add('<header id="overview"><h1>Saved decision report inspection</h1>'
+                 "<p><strong>Passive inspection of reported choices.</strong> "
+                 "Admission checks the saved schema and elementary representation "
+                 "consistency. It does not establish that search occurred, choices "
+                 "are legal, counters are honest or values are correct. No state "
+                 "reconstruction, environment, replay, search or RNG runs here.</p>"
+                 "<p><em>Recording provenance, report-producer provenance and this "
+                 "passive capture are separate roles.</em></p></header>")
+    _facts(document, [
+        ("Captured decision report bytes", len(captured)),
+        ("Captured decision report SHA-256", hashlib.sha256(captured).hexdigest()),
+        ("Claimed original episode bytes", record["source_record"]["bytes"]),
+        ("Claimed original episode SHA-256", record["source_record"]["sha256"]),
+        ("Screen edition", appearance),
+    ])
+    document.add('<nav aria-label="Report sections">')
+    for name, title in (
+        ("overview", "Overview"), ("selection", "Selected boundary"),
+        ("boundary", "Stored state"), ("stored-action", "Old action"),
+        ("alternatives", "Reported alternatives"), ("ranking", "Ranking"),
+        ("work", "Reported work"), ("provenance", "Saved provenance"),
+    ):
+        document.add(f'<a href="#{name}">{title}</a>')
+    document.add("</nav>")
+    for name, title in (
+        ("format", "Stored format"), ("schema_version", "Stored version"),
+        ("status", "Stored status"), ("search_performed", "Saved search claim"),
+        ("source_record", "Claimed original episode identity"),
+    ):
+        _fragment(document, record[name], f"/{name}", title)
+    document.add('<section id="selection"><h2>Selected pre-action boundary</h2>'
+                 "<p>The saved selection points into the original episode's state "
+                 "after refill and before its own recorded action. This pointer "
+                 "does not address an array in this report. The original episode "
+                 "is not opened or checked.</p>")
+    _facts(document, [
+        ("Original step index", record["selection"]["step_index"]),
+        ("Round number", record["selection"]["round_num"]),
+        ("Claimed original state pointer", record["selection"]["state_pointer"]),
+    ])
+    _fragment(document, record["selection"], "/selection", "Complete saved selection")
+    document.add('</section><section id="boundary"><h2>Complete selected state</h2>')
+    state = record["selected_state"]
+    _boundary(document, state)
+    _fragment(document, state, "/selected_state", "Complete selected state")
+    document.add('</section><section id="stored-action"><h2>Retained old action</h2>'
+                 "<p>This is the action retained from the original recording, not "
+                 "the reported current recommendation. Its label is kept literal.</p>")
+    _report_references(document, record["stored_action"], state)
+    _fragment(document, record["stored_action"], "/stored_action",
+              "Complete retained old action")
+    document.add('</section><section id="alternatives"><h2>Reported alternatives</h2>'
+                 "<p>Rows retain saved order and raw indices. References use only "
+                 "the selected saved hand and original enemy slots. Missing entries "
+                 "are visibly unresolved. No legality or completeness is recomputed. "
+                 "An unvisited row has no sampled mean; it is not a zero-valued "
+                 "recommendation. Null target can describe a self/all/utility "
+                 "identity without deriving an action description.</p>")
+    for index, action in enumerate(record["legal_actions"]):
+        document.add(f'<article id="alternative-{index}"><h3>Alternative {index}</h3>')
+        _report_references(document, action, state)
+        _facts(document, [
+            ("Saved sampling status", action["status"]),
+            ("Visits", action["visits"]),
+            ("Raw shaped-reward sum", action["value_sum"]),
+            ("Mean shaped reward", action["mean_shaped_reward"]),
+        ])
+        document.add("</article>")
+    _fragment(document, record["legal_actions"], "/legal_actions",
+              "Complete ordered alternatives and raw statistics")
+    document.add('</section><section id="ranking"><h2>Ranking and recommendation</h2>'
+                 "<p>Ranking retains reported order. It is not sorted or endorsed "
+                 "by this reader. A Pass object has both indices null and its saved "
+                 "label. It differs from a null recommendation, which means no "
+                 "recommendation was recorded.</p>")
+    _facts(document, [("Ordered raw ranking", record["ranking"])])
+    recommendation = record["recommendation"]
+    if recommendation is None:
+        document.add("<p>No recorded recommendation: <code>null</code>.</p>")
+    else:
+        document.add("<h3>Reported recommendation object</h3>")
+        _report_references(document, recommendation, state)
+    _fragment(document, record["ranking"], "/ranking", "Complete ordered ranking")
+    _fragment(document, recommendation, "/recommendation",
+              "Complete recommendation object or null")
+    document.add('</section><section id="work"><h2>Reported work and value meaning</h2>'
+                 "<p>Counts, stopping reasons and elapsed time are saved "
+                 "observations, not proof of execution or a resource guarantee. "
+                 "Only their elementary consistency is admitted. Shaped simulator "
+                 "rewards are not calibrated win probabilities.</p>")
+    _facts(document, [
+        ("Saved status", record["status"]),
+        ("Saved search-performed claim", record["search_performed"]),
+        ("Requested simulations", record["configuration"]["max_sims"]),
+        ("Reported simulations", record["work"]["simulations"]),
+        ("Reported transitions", record["work"]["transitions"]),
+        ("Unused transition allowance", record["work"]["unused_transitions"]),
+        ("Ordered stopping reasons", record["work"]["stop_reasons"]),
+        ("Reported elapsed seconds", record["elapsed_seconds"]),
+        ("Saved value explanation", record["value_semantics"]),
+    ])
+    if record["status"] == "no_work":
+        document.add("<p>Zero requested simulations: all alternatives are unvisited, "
+                     "ranking is empty and the recommendation is null.</p>")
+    for name, title in (
+        ("configuration", "Complete reported fresh configuration"),
+        ("work", "Complete reported work"),
+        ("elapsed_seconds", "Complete elapsed observation"),
+        ("value_semantics", "Complete saved value explanation"),
+    ):
+        _fragment(document, record[name], f"/{name}", title)
+    document.add('</section><section id="provenance"><h2>Saved provenance roles</h2>'
+                 "<p>Stored recording provenance includes content, scenario, "
+                 "configuration, episode.py implementation and environment RNG "
+                 "checkpoint digests. Report-producer provenance identifies "
+                 "decide_episode.py. These runtime labels, comparison names, "
+                 "hashes and equality booleans are saved claims. None is observed "
+                 "or authenticated here. RNG digests are not restorable states.</p>")
+    _fragment(document, record["stored_provenance"], "/stored_provenance",
+              "Complete recording provenance, all five branches")
+    _fragment(document, record["implementation"], "/implementation",
+              "Complete saved report-producer implementation and runtime")
+    _fragment(document, record["identity_comparisons"], "/identity_comparisons",
+              "Complete saved equality claims and distinct entrypoint roles")
+    document.add("</section><footer><p>Body typography uses local Inter when its "
+                 "declared faces are available, with Arial and the browser's "
+                 "sans-serif fallback otherwise. JSON intentionally uses monospace. "
+                 "No font is bundled or downloaded. Screen appearance is fixed "
+                 "for this document. Print uses Clair.</p><p>Pinned Clair/Obscur "
+                 "roles, MIT. Revision " + PRESENTATION_SOURCE["revision"]
+                 + ". Original normalized token SHA-256 "
+                 + PRESENTATION_SOURCE["sha256"]
+                 + ".</p></footer></main></body></html>")
+    return document.finish()
+
+
+def decision_inspection_html(record_path: Path, *, appearance: str = "obscur") -> bytes:
+    """Read one saved decision report and return passive HTML without file writes."""
+    if not isinstance(appearance, str) or appearance not in THEMES:
+        raise records.EpisodeInputError("appearance: choose obscur or clair")
+    captured = records._read(record_path, "decision report", records.RECORD_BYTES)
+    record = validate_decision_report(records._parse(
+        captured, "decision report", 200_000, 10**300))
+    try:
+        return _render_decision(record, captured, appearance)
+    except (ValueError, TypeError, OverflowError, RecursionError) as exc:
+        raise InspectionRuntimeError(
+            "admitted decision report cannot be rendered") from exc
