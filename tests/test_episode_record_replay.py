@@ -440,5 +440,220 @@ runpy.run_path(sys.argv.pop(1), run_name='__main__')
                                      self.scenarios.read_bytes()))
 
 
+class DeliverySink:
+    """An inert caller-owned stream with explicit delivery outcomes."""
+
+    def __init__(self, mode="complete"):
+        self.buffer = self
+        self.mode = mode
+        self.data = bytearray()
+        self.writes = 0
+        self.flushes = 0
+        self.closed = False
+
+    def write(self, data):
+        self.writes += 1
+        if self.mode == "write_refusal":
+            raise OSError("fixture output write refusal")
+        if self.mode in ("short", "none", "interrupt_write"):
+            self.data.extend(data[:5])
+            if self.mode == "interrupt_write":
+                raise KeyboardInterrupt
+            return None if self.mode == "none" else 5
+        self.data.extend(data)
+        return len(data)
+
+    def flush(self):
+        self.flushes += 1
+        if self.mode == "flush_refusal":
+            raise OSError("fixture output flush refusal")
+        if self.mode == "interrupt_flush":
+            raise KeyboardInterrupt
+
+    def close(self):
+        self.closed = True
+
+
+class OutputDeliveryTests(unittest.TestCase):
+    """Exercise command delivery without constructing an episode or search."""
+
+    VALUE = {
+        "fixture": "caf\u00e9", "items": [None, True, 1, 1.0],
+        "negative_zero": -0.0,
+    }
+    EXPECTED = (
+        b'{"fixture":"caf\\u00e9","items":[null,true,1,1.0],'
+        b'"negative_zero":-0.0}\n'
+    )
+
+    def invoke(self, operation, sink, *, replay_status=0, problem=None):
+        value = copy.deepcopy(self.VALUE)
+        arguments = ["record"] if operation == "record" else [
+            "replay", "unused-episode.json",
+        ]
+        error = io.StringIO()
+        with (
+            patch.object(episode, "record_episode", return_value=value,
+                         side_effect=problem if operation == "record"
+                         else forbidden) as record,
+            patch.object(episode, "replay_episode",
+                         return_value=(value, replay_status),
+                         side_effect=problem if operation == "replay"
+                         else forbidden) as replay,
+            patch.object(records, "load_content", forbidden),
+            patch.object(records, "_record_owner", forbidden),
+            patch.object(records, "play_game", forbidden),
+            contextlib.redirect_stdout(sink),
+            contextlib.redirect_stderr(error),
+        ):
+            try:
+                status = episode.main(arguments)
+            except SystemExit as exc:
+                status = exc.code
+            except KeyboardInterrupt:
+                self.fail("Output interruption escaped the command boundary")
+            except OSError as exc:
+                self.fail(f"Output failure escaped the command boundary: {exc}")
+        self.assertEqual(record.call_count, int(operation == "record"))
+        self.assertEqual(replay.call_count, int(operation == "replay"))
+        self.assertFalse(sink.closed, "main closed caller-owned stdout")
+        return status, error.getvalue()
+
+    def test_complete_output_preserves_record_and_replay_statuses(self):
+        for operation, selected in (("record", 0), ("replay", 0),
+                                    ("replay", 1), ("replay", 3)):
+            with self.subTest(operation=operation, status=selected):
+                sink = DeliverySink()
+                status, error = self.invoke(operation, sink,
+                                            replay_status=selected)
+                self.assertEqual(status, selected)
+                self.assertEqual(error, "")
+                self.assertEqual(bytes(sink.data), self.EXPECTED)
+                self.assertEqual((sink.writes, sink.flushes), (1, 1))
+                self.assertEqual(sink.data.count(b"\n"), 1)
+                self.assertNotIn(b"\r\n", sink.data)
+                parsed = json.loads(sink.data)
+                self.assertEqual(parsed["negative_zero"].hex(), "-0x0.0p+0")
+                self.assertIs(type(parsed["items"][2]), int)
+                self.assertIs(type(parsed["items"][3]), float)
+
+    def test_short_none_write_and_flush_refusals_are_runtime_failures(self):
+        for operation in ("record", "replay"):
+            for mode in ("short", "none", "write_refusal", "flush_refusal"):
+                with self.subTest(operation=operation, sink=mode):
+                    sink = DeliverySink(mode)
+                    status, error = self.invoke(operation, sink, replay_status=3)
+                    self.assertEqual(status, 1)
+                    self.assertIn("episode runtime:", error)
+                    self.assertEqual(sink.writes, 1)
+                    if mode in ("short", "none"):
+                        self.assertIn("incomplete", error)
+                        self.assertEqual(bytes(sink.data), self.EXPECTED[:5])
+                        self.assertEqual(sink.flushes, 0)
+                    elif mode == "write_refusal":
+                        self.assertIn("fixture output write refusal", error)
+                        self.assertEqual(sink.data, b"")
+                        self.assertEqual(sink.flushes, 0)
+                    else:
+                        self.assertIn("fixture output flush refusal", error)
+                        self.assertEqual(bytes(sink.data), self.EXPECTED)
+                        self.assertEqual(sink.flushes, 1)
+
+    def test_write_and_flush_interruptions_are_classified_for_both_dispatches(self):
+        for operation in ("record", "replay"):
+            for mode in ("interrupt_write", "interrupt_flush"):
+                with self.subTest(operation=operation, sink=mode):
+                    sink = DeliverySink(mode)
+                    status, error = self.invoke(operation, sink, replay_status=3)
+                    self.assertEqual(status, 130)
+                    self.assertIn("episode interrupted", error)
+                    self.assertEqual(sink.writes, 1)
+                    if mode == "interrupt_write":
+                        self.assertEqual(bytes(sink.data), self.EXPECTED[:5])
+                        self.assertEqual(sink.flushes, 0)
+                    else:
+                        self.assertEqual(bytes(sink.data), self.EXPECTED)
+                        self.assertEqual(sink.flushes, 1)
+
+    def test_pre_output_failures_remain_empty_for_both_dispatches(self):
+        cases = (
+            (records.EpisodeInputError("fixture invalid input"), 2, "error:"),
+            (RuntimeError("fixture pre-output failure"), 1, "episode runtime:"),
+            (KeyboardInterrupt(), 130, "episode interrupted"),
+        )
+        for operation in ("record", "replay"):
+            for problem, expected, diagnostic in cases:
+                with self.subTest(operation=operation, status=expected):
+                    sink = DeliverySink()
+                    status, error = self.invoke(operation, sink, problem=problem)
+                    self.assertEqual(status, expected)
+                    self.assertIn(diagnostic, error)
+                    self.assertEqual(sink.data, b"")
+                    self.assertEqual((sink.writes, sink.flushes), (0, 0))
+
+    def test_actual_buffered_flush_refusal_preserves_exit_one(self):
+        entry = ROOT / "episode.py"
+        before = entry.read_bytes()
+        wrapper = f'''
+import io
+import runpy
+import sys
+
+sys.path.insert(0, {str(ROOT)!r})
+import engine
+import game.episode_record as records
+
+def forbidden(*args, **kwargs):
+    raise AssertionError("output fixture attempted environment or search work")
+
+for owner in (engine.MCTS, engine.ParallelMCTS):
+    owner.__init__ = forbidden
+    owner.search = forbidden
+records.load_content = forbidden
+records._record_owner = forbidden
+records.play_game = forbidden
+records.replay_episode = forbidden
+calls = 0
+
+def literal_record(*args, **kwargs):
+    global calls
+    calls += 1
+    return {{"fixture": "buffered delivery"}}
+
+records.record_episode = literal_record
+
+class RefusedFlush(io.BufferedWriter):
+    def flush(self):
+        raise OSError("fixture stdout flush refusal")
+
+raw = io.FileIO(sys.stdout.fileno(), "wb", closefd=False)
+sys.stdout = io.TextIOWrapper(RefusedFlush(raw), encoding="utf-8")
+sys.argv = [{str(entry)!r}, "record"]
+try:
+    runpy.run_path({str(entry)!r}, run_name="__main__")
+except SystemExit:
+    assert calls == 1, "literal producer was not called exactly once"
+    raise
+'''
+        environment = dict(os.environ)
+        environment.pop("PYTHONPATH", None)
+        environment.pop("PYTHONHOME", None)
+        environment["PYTHONNOUSERSITE"] = "1"
+        environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        with tempfile.TemporaryDirectory(prefix="mcts-output-test-") as temporary:
+            result = subprocess.run(
+                [sys.executable, "-B", "-c", wrapper], cwd=temporary,
+                env=environment, stdin=subprocess.DEVNULL, capture_output=True,
+                timeout=15,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                check=False,
+            )
+        self.assertEqual(entry.read_bytes(), before)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn(b"episode runtime: fixture stdout flush refusal", result.stderr)
+        self.assertNotIn(b"Exception ignored", result.stderr)
+        self.assertNotIn(b"Traceback", result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

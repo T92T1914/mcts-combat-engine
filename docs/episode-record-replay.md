@@ -101,16 +101,31 @@ bytes, including formatting.
 
 | Exit | Meaning and output |
 | --- | --- |
-| 0 | One complete record or verified replay JSON object |
+| 0 | One complete record or verified replay JSON object, written and flushed including LF |
 | 2 | Argument/read/size/UTF-8/JSON/schema/content error, stderr diagnostic and empty stdout |
 | 3 | Initial content or observed implementation incompatibility, JSON status `incompatible`, before scenario generation |
-| 1 | First environment divergence, JSON status `mismatch`, or runtime/cleanup failure with stderr and empty stdout |
-| 130 | Interrupted command, empty stdout |
+| 1 | First environment divergence, JSON status `mismatch`, or runtime/cleanup/output failure with stderr |
+| 130 | Interrupted command, stderr diagnostic |
 
 Success output is buffered until owner cleanup, identity reobservation and output
 validation finish. A generated oversized/nonfinite record or code change after
 admitted work is a runtime failure, not initial incompatibility. A failed or
 interrupted recording does not emit a successful partial episode.
+
+The command checks that its output stream accepted every JSON byte and the final
+LF, then explicitly flushes before returning the record or replay status. An
+incomplete write or refused write/flush returns 1; interruption during delivery
+returns 130. Errors before output starts leave stdout empty. A delivery failure
+can leave partial or complete bytes in a redirected file or pipe, so check the
+exit status before using them. The command does not retry or remove those bytes.
+Flush acceptance does not establish durable disk storage or atomic replacement.
+
+Calling `main()` keeps the caller's output stream open. The executable retires a
+failed buffered stdout before interpreter shutdown can retry it and replace the
+intended failure status. Replay still requires matching implementation hashes,
+including `episode.py`; an entry change makes a record from a different entry
+incompatible (exit 3), before scenario work. Keep that record with its matching
+source instead of rewriting its stored hashes.
 
 ## Supported bounds
 
