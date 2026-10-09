@@ -12,6 +12,7 @@ from game.episode_record import (
     SEED_MAX,
     SEED_MIN,
     EpisodeInputError,
+    EpisodeRuntimeError,
     integer,
     output_bytes,
     record_episode,
@@ -60,6 +61,10 @@ def main(argv: list[str] | None = None) -> int:
             value, status = replay_episode(args.record, cards_path=args.cards,
                                           scenarios_path=args.scenarios)
         rendered = output_bytes(value)
+        written = sys.stdout.buffer.write(rendered)
+        if written != len(rendered):
+            raise EpisodeRuntimeError("output sink accepted an incomplete JSON object")
+        sys.stdout.buffer.flush()
     except EpisodeInputError as exc:
         parser.error(str(exc))
     except (RuntimeError, ValueError, OverflowError, OSError) as exc:
@@ -68,9 +73,15 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("episode interrupted", file=sys.stderr)
         return 130
-    sys.stdout.buffer.write(rendered)
     return status
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    exit_status = main()
+    if exit_status in (1, 130):
+        # Retire a failed buffered sink before shutdown can retry its flush.
+        try:
+            sys.stdout.close()
+        except (OSError, ValueError, KeyboardInterrupt):
+            pass
+    raise SystemExit(exit_status)
