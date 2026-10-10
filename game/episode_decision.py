@@ -310,15 +310,16 @@ def _statistics(search: MCTS, ranked: list[RankedAction], state: GameState,
     }
 
 
-def episode_decision(record_path: Path, *, step: int, seed: int = 7,
-                     sims: int = 16, horizon: int = 4) -> dict:
-    """Capture once, reconstruct one ongoing boundary and report current choices."""
-    step = integer(step, "step", 0, 29)
-    seed = integer(seed, "seed", SEED_MIN, SEED_MAX)
-    sims = integer(sims, "sims", 0, 64)
-    horizon = integer(horizon, "horizon", 1, 8)
-    data = _read(record_path, "record", RECORD_BYTES)
-    record = validate_record(_parse(data, "record", 200_000, 10**300))
+def _decision_from_record(data: bytes, record: dict, *, step: int, seed: int,
+                          sims: int, horizon: int, exploration: float | None,
+                          final_action_rule: str | None,
+                          implementation: dict | None = None) -> dict:
+    """Use one already captured/admitted episode, never rereading its path."""
+    from .episode_inspection import decision_ranking, validate_decision_report
+
+    version = 2 if exploration is not None or final_action_rule is not None else 1
+    coefficient = 1.2 if exploration is None else exploration
+    rule = "mean_visits" if final_action_rule is None else final_action_rule
     pointer = f"/steps/{step}/state"
     if step >= len(record["steps"]):
         _input(f"/steps/{step}", "selected step does not exist")
@@ -328,21 +329,29 @@ def episode_decision(record_path: Path, *, step: int, seed: int = 7,
     if state.is_terminal():
         _input(pointer, "terminal state has no decision remaining")
     try:
-        implementation = current_identity()
+        observed = current_identity()
+        if (implementation is not None
+                and canonical(observed) != canonical(implementation)):
+            raise DecisionRuntimeError("current identity changed between sweep cells")
+        implementation = observed
         configuration = {
             "method": "mcts", "mode": "serial_clockless", "seed": seed,
             "search_rng_mode": "new_seed_per_decision", "max_sims": sims,
             "horizon_rounds": horizon, "max_transitions": sims * horizon,
-            "exploration": 1.2, "time_budget_ms": None, "priors": None,
+            "exploration": coefficient, "time_budget_ms": None, "priors": None,
             "parallel": False, "workers": None,
         }
+        if version == 2:
+            configuration.update(final_action_rule=rule,
+                                 tie_break="root_encounter_order")
         statistics: list = []
         ranking: list[Action] = []
         elapsed = 0.0
         work = {"simulations": 0, "transitions": 0, "unused_transitions": 0,
                 "stop_reasons": ["zero_requested_simulations"]}
         if sims:
-            search = MCTS(horizon_rounds=horizon, max_sims=sims, exploration=1.2,
+            search = MCTS(horizon_rounds=horizon, max_sims=sims,
+                          exploration=coefficient,
                           max_transitions=sims * horizon, rng=random.Random(seed))
             started = time.perf_counter()
             ranked = search.search(state, time_budget_ms=None, priors=None)
@@ -367,7 +376,7 @@ def episode_decision(record_path: Path, *, step: int, seed: int = 7,
             "same_role": False,
         }
         base = {
-            "format": "mcts-episode-decision-report", "schema_version": 1,
+            "format": "mcts-episode-decision-report", "schema_version": version,
             "status": "decision" if sims else "no_work", "search_performed": bool(sims),
             "source_record": {"bytes": len(data),
                               "sha256": hashlib.sha256(data).hexdigest()},
@@ -382,6 +391,22 @@ def episode_decision(record_path: Path, *, step: int, seed: int = 7,
         }
         report = finish_report(base, state, configuration, work, statistics, ranking,
                                elapsed)
+        if version == 2:
+            report["root_encounter_order"] = [
+                {"card_idx": action.card_idx, "target_idx": action.target_idx}
+                for action, visits, _ in statistics if visits]
+            report["derivation"] = None
+            if report["ranking"] != decision_ranking(report, "mean_visits"):
+                raise DecisionRuntimeError(
+                    "engine ranking disagrees with captured statistics")
+            report["ranking"] = decision_ranking(report, rule)
+            if report["ranking"]:
+                chosen = report["ranking"][0]
+                label = next(row["label"] for row in report["legal_actions"]
+                             if row["card_idx"] == chosen["card_idx"] and
+                             row["target_idx"] == chosen["target_idx"])
+                report["recommendation"] = {**chosen, "label": label}
+            validate_decision_report(report)
         output_bytes(report)
         if (canonical(normalized(state)) != saved_state
                 or canonical(current_identity()) != canonical(implementation)):
@@ -394,3 +419,122 @@ def episode_decision(record_path: Path, *, step: int, seed: int = 7,
             AttributeError, ArithmeticError, RecursionError, MemoryError) as exc:
         message = f"{pointer}: current decision failed ({exc})"
         raise DecisionRuntimeError(message) from exc
+
+
+def episode_decision(record_path: Path, *, step: int, seed: int = 7,
+                     sims: int = 16, horizon: int = 4,
+                     exploration: float | None = None,
+                     final_action_rule: str | None = None) -> dict:
+    """Legacy V1 by default; explicit companion controls produce a V2 report."""
+    from .episode_inspection import EXPLORATIONS, FINAL_ACTION_RULES
+    from .episode_record import _choice, _number
+
+    step = integer(step, "step", 0, 29)
+    seed = integer(seed, "seed", SEED_MIN, SEED_MAX)
+    sims = integer(sims, "sims", 0, 64)
+    horizon = integer(horizon, "horizon", 1, 8)
+    if exploration is not None:
+        _number(exploration, "exploration", 0.6, 2.4)
+        if exploration not in EXPLORATIONS:
+            _input("exploration", "use 0.6, 1.2 or 2.4")
+    if final_action_rule is not None:
+        _choice(final_action_rule, "final_action_rule", FINAL_ACTION_RULES)
+    data = _read(record_path, "record", RECORD_BYTES)
+    record = validate_record(_parse(data, "record", 200_000, 10**300))
+    return _decision_from_record(data, record, step=step, seed=seed, sims=sims,
+                                 horizon=horizon, exploration=exploration,
+                                 final_action_rule=final_action_rule)
+
+
+def episode_stability(record_path: Path, *, step: int, seeds: list[int],
+                      explorations: list[float] | None = None,
+                      horizon: int = 4) -> dict:
+    """One admitted state, a fixed grid, and explicit completed/incomplete output."""
+    from .episode_inspection import (
+        stability_configuration,
+        stability_diagnostics,
+        stability_work,
+        validate_decision_report,
+        validate_stability_report,
+    )
+    from .episode_record import _envelope
+
+    config = stability_configuration(seeds, explorations if explorations is not None
+                                     else [0.6, 1.2, 2.4], horizon)
+    step = integer(step, "step", 0, 29)
+    data = _read(record_path, "record", RECORD_BYTES)
+    record = validate_record(_parse(data, "record", 200_000, 10**300))
+    reference = _decision_from_record(
+        data, record, step=step, seed=config["seeds"][0], sims=0, horizon=horizon,
+        exploration=config["explorations"][0], final_action_rule="mean_visits")
+    validate_decision_report(reference)
+    cells: list[dict] = []
+    report: dict[str, Any] = {
+        "format": "mcts-episode-stability-report", "schema_version": 1,
+        "status": "incomplete", "reference_decision": reference,
+        "configuration": config, "cells": cells, "work": stability_work(cells),
+        "diagnostics": None, "failure": None,
+    }
+    # Reserve repeated fixed payload, maximum choices and long numeric spellings
+    # before search. Final byte and structural admission remain mandatory.
+    placeholder = {**reference, "status": "decision", "search_performed": True,
+                   "configuration": {**reference["configuration"], "seed": SEED_MIN,
+                                     "max_sims": 64, "max_transitions": 512},
+                   "work": {"simulations": 64, "transitions": 512,
+                            "unused_transitions": 512,
+                            "stop_reasons": ["simulation_cap", "transition_allowance"]},
+                   "elapsed_seconds": 9.999999999999998e299,
+                   "legal_actions": [{**row, "visits": 64,
+                                      "value_sum": -9.999999999999998e299,
+                                      "mean_shaped_reward": -9.999999999999998e299}
+                                     for row in reference["legal_actions"]],
+                   "root_encounter_order": [{"card_idx": row["card_idx"],
+                                              "target_idx": row["target_idx"]}
+                                             for row in reference["legal_actions"]]}
+    placeholder["ranking"] = placeholder["root_encounter_order"]
+    first = reference["legal_actions"][0]
+    placeholder["recommendation"] = {name: first[name]
+                                     for name in ("card_idx", "target_idx", "label")}
+    preflight = {**report, "cells": [placeholder] * config["maximum_search_calls"],
+                 "diagnostics": ["x" * 2048] * 8,
+                 "failure": {"message": "x" * 2048}}
+    output_bytes(preflight)
+    _envelope(preflight, 200_000, 10**300)
+    try:
+        for coefficient in config["explorations"]:
+            for seed in config["seeds"]:
+                cell = _decision_from_record(
+                    data, record, step=step, seed=seed, sims=64, horizon=horizon,
+                    exploration=coefficient, final_action_rule="mean_visits",
+                    implementation=reference["implementation"])
+                validate_decision_report(cell)
+                cells.append(cell)
+        if canonical(current_identity()) != canonical(reference["implementation"]):
+            raise DecisionRuntimeError(
+                "current identity changed before sweep completion")
+        report["work"] = stability_work(cells)
+        report["diagnostics"] = stability_diagnostics(cells, config)
+        report["status"] = "complete"
+        validate_stability_report(report)
+        output_bytes(report)
+        return report
+    except (KeyboardInterrupt, RuntimeError, OSError, ValueError, TypeError,
+            KeyError, AttributeError, ArithmeticError, RecursionError,
+            MemoryError) as exc:
+        # The admitted prefix is the commit boundary, including interruptions
+        # immediately after append. A separate pending counter can lag behind it.
+        pending = (len(cells) if len(cells) < config["maximum_search_calls"]
+                   else None)
+        report["status"] = "incomplete"
+        report["diagnostics"] = None
+        report["work"] = stability_work(cells)
+        report["failure"] = {
+            "stage": "search" if pending is not None else "finalization",
+            "cell_index": pending,
+            "message": ("interrupted" if isinstance(exc, KeyboardInterrupt)
+                        else str(exc)[:2048] or type(exc).__name__),
+            "interrupted": isinstance(exc, KeyboardInterrupt),
+        }
+        validate_stability_report(report)
+        output_bytes(report)
+        return report

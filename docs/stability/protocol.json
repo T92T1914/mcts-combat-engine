@@ -1,0 +1,312 @@
+{
+  "format": "mcts-decision-stability-protocol",
+  "version": 1,
+  "date": "2026-10-10",
+  "reference_current_identity": {"python":"3.11.8","python_implementation":"CPython","platform":"Windows","engine_import_kind":"source","distribution_version":null,"distribution_matches_import":false,"engine_files_sha256":{"__init__.py":"099f37529017f01fe133417497ca038d72377633e8d8af98ef104b27b014b071","actions.py":"468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618","decider.py":"8d5c994f80abef9c8d6f1f83d524bb1bdd9792869b6d7f98770cb4318fcc0c3f","mcts.py":"86902c63ed6a2f5bb8acb26413167947dbf2687bf4e7dfb911743851be35c04d","parallel.py":"69769589192e740edaab83252766fb4dfb3d36a1d159571b4d415f2759d9f64b","py.typed":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","rules.py":"ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b","simulator.py":"401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d","state.py":"b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc"},"example_files_sha256":{"game/__init__.py":"735978f2d5b6b3d98ccd18a95cb4d7507b1b698d6daa16c1732f1a6e878bc22f","game/baselines.py":"b811957e04856da826a4160f1dc7ea45c5df13fc0796c37f3cf6fcb252873de7","game/content.py":"46969faf37663cbcf9ceadb0aa0cb0f84a2dfdd9e369fffdbb96d80537a4aabc","game/decision_report.py":"790f9821e310738aeb0f4dc17a516d7762b7171b203860969e4c2cb40e44e5de","game/episode_decision.py":"189129c0dc395cef29e64129cd9d167406466b23dcf27e08e6ce2697095c9557","game/episode_inspection.py":"d342749c3f2235bed55af53f20215a41a72ac7efac3a104b9753dd936fc242d5","game/episode_record.py":"746fcfe26702c2bfa0efc34b53bade65e66e4ea60e7823ec82ee04cfe0663b08","game/loader.py":"58fde6fbc9cee15fbba910fdbcdd2fc5e3e175b81a0f143ff20b7a3ffb13ff0f","game/runner.py":"192227008dcfd44259e74db54b6ec0528ac3d02dddb039da72f25db782bc5de6","game/stats.py":"cdc86beb41a03d27025faa10bdf6b5ff65e8fbf9cd10136d0c6dab1cf402d2b3"},"entrypoint_files_sha256":{"decide_episode.py":"6e9eab870af13139e1c5181da59ada30819ca1530db6331d5b2399d42fb939e6"},"machine":"AMD64","pointer_bits":64,"python_full_version":"3.11.8 (tags/v3.11.8:db85d51, Feb  6 2024, 22:03:32) [MSC v.1937 64 bit (AMD64)]","python_build":["tags/v3.11.8:db85d51","Feb  6 2024 22:03:32"],"python_cache_tag":"cpython-311","rng_state_version":3},
+  "metric_definitions": {"unordered_seed_pair_denominators": {"exploratory": 28, "confirmatory": 120}, "pair_dependence": "Overlapping seed pairs are dependent descriptive comparisons, not independent trials or a confidence sample.", "leading_primary_tie": "Number of sampled actions, including the chosen action, whose primary mean or visit key equals its leading key exactly.", "complete_tie": "Number of sampled actions, including the chosen action, whose mean and visits both equal its leading keys exactly. Captured encounter order resolves the tie.", "gaps": "Exact binary-float mean difference and integer visit difference between leading two rows in each ranking; null if fewer than two sampled actions.", "coefficient_pairs": [[0.6, 1.2], [0.6, 2.4], [1.2, 2.4]], "coverage": "Only selected early-state sensitivity, not late-round, prior, parallel, other-horizon or policy-quality generalization."},
+  "status": "frozen-before-deciding-results",
+  "question": "How do independent-seed final-action recommendations vary under fixed work, when comparing mean/visits with visits/mean and half/current/double exploration?",
+  "baseline_source_commit": "986bc2fd503783368eb84f67bdc50e6957709441",
+  "reference_engine_files_sha256": {
+    "__init__.py": "099f37529017f01fe133417497ca038d72377633e8d8af98ef104b27b014b071",
+    "actions.py": "468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618",
+    "decider.py": "8d5c994f80abef9c8d6f1f83d524bb1bdd9792869b6d7f98770cb4318fcc0c3f",
+    "mcts.py": "86902c63ed6a2f5bb8acb26413167947dbf2687bf4e7dfb911743851be35c04d",
+    "parallel.py": "69769589192e740edaab83252766fb4dfb3d36a1d159571b4d415f2759d9f64b",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rules.py": "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b",
+    "simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
+    "state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc"
+  },
+  "content": {
+    "kind": "built-in",
+    "cards": {
+      "bytes": 1280,
+      "sha256": "38ced8d0b83104610f421fb340679c9f0facfde46d95def33430ec1155656e20"
+    },
+    "scenarios": {
+      "bytes": 2509,
+      "sha256": "7b1b7b7d882c94ade7f1448bc71703758aa367230ae361ec77b985b7c2f9a378"
+    }
+  },
+  "inputs": [
+    {
+      "slice": "exploratory",
+      "scenario": "duel",
+      "environment_seed": 7,
+      "file": "exploratory-duel.json",
+      "bytes": 10559,
+      "sha256": "b7d31df835e0cbaf8bc81d8f67555351ed717bd5c5b77c7d2ae6cb5becdaa81b",
+      "selected_state_sha256": "f66d6209b6b3e30b91906f054400a16ff0da85a458db5f7b28a7ad5afb68ac07",
+      "step": 0,
+      "legal_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        }
+      ]
+    },
+    {
+      "slice": "exploratory",
+      "scenario": "gauntlet",
+      "environment_seed": 7,
+      "file": "exploratory-gauntlet.json",
+      "bytes": 13571,
+      "sha256": "e54bdf56c9b3dea3375e5576e14b9f047a6b67405c2ee47f22b71a77f5c9fbc5",
+      "selected_state_sha256": "c7678748969e7f931b7001c855b54ef13d20547e1040a06cc5c017ff7dbb8734",
+      "step": 0,
+      "legal_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 2
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 2
+        }
+      ]
+    },
+    {
+      "slice": "exploratory",
+      "scenario": "boss",
+      "environment_seed": 7,
+      "file": "exploratory-boss.json",
+      "bytes": 11873,
+      "sha256": "96042eb4b0eaf90209cccccdeae1a225c3c946b7fc3d82f3e58ab14a4974f2be",
+      "selected_state_sha256": "afeeaee5b359129108c0ce8fbb700324603839d55a7fb5705aef30e613d62f29",
+      "step": 0,
+      "legal_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        }
+      ]
+    },
+    {
+      "slice": "confirmatory",
+      "scenario": "duel",
+      "environment_seed": 31,
+      "file": "confirmatory-duel.json",
+      "bytes": 10575,
+      "sha256": "fc0f2f9e48b9bba66e54945b423f44cbfd9f6dfcbc3c8f7a9f3dfe31d355db87",
+      "selected_state_sha256": "ebb4cf5bafb00345909f365e824f710d6b45f8e07542955b4b9674dfda1cfea8",
+      "step": 0,
+      "legal_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        }
+      ]
+    },
+    {
+      "slice": "confirmatory",
+      "scenario": "gauntlet",
+      "environment_seed": 31,
+      "file": "confirmatory-gauntlet.json",
+      "bytes": 13600,
+      "sha256": "6c36144e9085d225aa937b5d8e1a8f2dc03781c49823082b184672ae93cf9c40",
+      "selected_state_sha256": "cd98a075e29b6e6c8023c79f65d8886110f96cfcff9b7dc05350f7e96fc54bd9",
+      "step": 0,
+      "legal_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 2
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 2
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 2
+        }
+      ]
+    },
+    {
+      "slice": "confirmatory",
+      "scenario": "boss",
+      "environment_seed": 31,
+      "file": "confirmatory-boss.json",
+      "bytes": 11889,
+      "sha256": "52ffb0bcf08ebd88a5d4584b9438fd362a01093a796e4fe0e830ddd9392f3857",
+      "selected_state_sha256": "a5dd4393e9d75fdadf3aa56ebc76e255e20fa1aa6afd83420e148752c9576427",
+      "step": 0,
+      "legal_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        }
+      ]
+    }
+  ],
+  "state_rationale": "Three existing supported encounter shapes: one target, multiple targets and registered boss rules. Initial pre-action states use two preselected environment seeds, changing dealt physical hand slots and legal branching without constructing a new domain. Inputs were captured with one-round, one-simulation bootstrap recording before deciding search; the selected initial boundary precedes that search.",
+  "slices": {
+    "exploratory": {
+      "environment_seed": 7,
+      "search_seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108
+      ]
+    },
+    "confirmatory": {
+      "environment_seed": 31,
+      "search_seeds": [
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016
+      ]
+    }
+  },
+  "controls": {
+    "exploration": [
+      0.6,
+      1.2,
+      2.4
+    ],
+    "max_sims": 64,
+    "horizon_rounds": 4,
+    "max_transitions": 256,
+    "time_budget_ms": null,
+    "priors": null,
+    "parallel": false,
+    "workers": null
+  },
+  "control_rationale": "Half/current/double coefficient in the unchanged shaped-reward scale measures local sensitivity without claiming an optimum. The maximum existing saved-state consumer allowance of64 simulations permits all admitted initial actions to receive opportunities while keeping a small fixed budget. Horizon4 matches that consumer default. No simulation/horizon tuning occurs.",
+  "selectors": {
+    "baseline": "mean_shaped_reward descending, visits descending, captured root encounter order for complete ties",
+    "alternative": "visits descending, mean_shaped_reward descending, same captured root encounter order for complete ties"
+  },
+  "comparison": "Both selectors use the same captured root statistics; changed exploration reruns search. Matching seeds across coefficients do not imply identical trajectories. All virtual visit counts are zero. Root-parallel aggregation is excluded; its weighted sufficient-statistic/canonical tie contract is documented but not experimentally generalized.",
+  "metrics": [
+    "per-state/per-coefficient selected-action frequencies for both rules",
+    "same-stat selector disagreement count/rate",
+    "pairwise independent-seed action disagreement count/denominator",
+    "modal frequency count/denominator, descriptive only",
+    "top two mean and visit gaps in their own ranking",
+    "primary and complete tie counts",
+    "matched-seed changed-coefficient action disagreement, not identical-trajectory inference",
+    "actual/unused simulations/transitions and stopping reasons",
+    "source, input/state identities and complete raw root visits/value sums in encounter order"
+  ],
+  "maximum_work": {
+    "search_calls": 216,
+    "simulations": 13824,
+    "transitions": 55296,
+    "per_search_simulations": 64,
+    "per_search_transitions": 256
+  },
+  "ordering": "Exploratory inputs first, then untouched confirmatory inputs. Within each input, listed coefficient order then ascending listed seeds. Confirmatory results remain unexamined until the collector/metrics and any exploratory source-contract fixes are frozen. No exploratory tuning or pruning is planned.",
+  "failures": "Retain every declared input/seed/coefficient cell. A raised exception or interrupted/over-budget/inconsistent search is an incomplete cell, not a decision. Stop the deciding batch on the first such contract failure, preserve completed cells and its partial receipt; investigate explicitly rather than retrying stochastic cells for favorable outcomes. No values are imputed and no unfavorable cell is removed.",
+  "stopping": "Finish exactly the predeclared cells, unless a recorded contract/host/user boundary interrupts. External runner90-second direct-process bound is a safety stop, not an algorithm deadline. No child processes or competing owned experiments are launched.",
+  "disposition": "Unless an independent applicable quality evaluation is separately qualified and executed, preserve the engine/default final rule and coefficient. A descriptive result delivers a reproducible stability diagnostic connected to ordinary decision reports and the existing companion. No stability, sampled mean, selector majority or literature theorem alone establishes stronger decisions, calibrated correctness probability or optimality.",
+  "research_note": "mcts-selection-research.md",
+  "research_note_sha256": "73842f9291a5e2e5813b4f78b7ed16ffaba959dd93fe2e7256a6ceea3774502a",
+  "protected": "Reward, simulator/actions, engine-only packaging, managed policy, historical record identity/admission, zero-search replay, passive inspection, old default decision interface/output contract and reader kit meanings."
+}

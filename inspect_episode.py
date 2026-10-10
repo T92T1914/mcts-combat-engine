@@ -22,7 +22,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--appearance", choices=("obscur", "clair"), default="obscur",
                         help="fixed output appearance (default: obscur)")
     parser.add_argument("--decision-report", action="store_true",
-                        help="read mcts-episode-decision-report schema 1 explicitly")
+                        help="read mcts-episode-decision-report schema 1 or 2 "
+                             "explicitly")
     parser.add_argument("--compare-report", type=Path, metavar="RIGHT",
                         help="compare a second saved report with --decision-report")
     args = parser.parse_args(argv)

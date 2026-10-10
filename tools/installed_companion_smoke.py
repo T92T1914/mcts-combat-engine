@@ -109,10 +109,13 @@ def main() -> None:
             script = (
                 "import sys,runpy;sys.path.insert(0,sys.argv.pop(1));"
                 "import game.episode_record as records;import engine;"
+                "import game.episode_decision as decisions;"
                 "\n"
                 "def refuse(*args,**kwargs):\n"
                 " raise RuntimeError('SEARCH REACHED DURING REPLAY')\n"
                 "records._record_owner=refuse;engine.mcts_decider=refuse;"
+                "engine.MCTS.__init__=refuse;decisions.current_identity=refuse;"
+                "decisions._reconstruct=refuse;"
                 "sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name='__main__')"
             )
             command = [sys.executable, "-I", "-B", "-c", script,
@@ -171,6 +174,30 @@ def main() -> None:
                       "comparison.html")
     require(b'data-comparison-status=' in comparison,
             "comparison omitted retained differences")
+    stability = json.loads(call("decide_episode.py", [
+        str(record_path), "--step", "0", "--stability", "--seeds", "19", "23",
+        "--explorations", "0.6", "1.2", "--horizon", "1"], "stability.json"))
+    require(stability["status"] == "complete" and
+            stability["work"]["completed_search_calls"] == 4 and
+            stability["work"]["simulations"] == 256 and
+            stability["work"]["transitions"] <= 256,
+            "installed stability did not preserve fixed work")
+    require(all(cell["implementation"]["engine_import_kind"] == "site-packages"
+                for cell in stability["cells"]), "stability used an uninstalled engine")
+    for rule in ("mean_visits", "visits_mean"):
+        extracted = json.loads(call("decide_episode.py", [
+            str(outputs / "stability.json"), "--extract-cell", "0",
+            "--final-action-rule", rule], rule + ".json", guard_search=True))
+        require(extracted["schema_version"] == 2 and
+                extracted["derivation"]["new_search_performed"] is False,
+                "extraction changed original work meaning")
+    call("inspect_episode.py", [str(outputs / "visits_mean.json"), "--decision-report"],
+         "stability-cell.html", guard_search=True)
+    call("inspect_episode.py", [str(left), "--decision-report", "--compare-report",
+         str(outputs / "visits_mean.json")], "mixed-schema-comparison.html",
+         guard_search=True)
+    call("decide_episode.py", [str(record_path), "--step", "0", "--stability",
+         "--seeds", "7", "-7"], "equivalent-seeds.stdout", 2, guard_search=True)
     incompatible = json.loads(record_body)
     incompatible["implementation"]["python"] = "historical-runtime-label"
     incompatible_path = outputs / "historical-runtime.json"
