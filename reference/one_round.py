@@ -13,6 +13,8 @@ import time
 from fractions import Fraction
 
 GRID = 1 << 53
+MODEL = "independent_one_round_binary53_shaped_v1"
+THREE_ENEMY_MODEL = "independent_one_round_three_enemy_binary53_shaped_v1"
 MAX_PATHS = 250_000
 MAX_TOTAL_PATHS = 1_000_000
 MAX_SECONDS = 30.0
@@ -192,14 +194,17 @@ def effective_pips(fighter, element):
     )
 
 
-def validate(state):
+def validate(state, *, model=MODEL):
     """Admit a complete supported root, without calling production validators."""
+    if not isinstance(model, str) or model not in (MODEL, THREE_ENEMY_MODEL):
+        raise UnsupportedState("model: exact supported reference identity required")
     _object(state, STATE_FIELDS, "state")
     _integer(state["round_num"], 1, 30, "state/round_num")
     if state["boss_rules"] != []:
         raise UnsupportedState("state/boss_rules: rules are excluded")
     _fighter(state["player"], "state/player")
-    _list(state["enemies"], 1, 2, "state/enemies")
+    low, high = (1, 2) if model == MODEL else (3, 3)
+    _list(state["enemies"], low, high, "state/enemies")
     for index, enemy in enumerate(state["enemies"]):
         _fighter(enemy, f"state/enemies/{index}")
     _list(state["hand"], 0, 7, "state/hand")
@@ -216,9 +221,9 @@ def validate(state):
         )
 
 
-def legal_actions(state):
+def legal_actions(state, *, model=MODEL):
     """Preserve distinct physical hand indices, enemy indices and pass identity."""
-    validate(state)
+    validate(state, model=model)
     choices = [{"card_idx": None, "target_idx": None}]
     for index, card in enumerate(state["hand"]):
         if effective_pips(state["player"], card["element"]) < card["pip_cost"]:
@@ -478,14 +483,16 @@ def score(state):
     return max(0.0, min(1.0, 0.5 + 0.5 * (player_ratio - enemy_ratio)))
 
 
-def enumerate_action(state, action, *, max_paths=MAX_PATHS, max_seconds=MAX_SECONDS):
+def enumerate_action(
+    state, action, *, max_paths=MAX_PATHS, max_seconds=MAX_SECONDS, model=MODEL
+):
     """Yield successor, exact weight and source-compatible draw tape.
 
     A prefix supplies transition witnesses only. A complete expectation requires
     exhausting every leaf and checking exact unit mass. Use evaluate for an
     accepted report covering the whole legal action set.
     """
-    choices = legal_actions(state)
+    choices = legal_actions(state, model=model)
     _object(action, {"card_idx", "target_idx"}, "action")
     for field in ("card_idx", "target_idx"):
         value = action[field]
@@ -559,6 +566,7 @@ def evaluate(
     max_paths=MAX_PATHS,
     max_total_paths=MAX_TOTAL_PATHS,
     max_seconds=MAX_SECONDS,
+    model=MODEL,
 ):
     """Complete action values or a refusal, never a partly priced action set."""
     started = time.monotonic()
@@ -567,7 +575,7 @@ def evaluate(
     _number(max_seconds, 0.000001, MAX_SECONDS, "max_seconds")
     rows = []
     total_leaves = 0
-    for action in legal_actions(state):
+    for action in legal_actions(state, model=model):
         probability = Fraction(0)
         expectation = Fraction(0)
         terminal_win = Fraction(0)
@@ -577,7 +585,11 @@ def evaluate(
         if remaining_seconds < 0.000001:
             raise ReferenceLimitExceeded("whole report exceeded cooperative deadline")
         for leaf in enumerate_action(
-            state, action, max_paths=max_paths, max_seconds=remaining_seconds
+            state,
+            action,
+            max_paths=max_paths,
+            max_seconds=remaining_seconds,
+            model=model,
         ):
             leaves += 1
             total_leaves += 1
@@ -624,7 +636,7 @@ def evaluate(
             "whole report exceeded cooperative deadline at completion"
         )
     return {
-        "model": "independent_one_round_binary53_shaped_v1",
+        "model": model,
         "horizon_rounds": 1,
         "terminal_depth": 1,
         "actions": rows,

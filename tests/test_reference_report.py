@@ -182,6 +182,124 @@ def literal_report(decision=None):
     )
 
 
+def literal_three_decision(*, version=2):
+    """Literal 22-choice envelope, with no recorded or searched provenance."""
+    value = literal_decision(version=version)
+    state = value["selected_state"]
+    state["player"].update(
+        hp=80,
+        max_hp=100,
+        pips=0,
+        power_pips=0,
+        blades=[],
+        traps=[],
+        shields=[],
+        dots=[],
+        resist={},
+        boost={},
+    )
+    enemy = copy.deepcopy(state["enemies"][0])
+    enemy.update(
+        hp=100,
+        max_hp=100,
+        blades=[],
+        traps=[],
+        shields=[],
+        dots=[],
+        resist={},
+        boost={},
+        power_pip_chance=0,
+    )
+    state["enemies"] = [
+        {**copy.deepcopy(enemy), "name": f"Synthetic enemy {index}"}
+        for index in range(3)
+    ]
+    card = copy.deepcopy(state["hand"][0])
+    card.update(
+        name="Synthetic duplicate damage",
+        element="ember",
+        card_type="damage",
+        damage_min=10,
+        damage_max=10,
+    )
+    state["hand"] = [copy.deepcopy(card) for _ in range(7)]
+    identities = [{"card_idx": None, "target_idx": None}] + [
+        {"card_idx": index, "target_idx": target}
+        for index in range(7)
+        for target in range(3)
+    ]
+    rows = []
+    for index, identity in enumerate(identities):
+        visits, total = ((4, 3.0), (12, 6.0))[index] if index < 2 else (0, 0)
+        rows.append(
+            {
+                **identity,
+                "label": "Pass" if index == 0 else card["name"],
+                "status": "sampled" if visits else "unvisited",
+                "visits": visits,
+                "value_sum": total,
+                "mean_shaped_reward": total / visits if visits else None,
+            }
+        )
+    value["legal_actions"] = rows
+    value["ranking"] = identities[:2]
+    value["recommendation"] = {**identities[0], "label": "Pass"}
+    if version == 2:
+        value["root_encounter_order"] = identities[1::-1]
+    return value
+
+
+def literal_three_evaluation(decision):
+    """Invented fractions test passive model admission, never numerical correctness."""
+    actions = []
+    for row in decision["legal_actions"]:
+        identity = {name: row[name] for name in ("card_idx", "target_idx")}
+        value = (
+            Fraction(1, 4)
+            if identity["card_idx"] is None
+            else Fraction(3, 4)
+            if identity["target_idx"] == 2
+            else Fraction(1, 2)
+        )
+        actions.append(
+            {
+                "action": identity,
+                "expected_value": report._fraction_object(value),
+                "expected_value_float": float(value),
+                "mass": report._fraction_object(Fraction(1)),
+                "win_mass": report._fraction_object(Fraction(0)),
+                "loss_mass": report._fraction_object(Fraction(0)),
+                "ongoing_mass": report._fraction_object(Fraction(1)),
+                "leaves": 1,
+            }
+        )
+    return {
+        "model": report.THREE_ENEMY_MODEL,
+        "horizon_rounds": 1,
+        "terminal_depth": 1,
+        "probability_model": report.PROBABILITY_MODEL,
+        "value_model": report.VALUE_MODEL,
+        "actions": actions,
+        "best_actions": [
+            row["action"] for row in actions if row["action"]["target_idx"] == 2
+        ],
+        "total_leaves": 22,
+        "elapsed_seconds": 0.01,
+    }
+
+
+def literal_three_report(*, version=2):
+    decision = literal_three_decision(version=version)
+    base = report.reference_report_base(
+        decision,
+        canonical(decision) + b"\n",
+        literal_implementation(decision),
+        {"max_paths": 100, "max_total_paths": 1000, "max_seconds": 1},
+        model=report.THREE_ENEMY_MODEL,
+    )
+    return report.complete_reference_report(base, literal_three_evaluation(decision))
+
+
 def replace(value, path, replacement):
     target = value
     for key in path[:-1]:
@@ -230,6 +348,119 @@ class ReferenceReportTests(unittest.TestCase):
             no_work["diagnostics"]["same_statistics"],
             {"mean_visits": None, "visits_mean": None},
         )
+
+    def test_explicit_three_enemy_report_keeps_22_choices_all_ties_and_exact_losses(
+        self,
+    ):
+        value = literal_three_report()
+        self.assertEqual(value["schema_version"], 1)
+        self.assertEqual(value["model"], report.THREE_ENEMY_MODEL)
+        self.assertEqual(len(value["evaluation"]["actions"]), 22)
+        self.assertEqual(
+            value["evaluation"]["best_actions"],
+            [{"card_idx": index, "target_idx": 2} for index in range(7)],
+        )
+        self.assertEqual(
+            value["diagnostics"]["recommendation"]["value_loss"],
+            {"numerator": "1", "denominator": "2"},
+        )
+        self.assertEqual(
+            value["diagnostics"]["same_statistics"]["visits_mean"]["value_loss"],
+            {"numerator": "1", "denominator": "4"},
+        )
+        self.assertIsNone(
+            literal_three_report(version=1)["diagnostics"]["same_statistics"]
+        )
+        old = literal_report(literal_decision(version=1))
+        original = canonical(old)
+        self.assertEqual(canonical(report.validate_reference_report(old)), original)
+        self.assertEqual(old["model"], report.MODEL)
+
+    def test_model_mismatch_unknown_identity_and_mislabeled_roots_are_rejected(self):
+        three = literal_three_report()
+        for models in (
+            (report.MODEL, report.THREE_ENEMY_MODEL),
+            (report.THREE_ENEMY_MODEL, report.MODEL),
+            (report.MODEL, report.MODEL),
+            ("unknown_model", "unknown_model"),
+        ):
+            with self.subTest(models=models):
+                changed = copy.deepcopy(three)
+                changed["model"], changed["evaluation"]["model"] = models
+                with self.assertRaises(EpisodeInputError):
+                    report.validate_reference_report(changed)
+        old = copy.deepcopy(self.value)
+        old["model"] = old["evaluation"]["model"] = report.THREE_ENEMY_MODEL
+        with self.assertRaises(EpisodeInputError):
+            report.validate_reference_report(old)
+        omitted = copy.deepcopy(three)
+        omitted["evaluation"]["actions"].pop()
+        with self.assertRaises(EpisodeInputError):
+            report.validate_reference_report(omitted)
+        for path, replacement in (
+            (("evaluation", "actions", 3, "action", "target_idx"), True),
+            (("evaluation", "actions", 3, "mass", "numerator"), "0"),
+            (("diagnostics", "recommendation", "value_loss", "numerator"), "0"),
+            (("evaluation", "best_actions"), [{"card_idx": 0, "target_idx": 2}]),
+        ):
+            changed = copy.deepcopy(three)
+            replace(changed, path, replacement)
+            with self.assertRaises(EpisodeInputError):
+                report.validate_reference_report(changed)
+
+    def test_three_enemy_passive_inspection_and_model_comparison_never_import_core(
+        self,
+    ):
+        value = literal_three_report()
+        left = self.save(value)
+        right = self.save(value, self.directory / "same-three.json")
+        with (
+            guarded_routes(no_search=True),
+            patch.dict(sys.modules, {"reference.one_round": None}),
+            patch.object(GameState, "heuristic_value", side_effect=AssertionError),
+            patch.object(random, "random", side_effect=AssertionError),
+            patch.object(random, "randint", side_effect=AssertionError),
+            patch.object(subprocess, "Popen", side_effect=AssertionError),
+        ):
+            rendered = report.reference_inspection_html(left)
+            artifact = Artifact(rendered)
+            self.assertEqual(artifact.fragments["/evaluation"], value["evaluation"])
+            self.assertIn(report.THREE_ENEMY_MODEL.encode(), rendered)
+            self.assertIn(b"Exactly three living enemies", rendered)
+            self.assertIn(
+                b"equal exact one-round value loss",
+                report.reference_comparison_html(left, right),
+            )
+            self.save(self.value, right)
+            comparison = report.reference_comparison_html(left, right)
+        self.assertIn(b"model_differs", comparison)
+        self.assertIn(b"No winner is declared", comparison)
+        self.assertNotIn(b"has lower exact one-round value loss", comparison)
+
+    def test_third_enemy_admission_rejects_broader_roots_after_hashes_are_rebound(self):
+        original = literal_three_report()
+        for path, replacement in (
+            (("enemies", 2, "hp"), 0),
+            (("enemies", 2, "is_boss"), True),
+            (("enemies", 2, "policy"), {"attack": 1.0}),
+            (("enemies", 2, "pips"), 8),
+            (
+                ("enemies", 2, "dots"),
+                [{"tick": 1, "rounds_left": 0, "element": "frost"}],
+            ),
+        ):
+            with self.subTest(path=path):
+                changed = copy.deepcopy(original)
+                decision = changed["decision_report"]
+                replace(decision["selected_state"], path, replacement)
+                changed["source_report"]["canonical_sha256"] = hashlib.sha256(
+                    canonical(decision)
+                ).hexdigest()
+                changed["selected_state_sha256"] = hashlib.sha256(
+                    canonical(decision["selected_state"])
+                ).hexdigest()
+                with self.assertRaises(EpisodeInputError):
+                    report.validate_reference_report(changed)
 
     def test_captured_bytes_and_exact_literal_state_are_separately_bound(self):
         decision = literal_decision()

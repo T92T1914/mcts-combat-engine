@@ -1,0 +1,1041 @@
+{
+  "format": "mcts-three-enemy-reference-test-inputs",
+  "schema_version": 1,
+  "source": {
+    "main": "6aaa82563f3570c30d7536e84e517d31c35cb920",
+    "tree": "436a6fac5ea6231206c3b5bd33c5cefd79e820fd",
+    "cards_sha256": "38ced8d0b83104610f421fb340679c9f0facfde46d95def33430ec1155656e20",
+    "scenarios_sha256": "7b1b7b7d882c94ade7f1448bc71703758aa367230ae361ec77b985b7c2f9a378",
+    "qualification_cases_sha256": "ca9a4d7e207304e6535cacf7ca67b7118356b2b8ce5c4d6eb52eb8339ecbae7b",
+    "provenance": "Literal source-labeled qualification inputs. Only genuine-gauntlet-initial has recorded episode provenance. All other states are manually modeled fixtures."
+  },
+  "cases": [
+    {
+      "id": "genuine-gauntlet-initial",
+      "provenance": {
+        "kind": "genuine_recorded_state",
+        "source": "Built-in gauntlet, initial pre-action state from a bounded installed companion episode.",
+        "environment_seed": 37,
+        "search_seed": 41,
+        "rounds": 1,
+        "simulations": 16,
+        "horizon_rounds": 1,
+        "selected_step": 0,
+        "canonical_state_sha256": "c96f3185761f5f0ca71d05defd1f1c2c25636b3fd03c64f58b38013ecc712237"
+      },
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 0.85,
+              "card_type": "damage",
+              "damage_max": 210,
+              "damage_min": 140,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "frost",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "(minion strike)",
+              "pip_cost": 3
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "frost",
+            "hp": 900,
+            "is_boss": false,
+            "max_hp": 900,
+            "name": "Warden",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.55,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 0.85,
+              "card_type": "damage",
+              "damage_max": 210,
+              "damage_min": 140,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "frost",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "(minion strike)",
+              "pip_cost": 3
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "frost",
+            "hp": 750,
+            "is_boss": false,
+            "max_hp": 750,
+            "name": "Acolyte",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.55,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 0.85,
+              "card_type": "damage",
+              "damage_max": 210,
+              "damage_min": 140,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "frost",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "(minion strike)",
+              "pip_cost": 3
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "frost",
+            "hp": 1100,
+            "is_boss": false,
+            "max_hp": 1100,
+            "name": "Adept",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.55,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 0.9,
+            "card_type": "damage",
+            "damage_max": 275,
+            "damage_min": 205,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "ember",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Flame Dart",
+            "pip_cost": 2
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "heal",
+            "damage_max": 0,
+            "damage_min": 0,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "ember",
+            "heal": 520,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Mend",
+            "pip_cost": 2
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 95,
+            "damage_min": 65,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "ember",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Spark",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "blade",
+            "damage_max": 0,
+            "damage_min": 0,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "ember",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.35,
+            "name": "Ember Blade",
+            "pip_cost": 1
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "shield",
+            "damage_max": 0,
+            "damage_min": 0,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.7,
+            "name": "Stone Ward",
+            "pip_cost": 1
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "heal",
+            "damage_max": 0,
+            "damage_min": 0,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "ember",
+            "heal": 520,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Mend",
+            "pip_cost": 2
+          },
+          {
+            "accuracy": 0.9,
+            "card_type": "damage",
+            "damage_max": 275,
+            "damage_min": 205,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "ember",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Flame Dart",
+            "pip_cost": 2
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "ember",
+          "hp": 2600,
+          "is_boss": false,
+          "max_hp": 2600,
+          "name": "Player",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.6,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      }
+    },
+    {
+      "id": "modeled-three-target-duplicates",
+      "provenance": {
+        "kind": "modeled_calibration",
+        "source": "Literal qualification fixture. Seven physical duplicate cards and three different enemy threats, not a recorded encounter."
+      },
+      "state": {
+        "player": {
+          "name": "Player",
+          "element": "ember",
+          "hp": 80,
+          "max_hp": 100,
+          "pips": 0,
+          "power_pips": 0,
+          "power_pip_chance": 0.5,
+          "resist": {},
+          "boost": {},
+          "blades": [],
+          "traps": [],
+          "shields": [],
+          "dots": [],
+          "is_boss": false,
+          "base_attack": null,
+          "policy": null
+        },
+        "enemies": [
+          {
+            "name": "First",
+            "element": "frost",
+            "hp": 25,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.5,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": {
+              "name": "First threat",
+              "element": "frost",
+              "card_type": "damage",
+              "pip_cost": 3,
+              "accuracy": 1.0,
+              "damage_min": 300,
+              "damage_max": 300,
+              "heal": 0,
+              "dot_tick": 0,
+              "dot_rounds": 0,
+              "modifier": 0.0,
+              "hits_all": false
+            },
+            "policy": null
+          },
+          {
+            "name": "Second",
+            "element": "frost",
+            "hp": 35,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.5,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": {
+              "name": "Second threat",
+              "element": "frost",
+              "card_type": "damage",
+              "pip_cost": 3,
+              "accuracy": 1.0,
+              "damage_min": 400,
+              "damage_max": 400,
+              "heal": 0,
+              "dot_tick": 0,
+              "dot_rounds": 0,
+              "modifier": 0.0,
+              "hits_all": false
+            },
+            "policy": null
+          },
+          {
+            "name": "Third",
+            "element": "frost",
+            "hp": 45,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.5,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": {
+              "name": "Third threat",
+              "element": "frost",
+              "card_type": "damage",
+              "pip_cost": 3,
+              "accuracy": 1.0,
+              "damage_min": 500,
+              "damage_max": 500,
+              "heal": 0,
+              "dot_tick": 0,
+              "dot_rounds": 0,
+              "modifier": 0.0,
+              "hits_all": false
+            },
+            "policy": null
+          }
+        ],
+        "hand": [
+          {
+            "name": "Modeled duplicate",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 10,
+            "damage_max": 10,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          },
+          {
+            "name": "Modeled duplicate",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 10,
+            "damage_max": 10,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          },
+          {
+            "name": "Modeled duplicate",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 10,
+            "damage_max": 10,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          },
+          {
+            "name": "Modeled duplicate",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 10,
+            "damage_max": 10,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          },
+          {
+            "name": "Modeled duplicate",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 10,
+            "damage_max": 10,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          },
+          {
+            "name": "Modeled duplicate",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 10,
+            "damage_max": 10,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          },
+          {
+            "name": "Modeled duplicate",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 10,
+            "damage_max": 10,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          }
+        ],
+        "round_num": 1,
+        "boss_rules": []
+      }
+    },
+    {
+      "id": "modeled-third-response-suppression",
+      "provenance": {
+        "kind": "modeled_calibration",
+        "source": "Literal qualification fixture with only physical enemy index 2 able to afford a response, not a recorded encounter."
+      },
+      "state": {
+        "player": {
+          "name": "Player",
+          "element": "ember",
+          "hp": 15,
+          "max_hp": 100,
+          "pips": 1,
+          "power_pips": 0,
+          "power_pip_chance": 0.0,
+          "resist": {},
+          "boost": {},
+          "blades": [],
+          "traps": [],
+          "shields": [],
+          "dots": [],
+          "is_boss": false,
+          "base_attack": null,
+          "policy": null
+        },
+        "enemies": [
+          {
+            "name": "First",
+            "element": "frost",
+            "hp": 30,
+            "max_hp": 50,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": {
+              "name": "Unaffordable first",
+              "element": "frost",
+              "card_type": "damage",
+              "pip_cost": 3,
+              "accuracy": 1.0,
+              "damage_min": 8,
+              "damage_max": 8,
+              "heal": 0,
+              "dot_tick": 0,
+              "dot_rounds": 0,
+              "modifier": 0.0,
+              "hits_all": false
+            },
+            "policy": null
+          },
+          {
+            "name": "Second",
+            "element": "frost",
+            "hp": 40,
+            "max_hp": 50,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": {
+              "name": "Unaffordable second",
+              "element": "frost",
+              "card_type": "damage",
+              "pip_cost": 3,
+              "accuracy": 1.0,
+              "damage_min": 8,
+              "damage_max": 8,
+              "heal": 0,
+              "dot_tick": 0,
+              "dot_rounds": 0,
+              "modifier": 0.0,
+              "hits_all": false
+            },
+            "policy": null
+          },
+          {
+            "name": "Affordable third",
+            "element": "frost",
+            "hp": 10,
+            "max_hp": 60,
+            "pips": 3,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": {
+              "name": "Third reply",
+              "element": "frost",
+              "card_type": "damage",
+              "pip_cost": 3,
+              "accuracy": 1.0,
+              "damage_min": 20,
+              "damage_max": 21,
+              "heal": 0,
+              "dot_tick": 0,
+              "dot_rounds": 0,
+              "modifier": 0.0,
+              "hits_all": false
+            },
+            "policy": null
+          }
+        ],
+        "hand": [
+          {
+            "name": "Modeled conditional suppression",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 1,
+            "accuracy": 0.5,
+            "damage_min": 12,
+            "damage_max": 12,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": false
+          }
+        ],
+        "round_num": 1,
+        "boss_rules": []
+      }
+    },
+    {
+      "id": "modeled-three-area-one-blade",
+      "provenance": {
+        "kind": "modeled_calibration",
+        "source": "Literal tiny-width three-target area fixture with one matching and one mismatched blade, not a recorded encounter."
+      },
+      "state": {
+        "player": {
+          "name": "Player",
+          "element": "ember",
+          "hp": 30,
+          "max_hp": 100,
+          "pips": 0,
+          "power_pips": 3,
+          "power_pip_chance": 0.0,
+          "resist": {},
+          "boost": {},
+          "blades": [
+            {
+              "value": 0.5,
+              "element": "ember"
+            },
+            {
+              "value": 0.25,
+              "element": "frost"
+            }
+          ],
+          "traps": [],
+          "shields": [],
+          "dots": [],
+          "is_boss": false,
+          "base_attack": null,
+          "policy": null
+        },
+        "enemies": [
+          {
+            "name": "First",
+            "element": "frost",
+            "hp": 2,
+            "max_hp": 10,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.5,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Second",
+            "element": "frost",
+            "hp": 5,
+            "max_hp": 10,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.5,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [
+              {
+                "value": 0.25,
+                "element": "ember"
+              }
+            ],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Third",
+            "element": "frost",
+            "hp": 7,
+            "max_hp": 10,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.5,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [
+              {
+                "value": -0.5,
+                "element": "ember"
+              }
+            ],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          }
+        ],
+        "hand": [
+          {
+            "name": "Modeled tiny three-target area",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 5,
+            "accuracy": 1.0,
+            "damage_min": 2,
+            "damage_max": 3,
+            "heal": 1,
+            "dot_tick": 1,
+            "dot_rounds": 2,
+            "modifier": 0.0,
+            "hits_all": true
+          }
+        ],
+        "round_num": 3,
+        "boss_rules": []
+      }
+    },
+    {
+      "id": "modeled-three-terminal-ongoing-masses",
+      "provenance": {
+        "kind": "modeled_calibration",
+        "source": "Literal tiny-width area fixture separating a third surviving enemy from a complete three-enemy win, not a recorded encounter."
+      },
+      "state": {
+        "player": {
+          "name": "Player",
+          "element": "ember",
+          "hp": 100,
+          "max_hp": 100,
+          "pips": 0,
+          "power_pips": 0,
+          "power_pip_chance": 0.0,
+          "resist": {},
+          "boost": {},
+          "blades": [],
+          "traps": [],
+          "shields": [],
+          "dots": [],
+          "is_boss": false,
+          "base_attack": null,
+          "policy": null
+        },
+        "enemies": [
+          {
+            "name": "First",
+            "element": "frost",
+            "hp": 2,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Second",
+            "element": "frost",
+            "hp": 2,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Third",
+            "element": "frost",
+            "hp": 2,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          }
+        ],
+        "hand": [
+          {
+            "name": "Modeled mixed terminal area",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 0.5,
+            "damage_min": 1,
+            "damage_max": 2,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": true
+          }
+        ],
+        "round_num": 1,
+        "boss_rules": []
+      }
+    },
+    {
+      "id": "modeled-three-simultaneous-upkeep",
+      "provenance": {
+        "kind": "modeled_calibration",
+        "source": "Literal pass-only fixture where all four combatants die during upkeep, not a recorded encounter."
+      },
+      "state": {
+        "player": {
+          "name": "Player",
+          "element": "ember",
+          "hp": 1,
+          "max_hp": 100,
+          "pips": 0,
+          "power_pips": 0,
+          "power_pip_chance": 0.0,
+          "resist": {},
+          "boost": {},
+          "blades": [],
+          "traps": [],
+          "shields": [],
+          "dots": [
+            {
+              "tick": 1,
+              "rounds_left": 1,
+              "element": "ember"
+            }
+          ],
+          "is_boss": false,
+          "base_attack": null,
+          "policy": null
+        },
+        "enemies": [
+          {
+            "name": "First",
+            "element": "frost",
+            "hp": 1,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [
+              {
+                "tick": 1,
+                "rounds_left": 1,
+                "element": "ember"
+              }
+            ],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Second",
+            "element": "frost",
+            "hp": 1,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [
+              {
+                "tick": 1,
+                "rounds_left": 1,
+                "element": "ember"
+              }
+            ],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Third",
+            "element": "frost",
+            "hp": 1,
+            "max_hp": 100,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [
+              {
+                "tick": 1,
+                "rounds_left": 1,
+                "element": "ember"
+              }
+            ],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          }
+        ],
+        "hand": [],
+        "round_num": 1,
+        "boss_rules": []
+      }
+    },
+    {
+      "id": "modeled-three-lawful-wide-area",
+      "provenance": {
+        "kind": "modeled_calibration",
+        "source": "Literal lawful width-151 three-target area fixture, not a recorded encounter or a measured resource result."
+      },
+      "state": {
+        "player": {
+          "name": "Player",
+          "element": "ember",
+          "hp": 1000,
+          "max_hp": 1000,
+          "pips": 0,
+          "power_pips": 0,
+          "power_pip_chance": 0.0,
+          "resist": {},
+          "boost": {},
+          "blades": [],
+          "traps": [],
+          "shields": [],
+          "dots": [],
+          "is_boss": false,
+          "base_attack": null,
+          "policy": null
+        },
+        "enemies": [
+          {
+            "name": "First",
+            "element": "frost",
+            "hp": 1000,
+            "max_hp": 1000,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Second",
+            "element": "frost",
+            "hp": 1000,
+            "max_hp": 1000,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          },
+          {
+            "name": "Third",
+            "element": "frost",
+            "hp": 1000,
+            "max_hp": 1000,
+            "pips": 0,
+            "power_pips": 0,
+            "power_pip_chance": 0.0,
+            "resist": {},
+            "boost": {},
+            "blades": [],
+            "traps": [],
+            "shields": [],
+            "dots": [],
+            "is_boss": false,
+            "base_attack": null,
+            "policy": null
+          }
+        ],
+        "hand": [
+          {
+            "name": "Modeled lawful wide area",
+            "element": "ember",
+            "card_type": "damage",
+            "pip_cost": 0,
+            "accuracy": 1.0,
+            "damage_min": 1,
+            "damage_max": 151,
+            "heal": 0,
+            "dot_tick": 0,
+            "dot_rounds": 0,
+            "modifier": 0.0,
+            "hits_all": true
+          }
+        ],
+        "round_num": 1,
+        "boss_rules": []
+      }
+    }
+  ]
+}

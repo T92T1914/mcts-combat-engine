@@ -48,8 +48,12 @@ replay, saved-state decisions and inspection with an installed engine and no
 development checkout. Its [independent one-round reference](docs/episode-reference.md)
 prices every supported physical action from a saved horizon-one decision,
 reports exact expectations and selected-action score loss, and generates local
-inspection/comparison pages. The probability law, model identity and cooperative
-work limits are explicit. These values describe the declared one-round objective,
+inspection/comparison pages. The default supports one or two living enemies.
+Select `--model three-enemy` explicitly for the bounded three-enemy model,
+including the bundled gauntlet's initial saved decision. Both models preserve
+physical card copies and targets, and refuse unfinished calculations without
+partial rankings. The probability law, model identity and cooperative work limits
+are explicit. These values describe the declared one-round objective,
 not full-encounter optimality or calibrated win probability. Engine packaging,
 search defaults and the separate saved episode reader kit remain preserved.
 

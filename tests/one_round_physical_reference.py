@@ -17,6 +17,7 @@ from fractions import Fraction
 
 GRID = 2**53
 MODEL = "independent_one_round_binary53_binary64_v1"
+THREE_ENEMY_MODEL = "independent_one_round_three_enemy_binary53_shaped_v1"
 ELEMENTS = {"ember", "frost", "gale", "rune", "verdant", "shade", "aether", "neutral"}
 KINDS = {"damage", "heal", "blade", "trap", "shield", "utility"}
 CARD_FIELDS = {
@@ -201,13 +202,21 @@ def _available(fighter, card):
     )
 
 
-def validate_state(state):
+def validate_state(state, *, model=MODEL):
     """Admit a complete nonterminal root, never a silently reduced state."""
+    if model not in (MODEL, THREE_ENEMY_MODEL):
+        raise UnsupportedReference("state: unknown reference model")
     _object(state, {"player", "enemies", "hand", "round_num", "boss_rules"}, "state")
     _fighter(state["player"], "player")
-    if not isinstance(state["enemies"], list) or not 1 <= len(state["enemies"]) <= 2:
+    if not isinstance(state["enemies"], list) or not (
+        len(state["enemies"]) == 3
+        if model == THREE_ENEMY_MODEL
+        else 1 <= len(state["enemies"]) <= 2
+    ):
         raise UnsupportedReference(
-            "state: one or two initially living enemies required"
+            "state: exactly three initially living enemies required"
+            if model == THREE_ENEMY_MODEL
+            else "state: one or two initially living enemies required"
         )
     attackers = 0
     for index, enemy in enumerate(state["enemies"]):
@@ -272,8 +281,8 @@ def materialize_case(document, case_id):
     }
 
 
-def legal_action_identities(state):
-    validate_state(state)
+def legal_action_identities(state, *, model=MODEL):
+    validate_state(state, model=model)
     result = [{"card_idx": None, "target_idx": None}]
     for index, card in enumerate(state["hand"]):
         if _available(state["player"], card) < card["pip_cost"]:
@@ -561,13 +570,15 @@ def score_successor(state):
     return max(0.0, min(1.0, 0.5 + 0.5 * (player_fraction - enemy_fraction))), "ongoing"
 
 
-def enumerate_action(state, action, *, max_paths=250_000, max_seconds=30.0):
+def enumerate_action(
+    state, action, *, max_paths=250_000, max_seconds=30.0, model=MODEL
+):
     """Yield complete independent leaves with source-compatible draw tapes.
 
     Consuming only a prefix provides transition witnesses, never an accepted
     expected value. Exhaustion and exact unit mass are required for acceptance.
     """
-    actions = legal_action_identities(state)
+    actions = legal_action_identities(state, model=model)
     if (
         not isinstance(action, dict)
         or set(action) != {"card_idx", "target_idx"}
@@ -630,14 +641,17 @@ def _rational(value):
     return {"numerator": str(value.numerator), "denominator": str(value.denominator)}
 
 
-def evaluate(state, *, max_paths=250_000, max_total_paths=1_000_000, max_seconds=30.0):
+def evaluate(
+    state, *, max_paths=250_000, max_total_paths=1_000_000,
+    max_seconds=30.0, model=MODEL
+):
     """Return values only after every legal action is completely enumerated."""
     _integer(max_total_paths, 1, 1_000_000, "max_total_paths")
     _integer(max_paths, 1, 250_000, "max_paths")
     _number(max_seconds, 0.000001, 30, "max_seconds")
     started = time.perf_counter()
     values, rows, total = [], [], 0
-    for action in legal_action_identities(state):
+    for action in legal_action_identities(state, model=model):
         remaining = max_seconds - (time.perf_counter() - started)
         if remaining < 0.000001 or total >= max_total_paths:
             raise ReferenceLimitExceeded(
@@ -650,6 +664,7 @@ def evaluate(state, *, max_paths=250_000, max_total_paths=1_000_000, max_seconds
             action,
             max_paths=min(max_paths, max_total_paths - total),
             max_seconds=remaining,
+            model=model,
         ):
             probability = leaf["probability"]
             mass += probability
@@ -675,7 +690,7 @@ def evaluate(state, *, max_paths=250_000, max_total_paths=1_000_000, max_seconds
     # Every complete physical action appends one value and one report row.
     best = max(values)
     result = {
-        "model": MODEL,
+        "model": model,
         "horizon_rounds": 1,
         "terminal_depth": 1,
         "probability_law": "iid_uniform_binary53_and_inclusive_uniform_integer_damage",

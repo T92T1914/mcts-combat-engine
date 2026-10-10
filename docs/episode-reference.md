@@ -1,7 +1,7 @@
 # Price and inspect a saved one-round decision
 
 Use the complete [episode companion](episode-companion.md) with its matching
-installed engine. The new `reference_episode.py` command consumes an existing
+installed engine. The `reference_episode.py` command consumes an existing
 decision report, including a passively extracted stability cell. It does not
 start another search or replay the encounter. This addition is separate from
 the engine wheel and the saved episode reader kit.
@@ -36,10 +36,49 @@ assessed from the same retained root statistics, with no new simulations.
 Version 1 preserves its recorded recommendation and does not infer missing
 encounter order for alternate ties.
 
+## Choose the admitted state model
+
+The calculation model is an explicit choice. Omitting `--model` preserves the
+original one/two-enemy route. It does not expand automatically when a saved
+state contains three enemies.
+
+| Calculation option | Report model identity | Admitted initial enemies |
+| --- | --- | --- |
+| Default, or `--model one-round` | `independent_one_round_binary53_shaped_v1` | One or two living enemies |
+| `--model three-enemy` | `independent_one_round_three_enemy_binary53_shaped_v1` | Exactly three living enemies |
+
+Both models use the same one-round objective, probability law and field bounds.
+The Python consumer accepts the full model identity through its `model` keyword.
+An unknown identity or command option is an input error. A valid saved state
+outside the chosen subset produces a refusal with no accepted reference values.
+Existing schema-version-1 reports retain their stored model and meaning.
+Inspection reads that model from the saved report and rejects `--model` and
+calculation controls. It cannot reinterpret an older result as a new model.
+
+The bundled initial `gauntlet` state is a usable three-enemy example. Record
+and replay a bounded episode, obtain a separate horizon-one decision, then
+price its retained initial state with the explicit model:
+
+```powershell
+& $py "$companion\episode.py" record gauntlet --environment-seed 37 --search-seed 41 --rounds 1 --sims 16 --horizon 1 > C:\work\gauntlet-episode.json
+& $py "$companion\episode.py" replay C:\work\gauntlet-episode.json > C:\work\gauntlet-replay.json
+& $py "$companion\decide_episode.py" C:\work\gauntlet-episode.json --step 0 --seed 43 --sims 16 --horizon 1 > C:\work\gauntlet-decision.json
+& $py "$companion\reference_episode.py" C:\work\gauntlet-decision.json --model three-enemy --max-seconds 10 > C:\work\gauntlet-reference.json
+& $py "$companion\reference_episode.py" C:\work\gauntlet-reference.json --inspect --appearance obscur > C:\work\gauntlet-reference.html
+& $py "$companion\reference_episode.py" C:\work\gauntlet-decision.json --model three-enemy --max-seconds 5 > C:\work\gauntlet-reference-other.json
+& $py "$companion\reference_episode.py" C:\work\gauntlet-reference.json --inspect --compare-report C:\work\gauntlet-reference-other.json > C:\work\gauntlet-reference-comparison.html
+```
+
+These commands keep the same acquisition, encoding, fresh-path and exit-status
+requirements as the first journey. Different cooperative limits are visible in
+comparison and do not change the objective. Comparison requires matching exact
+state, model identity, law and objective. Different model identities are
+ineligible even when the remaining report fields agree.
+
 ## Objective and evidence boundary
 
-Model `independent_one_round_binary53_shaped_v1` prices every legal physical
-action after one complete round. Terminal depth and horizon are both one.
+Each declared model prices every legal physical action after one complete round.
+Terminal depth and horizon are both one.
 A win uses the source binary64 value `1.0 - 0.045`, a loss uses `0.15`, including
 simultaneous death, and an ongoing state uses the original HP/setup score in
 its source floating operation order. A nearly finished ongoing state can score
@@ -69,11 +108,14 @@ trusted authorship. Historical episode admission and replay remain unchanged.
 
 ## Supported subset and limits
 
-The subset has one or two living enemies, a living player, no boss flags/rules
-or learned policy, and at most one initially affordable enemy response. It
+The chosen subset requires one/two or exactly three living initial enemies as
+listed above, a living player, no boss flags/rules or learned policy, and at most
+one initially affordable enemy response. It
 admits up to seven hand cards and seven resource slots, all current card types,
 supported damage/heal/setup/status effects and explicit normalized fields.
-Duplicate cards and targets retain distinct physical indices. Damage ranges
+Duplicate cards and targets retain distinct physical indices. A full seven-card
+hand of single-target attacks has up to 15 physical choices in the default model
+and 22 in the three-enemy model, including pass. Damage ranges
 span at most 151 integer values. HP and damage are bounded at one million,
 root charm and damage-over-time lists have at most four entries, and positive
 effect lifetimes are bounded at 30 rounds. The implementation states complete
