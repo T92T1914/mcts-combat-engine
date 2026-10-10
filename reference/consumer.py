@@ -9,6 +9,7 @@ from game.episode_decision import current_identity
 from game.episode_inspection import validate_decision_report
 from game.episode_record import (
     RECORD_BYTES,
+    _choice,
     _number,
     _parse,
     _read,
@@ -18,7 +19,9 @@ from game.episode_record import (
 )
 
 from .report import (
+    MODEL,
     REFERENCE_ENGINE_FILES_SHA256,
+    THREE_ENEMY_MODEL,
     complete_reference_report,
     reference_report_base,
     refused_reference_report,
@@ -61,22 +64,24 @@ def reference_decision(
     max_paths: int = 250_000,
     max_total_paths: int = 1_000_000,
     max_seconds: float = 30.0,
+    model: str = MODEL,
 ) -> dict:
     """Return a complete report or explicit refusal, with no new search or replay."""
-    from .one_round import ReferenceLimitExceeded, UnsupportedState, evaluate
-
+    _choice(model, "model", {MODEL, THREE_ENEMY_MODEL})
     _number(max_seconds, "max_seconds", 0.000001, 30.0)
     limits = {
         "max_paths": integer(max_paths, "max_paths", 1, 250_000),
         "max_total_paths": integer(max_total_paths, "max_total_paths", 1, 1_000_000),
         "max_seconds": max_seconds,
     }
+    from .one_round import ReferenceLimitExceeded, UnsupportedState, evaluate
+
     captured = _read(path, "decision report", RECORD_BYTES)
     decision = validate_decision_report(
         _parse(captured, "decision report", 200_000, 10**300)
     )
     observed = reference_identity()
-    base = reference_report_base(decision, captured, observed, limits)
+    base = reference_report_base(decision, captured, observed, limits, model=model)
     try:
         if (
             observed["decision_consumer"]["engine_files_sha256"]
@@ -96,7 +101,7 @@ def reference_decision(
                 "decision or extract a horizon-one stability cell first.",
             )
         else:
-            evaluation = evaluate(decision["selected_state"], **limits)
+            evaluation = evaluate(decision["selected_state"], **limits, model=model)
             report = complete_reference_report(base, evaluation)
     except UnsupportedState as exc:
         report = refused_reference_report(base, "unsupported_state", str(exc))

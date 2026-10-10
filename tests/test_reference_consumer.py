@@ -1,7 +1,8 @@
 """Saved-decision consumer and output failures preserve complete-report boundaries.
 
-The input envelope is synthetic fixture data. Its search is real and bounded, but
-these tests do not claim that an environment recorded or replayed the episode.
+Most input envelopes are synthetic fixture data with real bounded search. The
+separately named gauntlet journey records genuine bundled input before pricing
+its saved initial state. Passive reads never search or replay either kind.
 """
 
 from __future__ import annotations
@@ -17,20 +18,25 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from test_episode_decision import synthetic_record
-from test_one_round_reference import card, modeled_state
+from test_one_round_reference import card, fighter, modeled_state
 
 import reference_episode
 from engine import MCTS, simulator
 from game.episode_decision import episode_decision
-from game.episode_record import EpisodeInputError, canonical, output_bytes
+from game.episode_record import (
+    EpisodeInputError,
+    canonical,
+    output_bytes,
+    record_episode,
+)
 from reference import consumer, one_round
 from reference import report as reports
 
 
-def synthetic_supported_record():
+def synthetic_supported_record(initial=None):
     """Supply a supported literal state without claiming environment provenance."""
     record = synthetic_record()
-    initial = modeled_state([card()])
+    initial = modeled_state([card()]) if initial is None else copy.deepcopy(initial)
     record["initial_state"] = copy.deepcopy(initial)
     record["scenario"]["deck"] = copy.deepcopy(initial["hand"])
     for index, step in enumerate(record["steps"]):
@@ -140,6 +146,191 @@ class ReferenceConsumerTests(unittest.TestCase):
         result = consumer.reference_decision(self.decision, max_total_paths=1)
         self.assert_refusal(result, "work_limit")
         self.assertEqual(result["limits"]["max_total_paths"], 1)
+
+    def three_enemy_decision(self):
+        """Synthetic full 22-choice state with real bounded saved-state search."""
+        initial = modeled_state(
+            [card() for _ in range(7)],
+            player=fighter("Player", power_pip_chance=0.5),
+            enemies=[
+                fighter(f"Enemy {index}", element="frost", power_pip_chance=0.5)
+                for index in range(3)
+            ],
+        )
+        episode = self.root / "synthetic-three-episode.json"
+        episode.write_bytes(output_bytes(synthetic_supported_record(initial)))
+        decision = self.root / "synthetic-three-decision.json"
+        decision.write_bytes(
+            output_bytes(episode_decision(episode, step=0, sims=4, horizon=1))
+        )
+        return decision
+
+    def test_explicit_model_preserves_22_physical_choices_and_bounded_refusals(self):
+        decision = self.three_enemy_decision()
+        before = decision.read_bytes()
+        with (
+            patch.object(
+                MCTS, "search", side_effect=AssertionError("unexpected search")
+            ),
+            patch.object(
+                simulator,
+                "advance_round",
+                side_effect=AssertionError("unexpected transition"),
+            ),
+        ):
+            default = consumer.reference_decision(decision)
+            result = consumer.reference_decision(
+                decision, model=reports.THREE_ENEMY_MODEL
+            )
+            limited = consumer.reference_decision(
+                decision, model=reports.THREE_ENEMY_MODEL, max_total_paths=17
+            )
+        self.assert_refusal(default, "unsupported_state")
+        self.assertEqual(default["model"], reports.MODEL)
+        self.assertEqual(result["status"], "complete")
+        self.assertEqual(result["model"], reports.THREE_ENEMY_MODEL)
+        actions = result["evaluation"]["actions"]
+        self.assertEqual(
+            [row["action"] for row in actions],
+            [
+                {"card_idx": None, "target_idx": None},
+                *[
+                    {"card_idx": index, "target_idx": target}
+                    for index in range(7)
+                    for target in range(3)
+                ],
+            ],
+        )
+        self.assertEqual(result["evaluation"]["total_leaves"], 352)
+        self.assertEqual(len(result["evaluation"]["best_actions"]), 21)
+        self.assert_refusal(limited, "work_limit")
+        unsupported = json.loads(before)
+        unsupported["selected_state"]["enemies"][2]["pips"] = 8
+        decision.write_bytes(output_bytes(unsupported))
+        refused = consumer.reference_decision(decision, model=reports.THREE_ENEMY_MODEL)
+        self.assert_refusal(refused, "unsupported_state")
+        self.assertEqual(refused["model"], reports.THREE_ENEMY_MODEL)
+        self.assertEqual(
+            result["decision_report"]["selected_state"],
+            json.loads(before)["selected_state"],
+        )
+        invalid = json.loads(before)
+        invalid["selected_state"]["enemies"][2]["policy"] = {"attack": 1.0}
+        decision.write_bytes(output_bytes(invalid))
+        with (
+            patch.object(
+                one_round,
+                "evaluate",
+                side_effect=AssertionError("invalid input priced"),
+            ),
+            self.assertRaisesRegex(
+                EpisodeInputError, "loader-created policy must be null"
+            ),
+        ):
+            consumer.reference_decision(decision, model=reports.THREE_ENEMY_MODEL)
+
+    def test_genuine_initial_gauntlet_explicit_cli_and_passive_saved_report_journey(
+        self,
+    ):
+        episode = self.root / "recorded-gauntlet.json"
+        episode.write_bytes(
+            output_bytes(
+                record_episode(
+                    "gauntlet",
+                    environment_seed=37,
+                    search_seed=41,
+                    rounds=1,
+                    sims=16,
+                    horizon=1,
+                )
+            )
+        )
+        decision = self.root / "gauntlet-decision.json"
+        decision.write_bytes(
+            output_bytes(episode_decision(episode, step=0, seed=43, sims=16, horizon=1))
+        )
+        before = (episode.read_bytes(), decision.read_bytes())
+        with (
+            patch.object(
+                MCTS, "search", side_effect=AssertionError("reference searched")
+            ),
+            patch.object(
+                simulator,
+                "advance_round",
+                side_effect=AssertionError("reference replayed"),
+            ),
+        ):
+            status, captured, errors = self.cli(
+                [str(decision), "--model", "three-enemy"]
+            )
+        self.assertEqual((status, errors), (0, ""))
+        result = json.loads(captured)
+        self.assertEqual(result["model"], reports.THREE_ENEMY_MODEL)
+        self.assertEqual(
+            [row["leaves"] for row in result["evaluation"]["actions"]],
+            [16, 496, 496, 496],
+        )
+        self.assertEqual(result["evaluation"]["total_leaves"], 1504)
+        self.assertEqual(
+            result["evaluation"]["best_actions"],
+            [{"card_idx": 2, "target_idx": target} for target in range(3)],
+        )
+        for row in result["evaluation"]["actions"][1:]:
+            self.assertEqual(
+                row["expected_value"],
+                {
+                    "numerator": "143673016476077679",
+                    "denominator": "279223176896970752",
+                },
+            )
+        saved = self.root / "gauntlet-reference.json"
+        saved.write_bytes(captured)
+        with (
+            patch.dict("sys.modules", {"reference.one_round": None}),
+            patch.object(
+                consumer,
+                "reference_decision",
+                side_effect=AssertionError("passive calculation"),
+            ),
+            patch.object(MCTS, "search", side_effect=AssertionError("passive search")),
+            patch.object(
+                simulator, "advance_round", side_effect=AssertionError("passive replay")
+            ),
+        ):
+            status, html, errors = self.cli([str(saved), "--inspect"])
+            self.assertEqual((status, errors), (0, ""))
+            self.assertIn(reports.THREE_ENEMY_MODEL.encode(), html)
+            self.assertIn(b"Exactly three living enemies", html)
+            status, html, errors = self.cli(
+                [str(saved), "--inspect", "--compare-report", str(saved)]
+            )
+            self.assertEqual((status, errors), (0, ""))
+            self.assertIn(b"equal exact one-round value loss", html)
+        self.assertEqual((episode.read_bytes(), decision.read_bytes()), before)
+        self.assertEqual(saved.read_bytes(), captured)
+
+    def test_unknown_model_is_input_error_and_explicit_new_model_never_expands_old_root(
+        self,
+    ):
+        with patch.object(
+            one_round, "evaluate", side_effect=AssertionError("unknown model evaluated")
+        ) as evaluate:
+            for model in ("unknown", "three-enemy", None, True):
+                with self.subTest(model=model), self.assertRaises(EpisodeInputError):
+                    consumer.reference_decision(self.decision, model=model)
+            evaluate.assert_not_called()
+        status, captured, errors = self.cli([str(self.decision), "--model", "unknown"])
+        self.assertEqual(status, 2)
+        self.assertEqual(captured, b"")
+        self.assertTrue(errors)
+        status, captured, errors = self.cli(
+            [str(self.decision), "--model", "three-enemy"]
+        )
+        self.assertEqual(status, 1)
+        result = json.loads(captured)
+        self.assert_refusal(result, "unsupported_state")
+        self.assertEqual(result["model"], reports.THREE_ENEMY_MODEL)
+        self.assertTrue(errors)
 
     def test_horizon_and_engine_mismatch_are_refused_before_arithmetic(self):
         search = episode_decision(
@@ -312,6 +503,8 @@ class ReferenceConsumerTests(unittest.TestCase):
     def test_cli_rejects_ambiguous_inspection_controls_before_any_calculation(self):
         for controls in (
             ["--inspect", "--max-seconds", "1"],
+            ["--inspect", "--model", "three-enemy"],
+            ["--inspect", "--model", "one-round"],
             ["--compare-report", str(self.decision)],
             ["--appearance", "clair"],
         ):

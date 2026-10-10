@@ -20,6 +20,7 @@ from game import episode_record as records
 
 FORMAT = "mcts-one-round-reference-report"
 MODEL = "independent_one_round_binary53_shaped_v1"
+THREE_ENEMY_MODEL = "independent_one_round_three_enemy_binary53_shaped_v1"
 PROBABILITY_MODEL = "iid_uniform_binary53_random_and_uniform_inclusive_integer"
 VALUE_MODEL = "exact_expectation_of_source_order_binary64_shaped_reward"
 REFERENCE_ENGINE_FILES_SHA256 = {
@@ -156,14 +157,17 @@ def _qualified_fighter(fighter: dict, location: str) -> None:
             records._error(location + "/base_attack", "must be a damage card")
 
 
-def _qualified_state(state: dict) -> None:
+def _qualified_state(state: dict, *, model: str = MODEL) -> None:
     """Admit the whole declared root subset without importing the numerical core."""
     location = "/decision_report/selected_state"
     records.integer(state["round_num"], location + "/round_num", 1, 30)
     if state["boss_rules"] != []:
         records._error(location + "/boss_rules", "rules are outside this model")
     _qualified_fighter(state["player"], location + "/player")
-    enemies = records._array(state["enemies"], location + "/enemies", 1, 2)
+    minimum, maximum = (3, 3) if model == THREE_ENEMY_MODEL else (1, 2)
+    enemies = records._array(
+        state["enemies"], location + "/enemies", minimum, maximum
+    )
     affordable = 0
     for index, enemy in enumerate(enemies):
         _qualified_fighter(enemy, f"{location}/enemies/{index}")
@@ -335,9 +339,11 @@ def _limits(value: Any) -> dict:
     return obj
 
 
-def _model(value: dict, location: str = "") -> None:
+def _model(value: dict, location: str = "", *, model: str | None = None) -> None:
+    records._choice(value["model"], location + "/model", {MODEL, THREE_ENEMY_MODEL})
+    if model is not None and value["model"] != model:
+        records._error(location + "/model", "must match the report's selected model")
     for name, expected in (
-        ("model", MODEL),
         ("probability_model", PROBABILITY_MODEL),
         ("value_model", VALUE_MODEL),
     ):
@@ -397,9 +403,15 @@ def _validate_base(value: Any, *, envelope: bool = True) -> dict:
 
 
 def reference_report_base(
-    decision: dict, captured: bytes, implementation: dict, limits: dict
+    decision: dict,
+    captured: bytes,
+    implementation: dict,
+    limits: dict,
+    *,
+    model: str = MODEL,
 ) -> dict:
     """Bind a validated saved decision and observed producer before evaluation."""
+    records._choice(model, "/model", {MODEL, THREE_ENEMY_MODEL})
     decision = inspection.validate_decision_report(decision)
     if (
         not isinstance(captured, bytes)
@@ -426,7 +438,7 @@ def reference_report_base(
         ).hexdigest(),
         "implementation": copy.deepcopy(implementation),
         "identity_comparisons": _comparisons(decision, implementation),
-        "model": MODEL,
+        "model": model,
         "horizon_rounds": 1,
         "terminal_depth": 1,
         "probability_model": PROBABILITY_MODEL,
@@ -438,16 +450,19 @@ def reference_report_base(
     return _validate_base(base)
 
 
-def _evaluation(value: Any, decision: dict, limits: dict) -> dict:
+def _evaluation(
+    value: Any, decision: dict, limits: dict, *, model: str = MODEL
+) -> dict:
     obj = records._object(value, "/evaluation", EVALUATION_FIELDS)
-    _model(obj, "/evaluation")
+    _model(obj, "/evaluation", model=model)
     if decision["configuration"]["horizon_rounds"] != 1:
         records._error(
             "/decision_report/configuration/horizon_rounds",
             "a complete comparison requires one-round search",
         )
     state = decision["selected_state"]
-    _qualified_state(state)
+    _qualified_state(state, model=model)
+    action_limit = 22 if model == THREE_ENEMY_MODEL else 15
     expected_actions = _physical_actions(state)
     saved_actions = [
         {name: row[name] for name in ("card_idx", "target_idx")}
@@ -462,7 +477,7 @@ def _evaluation(value: Any, decision: dict, limits: dict) -> dict:
     actions = []
     total = 0
     for index, row in enumerate(
-        records._array(obj["actions"], "/evaluation/actions", 1, 15)
+        records._array(obj["actions"], "/evaluation/actions", 1, action_limit)
     ):
         path = f"/evaluation/actions/{index}"
         row = records._object(
@@ -524,7 +539,7 @@ def _evaluation(value: Any, decision: dict, limits: dict) -> dict:
         if value == maximum
     ]
     for index, action in enumerate(
-        records._array(obj["best_actions"], "/evaluation/best_actions", 1, 15)
+        records._array(obj["best_actions"], "/evaluation/best_actions", 1, action_limit)
     ):
         _action(action, f"/evaluation/best_actions/{index}")
     if not _same(obj["best_actions"], best):
@@ -588,7 +603,9 @@ def _diagnostics(base: dict, evaluation: dict) -> dict:
 def complete_reference_report(base: dict, evaluation: dict) -> dict:
     """Finish only after every admitted action has a complete finite value."""
     base = _validate_base(base)
-    evaluation = _evaluation(evaluation, base["decision_report"], base["limits"])
+    evaluation = _evaluation(
+        evaluation, base["decision_report"], base["limits"], model=base["model"]
+    )
     value = {
         **copy.deepcopy(base),
         "status": "complete",
@@ -653,7 +670,10 @@ def validate_reference_report(value: Any) -> dict:
                 "complete values require the qualified engine bodies",
             )
         evaluation = _evaluation(
-            obj["evaluation"], base["decision_report"], base["limits"]
+            obj["evaluation"],
+            base["decision_report"],
+            base["limits"],
+            model=base["model"],
         )
         if not _same(obj["diagnostics"], _diagnostics(base, evaluation)):
             records._error(
@@ -718,6 +738,12 @@ def _meaning(document: inspection._Document, record: dict, *, prefix: str) -> No
         [
             ("Report status", record["status"]),
             ("Model", record["model"]),
+            (
+                "Admitted initial enemy subset",
+                "Exactly three living enemies"
+                if record["model"] == THREE_ENEMY_MODEL
+                else "One or two living enemies",
+            ),
             ("Probability law", record["probability_model"]),
             ("Value objective", record["value_model"]),
             ("Complete round horizon", record["horizon_rounds"]),

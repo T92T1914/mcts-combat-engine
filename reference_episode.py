@@ -36,6 +36,12 @@ def main(argv: list[str] | None = None) -> int:
         help="inspection appearance (default: obscur)",
     )
     parser.add_argument(
+        "--model",
+        choices=("one-round", "three-enemy"),
+        help="calculation subset: one-round retains one/two initial enemies "
+        "(default); three-enemy explicitly requires exactly three",
+    )
+    parser.add_argument(
         "--max-paths", type=int, help="leaves per action, 1..250000 (default: 250000)"
     )
     parser.add_argument(
@@ -53,9 +59,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.inspect:
         if any(
             value is not None
-            for value in (args.max_paths, args.max_total_paths, args.max_seconds)
+            for value in (
+                args.model, args.max_paths, args.max_total_paths, args.max_seconds
+            )
         ):
-            parser.error("inspection cannot accept calculation controls")
+            parser.error("inspection cannot accept model or calculation controls")
     elif args.compare_report is not None or args.appearance is not None:
         parser.error("--compare-report and --appearance require --inspect")
     try:
@@ -78,6 +86,7 @@ def main(argv: list[str] | None = None) -> int:
             exit_status = 0
         else:
             from reference.consumer import reference_decision
+            from reference.report import MODEL, THREE_ENEMY_MODEL
 
             report = reference_decision(
                 args.report,
@@ -86,6 +95,7 @@ def main(argv: list[str] | None = None) -> int:
                     1_000_000 if args.max_total_paths is None else args.max_total_paths
                 ),
                 max_seconds=30.0 if args.max_seconds is None else args.max_seconds,
+                model=THREE_ENEMY_MODEL if args.model == "three-enemy" else MODEL,
             )
             rendered = output_bytes(report)
             exit_status = 0 if report["status"] == "complete" else 1

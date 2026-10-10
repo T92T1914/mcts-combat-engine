@@ -35,8 +35,8 @@ string alone does not establish matching code.
 `manifest.json` records source, payload and separate reference engine identities.
 Every payload file, including this guide, is literal committed source.
 
-Keep `demo.py`, `episode.py`, both saved-record entries, the full `game/` and
-`data/` together. `demo.py` participates in implementation identity even when
+Keep `demo.py`, `episode.py`, the saved-record entries, `reference_episode.py`,
+and the full `game/`, `reference/` and `data/` together. `demo.py` participates in implementation identity even when
 you never run it. Move the whole directory when relocating the companion.
 Do not add a local `engine/`, which would shadow the installed engine.
 
@@ -120,5 +120,10 @@ default selector, rewards and coefficient remain unchanged.
 The complete companion also includes an [independent one-round reference](episode-reference.md).
 It prices a saved horizon-one decision, including an extracted stability cell,
 and produces exact action expectations and score losses for passive inspection
-and comparison. The supported subset, probability law and cooperative limits
-are explicit. This addition preserves the engine and separate reader kit.
+and comparison. The default retains the original one/two-enemy subset.
+`reference_episode.py --model three-enemy` explicitly selects the separately
+identified exactly-three-enemy model. The reference guide includes a complete
+bundled gauntlet recording, replay, calculation and passive comparison journey.
+Saved reports retain their declared model, including historical version-1
+reports. The probability law and cooperative limits are explicit. This addition
+preserves the engine and separate reader kit.
