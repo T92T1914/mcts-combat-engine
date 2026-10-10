@@ -19,6 +19,7 @@ from pathlib import Path
 from unittest import mock
 
 from tools import build_episode_examples as kit
+from tools.build_episode_companion import OUTPUT_NAMES as COMPANION_OUTPUT_NAMES
 
 GAME_FILES = (
     "__init__.py", "baselines.py", "content.py", "decision_report.py",
@@ -452,7 +453,8 @@ class ExampleKitTests(unittest.TestCase):
                              for target in node.targets))
         self.assertIsInstance(generated, ast.BinOp)
         self.assertEqual(ast.unparse(generated),
-                         "{'appearance.css', 'presentation.json'} | OUTPUT_NAMES")
+                         "{'appearance.css', 'presentation.json'} | OUTPUT_NAMES | "
+                         "COMPANION_OUTPUT_NAMES")
         calls = [node for node in ast.walk(source) if isinstance(node, ast.Call)]
         self.assertTrue(any(isinstance(node.func, ast.Name) and
                             node.func.id == "build_episode_examples" for node in calls))
@@ -477,6 +479,8 @@ class ExampleKitTests(unittest.TestCase):
         output.mkdir()
         (output / "saved.txt").write_bytes(b"retained public body\n")
         (output / "appearance.css").write_bytes(b"/* retained style */\n")
+        for name in COMPANION_OUTPUT_NAMES:
+            (output / name).write_bytes(b"separate companion fixture\n")
         foreign = output / "foreign"
         foreign.mkdir()
         self.git("-C", str(foreign), "init", "--initial-branch=main",
@@ -489,6 +493,7 @@ class ExampleKitTests(unittest.TestCase):
         namespace: dict = {
             "ROOT": self.root, "OUT": output, "FILES": {"saved": "saved.txt"},
             "OUTPUT_NAMES": kit.OUTPUT_NAMES, "source_git": kit._git,
+            "COMPANION_OUTPUT_NAMES": COMPANION_OUTPUT_NAMES,
             "hashlib": hashlib, "json": json,
             "load_tokens": lambda: {"source": "retained token fixture"},
         }
@@ -515,7 +520,8 @@ class ExampleKitTests(unittest.TestCase):
         self.assertFalse(observed["evaluation_rerun"])
         self.assertEqual(observed["files"], {
             name: hashlib.sha256((output / name).read_bytes()).hexdigest()
-            for name in {"saved.txt", "appearance.css"} | kit.OUTPUT_NAMES
+            for name in {"saved.txt", "appearance.css"} | kit.OUTPUT_NAMES |
+            COMPANION_OUTPUT_NAMES
         })
         (self.root / "decide_episode.py").write_bytes(b"# changed source\n")
         self.assertTrue(namespace["provenance"]({"source_commit": "stored fixture"})[

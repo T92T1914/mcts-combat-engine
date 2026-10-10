@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 
 try:
+    from .build_episode_companion import OUTPUT_NAMES as COMPANION_OUTPUT_NAMES
+    from .build_episode_companion import build as build_episode_companion
     from .build_episode_examples import OUTPUT_NAMES
     from .build_episode_examples import _git as source_git
     from .build_episode_examples import build as build_episode_examples
@@ -14,6 +16,8 @@ try:
     from .render_decision_figure import check_outputs
     from .render_same_forest import check_outputs as check_execution_report
 except ImportError:
+    from build_episode_companion import OUTPUT_NAMES as COMPANION_OUTPUT_NAMES
+    from build_episode_companion import build as build_episode_companion
     from build_episode_examples import OUTPUT_NAMES
     from build_episode_examples import _git as source_git
     from build_episode_examples import build as build_episode_examples
@@ -68,7 +72,8 @@ FILES = {
         )
     },
 }
-GENERATED = {"appearance.css", "presentation.json"} | OUTPUT_NAMES
+GENERATED = ({"appearance.css", "presentation.json"} | OUTPUT_NAMES |
+             COMPANION_OUTPUT_NAMES)
 
 
 def provenance(data):
@@ -94,7 +99,7 @@ def provenance(data):
         "files": {
             target: hashlib.sha256((OUT / target).read_bytes()).hexdigest()
             for target in sorted(set(FILES.values()) | {"appearance.css"} |
-                                 OUTPUT_NAMES)
+                                 OUTPUT_NAMES | COMPANION_OUTPUT_NAMES)
         },
     }
 
@@ -123,6 +128,7 @@ def main():
         shutil.copyfile(path, OUT / target)
     (OUT / "appearance.css").write_text(appearance_css(load_tokens()), encoding="utf-8")
     build_episode_examples(ROOT, output_directory=OUT)
+    build_episode_companion(ROOT, output_directory=OUT)
     (OUT / "presentation.json").write_text(
         json.dumps(provenance(data), indent=2) + "\n", encoding="utf-8"
     )
