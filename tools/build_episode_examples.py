@@ -105,9 +105,10 @@ def _safe_name(name: str) -> None:
             "unsupported portable name: " + repr(name))
 
 
-def _inventory(root: Path, commit: str) -> tuple[dict, tuple[str, ...]]:
+def _inventory(root: Path, commit: str, *,
+               fixed_payload: set[str] = FIXED_PAYLOAD) -> tuple[dict, tuple[str, ...]]:
     listing = _git(root, "ls-tree", "-rlz", "--full-tree", commit, "--",
-                   *sorted(FIXED_PAYLOAD), "game/", "engine/", "pyproject.toml")
+                   *sorted(fixed_payload), "game/", "engine/", "pyproject.toml")
     rows: dict[str, tuple[str, int]] = {}
     folded: set[str] = set()
     for item in listing.split(b"\0"):
@@ -132,7 +133,7 @@ def _inventory(root: Path, commit: str) -> tuple[dict, tuple[str, ...]]:
             "complete game directory must contain only committed Python files")
     require({name for name in rows if name.startswith("engine/")} == ENGINE_NAMES,
             "reference engine inventory differs from the nine supported members")
-    payload = FIXED_PAYLOAD | game
+    payload = fixed_payload | game
     require(set(rows) == payload | ENGINE_NAMES | {"pyproject.toml"},
             "missing or unexpected source member")
     require(len(payload) <= PAYLOAD_MEMBERS and
@@ -200,12 +201,12 @@ class Source:
     raw: dict[str, bytes]
 
 
-def _source(root: Path) -> Source:
+def _source(root: Path, *, fixed_payload: set[str] = FIXED_PAYLOAD) -> Source:
     root = root.resolve()
     top = _git(root, "rev-parse", "--show-toplevel").decode("utf-8").strip()
     require(Path(top).resolve() == root, "generator needs the Git checkout root")
     commit, tree = _revision(root)
-    rows, payload = _inventory(root, commit)
+    rows, payload = _inventory(root, commit, fixed_payload=fixed_payload)
     bodies = _blobs(root, rows)
     raw = {}
     for name, body in bodies.items():
@@ -308,7 +309,8 @@ def prepare(root: Path) -> tuple[bytes, bytes, dict]:
         raise KitError("source could not be captured: " + str(error)) from error
 
 
-def _output_directory(root: Path, destination: Path | None) -> Path:
+def _output_directory(root: Path, destination: Path | None, *,
+                      output_names: set[str] = OUTPUT_NAMES) -> Path:
     requested = root.resolve() / "_site" if destination is None else destination
     output = requested.absolute()
     require(".." not in output.parts, "kit output directory must not contain ..")
@@ -322,7 +324,7 @@ def _output_directory(root: Path, destination: Path | None) -> Path:
         info = output.lstat()
     require(_ordinary(info, directory=True),
             "kit output directory must be ordinary")
-    for name in OUTPUT_NAMES:
+    for name in output_names:
         path = output / name
         if path.exists() or path.is_symlink():
             info = path.lstat()

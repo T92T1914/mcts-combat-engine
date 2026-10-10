@@ -54,8 +54,10 @@ jobs:
           python -m venv "$consumer_root/venv"
           "$consumer_root/venv/bin/python" -m pip install --no-index --no-deps "$consumer_root"/wheels/*.whl
           mkdir "$consumer_root/run"
+          python tools/build_episode_companion.py
           cd "$consumer_root/run"
           # GNU timeout owns this consumer's process group, including spawned
           # workers. TERM then KILL bounds this test if retirement stalls.
           # The runner disposes of the one mktemp directory after the job.
           timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_policy_smoke.py"
+          timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_companion_smoke.py" "$GITHUB_WORKSPACE/_site/episode-companion.zip" "$consumer_root/journey"
