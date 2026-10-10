@@ -67,7 +67,7 @@ class PresentationTests(unittest.TestCase):
             self.assertEqual(
                 set(manifest["files"]),
                 set(build_site.FILES.values()) | {"appearance.css"}
-                | build_site.OUTPUT_NAMES,
+                | build_site.OUTPUT_NAMES | build_site.COMPANION_OUTPUT_NAMES,
             )
             for name, digest in manifest["files"].items():
                 self.assertEqual(
