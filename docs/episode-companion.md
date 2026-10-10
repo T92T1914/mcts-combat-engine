@@ -116,3 +116,9 @@ It repeats fixed-work decisions across admitted seeds and coefficients, then
 extracts a constituent for this existing inspector and comparison. Included
 baseline evidence and repeat commands preserve source identities. The engine's
 default selector, rewards and coefficient remain unchanged.
+
+The complete companion also includes an [independent one-round reference](episode-reference.md).
+It prices a saved horizon-one decision, including an extracted stability cell,
+and produces exact action expectations and score losses for passive inspection
+and comparison. The supported subset, probability law and cooperative limits
+are explicit. This addition preserves the engine and separate reader kit.
