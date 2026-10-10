@@ -18,7 +18,12 @@ OUTPUT_NAMES = {ZIP_NAME, SIDECAR_NAME}
 GUIDE = "docs/episode-companion.md"
 FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     "episode.py", "demo.py", "data/cards.json", "data/scenarios.json",
-    "docs/episode-record-replay.md", GUIDE,
+    "docs/episode-record-replay.md", GUIDE, "docs/episode-stability.md",
+    "docs/stability/protocol.json", "docs/stability/exploratory-receipt.json",
+    "docs/stability/confirmatory-receipt.json",
+    *{"docs/stability/" + name + ".json" for name in (
+        "exploratory-duel", "exploratory-gauntlet", "exploratory-boss",
+        "confirmatory-duel", "confirmatory-gauntlet", "confirmatory-boss")},
 }
 
 

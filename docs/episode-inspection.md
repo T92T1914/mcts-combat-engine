@@ -138,6 +138,22 @@ HTML uses the same fixed editions, local fonts, escaping, 64 MiB output bound an
 failure behavior described below.
 
 
+## Explicit schema 2 decisions
+
+`--decision-report` also admits schema 2. Its explicit coefficient, final-action
+rule and captured root encounter order must agree with its ranking. Complete
+ties preserve that encounter order. Schema 1 keeps its existing coefficient
+1.2 and raw reported ranking admission. Neither version is authenticated or
+endorsed by the reader.
+
+Schema 2 fragments include complete encounter order and derivation. A stability
+extraction retains the original cell's search/work declarations and separately
+states `new_search_performed=false`. Its source sweep can be incomplete even
+when the selected cell completed. See [the diagnostic guide](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-stability.md).
+Mixed-version comparison retains each complete input, exposes configuration
+differences and explains coefficient reruns versus same-stat selector changes.
+It executes no additional search and makes no policy-quality inference.
+
 ## Compare two saved decision reports
 
 Select pair mode explicitly:

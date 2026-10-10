@@ -1,5 +1,20 @@
 # A fresh decision from a saved episode state
 
+The existing command and schema 1 defaults remain supported. Explicit
+`--exploration 0.6|1.2|2.4` or `--final-action-rule mean_visits|visits_mean`
+produces schema 2, including when the chosen values equal the old defaults.
+Schema 2 records the captured sampled root encounter order, the explicit rule,
+and the tie rule. A visits-first report reranks the same captured statistics
+without changing engine search. Complete ties retain encounter order.
+`--sims 0` also supports an explicit schema 2 no-work report.
+
+The [stability diagnostic](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-stability.md) documents repeated fixed-work
+decisions and passive `--extract-cell` use. Extracted reports preserve the
+original search-performed claim and work, with a separate derivation declaring
+that extraction performed no new search. The existing passive inspector and
+comparison accept both versions. Stored recording/replay schema and identity
+requirements remain unchanged.
+
 Select one pre-action step from a saved episode and ask the current engine for a
 new decision. The command uses the saved hand positions, enemy positions,
 resources, modifiers, damage-over-time and registered rules. It needs no
@@ -76,7 +91,10 @@ decision quality. The search leaves the reconstructed root unchanged.
 
 ## Read the JSON report
 
-The report has format `mcts-episode-decision-report`, schema version 1.
+The report has format `mcts-episode-decision-report`. The legacy default emits
+schema version 1 with coefficient 1.2 and the engine's mean-first ordering.
+Explicit coefficient or final-action controls emit schema version 2. Both
+versions retain these fields:
 
 - `source_record` identifies the one captured byte buffer by length and SHA-256.
 - `selection` gives the step, round and exact selected-state pointer.
@@ -87,10 +105,17 @@ The report has format `mcts-episode-decision-report`, schema version 1.
   transitions, unused allowance and stop reasons.
 - `legal_actions` shows every current indexed choice in legal order, including
   unvisited alternatives. Sampled rows include visits, raw value sums and means.
-- `ranking` and `recommendation` preserve the current engine's sampled ordering.
+- `ranking` and `recommendation` preserve the engine's sampled ordering in the
+  legacy default. Schema 2 applies its declared `mean_visits` or `visits_mean`
+  rule to the captured statistics, retaining root encounter order for complete
+  ties. Changing that report rule performs no additional search.
 - `implementation` observes current engine, complete game helpers, entry and
   runtime. `identity_comparisons` separates engine-file, example-file and
   runtime-field equality and names the different entrypoint roles.
+
+Schema 2 also retains `root_encounter_order` and `derivation`. A fresh decision
+has a null derivation. A passively extracted stability cell identifies its saved
+source sweep and states that extraction performed no new search.
 
 The stored action is retained data. This command neither executes it nor
 establishes its original legality, label accuracy or choice quality. Current

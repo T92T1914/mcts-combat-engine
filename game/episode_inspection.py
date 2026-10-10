@@ -320,6 +320,22 @@ DECISION_FIELDS = (
     "implementation", "identity_comparisons", "value_semantics", "configuration",
     "work", "elapsed_seconds", "legal_actions", "ranking", "recommendation",
 )
+V2_FIELDS = {"root_encounter_order", "derivation"}
+EXPLORATIONS = (0.6, 1.2, 2.4)
+FINAL_ACTION_RULES = {"mean_visits", "visits_mean"}
+
+
+def decision_ranking(report: dict, rule: str) -> list[dict]:
+    """Rerank saved sufficient statistics only, preserving encounter ties."""
+    records._choice(rule, "final_action_rule", FINAL_ACTION_RULES)
+    rows = {(row["card_idx"], row["target_idx"]): row
+            for row in report["legal_actions"]}
+    order = report["root_encounter_order"]
+    names = (("mean_shaped_reward", "visits") if rule == "mean_visits"
+             else ("visits", "mean_shaped_reward"))
+    return sorted(order, key=lambda action: tuple(
+        rows[(action["card_idx"], action["target_idx"])][name] for name in names),
+        reverse=True)
 
 
 def _report_implementation(value: Any, location: str) -> None:
@@ -411,13 +427,16 @@ def _stored_provenance(value: Any) -> dict:
     return obj
 
 
-def _report_configuration(value: Any) -> dict:
+def _report_configuration(value: Any, version: int = 1) -> dict:
     location = "/configuration"
-    obj = records._object(value, location, {
+    required = {
         "method", "mode", "seed", "search_rng_mode", "max_sims", "horizon_rounds",
         "max_transitions", "exploration", "time_budget_ms", "priors", "parallel",
         "workers",
-    })
+    }
+    if version == 2:
+        required |= {"final_action_rule", "tie_break"}
+    obj = records._object(value, location, required)
     for name, expected in (
         ("method", "mcts"), ("mode", "serial_clockless"),
         ("search_rng_mode", "new_seed_per_decision"),
@@ -430,7 +449,16 @@ def _report_configuration(value: Any) -> dict:
                               f"{location}/horizon_rounds", 1, 8)
     records.integer(obj["max_transitions"], f"{location}/max_transitions",
                     sims * horizon, sims * horizon)
-    records._number(obj["exploration"], f"{location}/exploration", 1.2, 1.2)
+    if version == 1:
+        records._number(obj["exploration"], f"{location}/exploration", 1.2, 1.2)
+    else:
+        records._number(obj["exploration"], f"{location}/exploration", 0.6, 2.4)
+        if obj["exploration"] not in EXPLORATIONS:
+            records._error(f"{location}/exploration", "use 0.6, 1.2 or 2.4")
+        records._choice(obj["final_action_rule"], f"{location}/final_action_rule",
+                        FINAL_ACTION_RULES)
+        records._choice(obj["tie_break"], f"{location}/tie_break",
+                        {"root_encounter_order"})
     for name in ("time_budget_ms", "priors", "workers"):
         if obj[name] is not None:
             records._error(f"{location}/{name}", "must be null")
@@ -538,9 +566,12 @@ def _report_statistics(obj: dict, config: dict) -> None:
 def validate_decision_report(value: Any) -> dict:
     """Admit stored representation only, without reconstruction or model calls."""
     records._envelope(value, 200_000, 10**300)
-    obj = records._object(value, "/report", set(DECISION_FIELDS))
+    if not isinstance(value, dict):
+        records._error("/report", "must be an object")
+    version = records.integer(value.get("schema_version"), "/schema_version", 1, 2)
+    obj = records._object(value, "/report", set(DECISION_FIELDS) |
+                          (V2_FIELDS if version == 2 else set()))
     records._choice(obj["format"], "/format", {"mcts-episode-decision-report"})
-    records.integer(obj["schema_version"], "/schema_version", 1, 1)
     records._choice(obj["status"], "/status", {"decision", "no_work"})
     records._boolean(obj["search_performed"], "/search_performed")
     source = records._object(obj["source_record"], "/source_record",
@@ -581,9 +612,270 @@ def validate_decision_report(value: Any) -> dict:
                        "the saved entrypoint roles must remain distinct")
     records._string(obj["value_semantics"], "/value_semantics", high=2048)
     records._number(obj["elapsed_seconds"], "/elapsed_seconds", 0, 10**300)
-    config = _report_configuration(obj["configuration"])
+    config = _report_configuration(obj["configuration"], version)
     _report_statistics(obj, config)
+    if version == 2:
+        order = []
+        for index, action in enumerate(records._array(
+                obj["root_encounter_order"], "/root_encounter_order", 0, 57)):
+            identity = _report_action(action, f"/root_encounter_order/{index}")
+            if identity in order:
+                records._error("/root_encounter_order", "duplicate identity")
+            order.append(identity)
+        sampled = {(row["card_idx"], row["target_idx"])
+                   for row in obj["legal_actions"] if row["visits"]}
+        if set(order) != sampled:
+            records._error("/root_encounter_order",
+                           "must contain each sampled identity exactly once")
+        if obj["ranking"] != decision_ranking(obj, config["final_action_rule"]):
+            records._error("/ranking",
+                           "disagrees with declared rule and encounter ties")
+        if obj["derivation"] is not None:
+            path = "/derivation"
+            derived = records._object(obj["derivation"], path, {
+                "operation", "source_report", "cell_index",
+                "source_final_action_rule", "new_search_performed",
+            })
+            records._choice(derived["operation"], path + "/operation",
+                            {"stability_cell_extraction"})
+            source = records._object(derived["source_report"], path + "/source_report",
+                                     {"bytes", "sha256", "status"})
+            records.integer(source["bytes"], path + "/source_report/bytes",
+                            1, records.RECORD_BYTES)
+            records._digest(source["sha256"], path + "/source_report/sha256")
+            records._choice(source["status"], path + "/source_report/status",
+                            {"complete", "incomplete"})
+            records.integer(derived["cell_index"], path + "/cell_index", 0, 47)
+            records._choice(derived["source_final_action_rule"],
+                            path + "/source_final_action_rule", {"mean_visits"})
+            if derived["new_search_performed"] is not False:
+                records._error(path + "/new_search_performed", "must be false")
     return obj
+
+
+def stability_configuration(seeds: Any, explorations: Any, horizon: Any) -> dict:
+    """Admit the complete finite grid before any fresh-search operation."""
+    seeds = records._array(seeds, "seeds", 2, 16)
+    for index, seed in enumerate(seeds):
+        records.integer(seed, f"seeds/{index}", records.SEED_MIN, records.SEED_MAX)
+    if len(set(seeds)) != len(seeds):
+        records._error("seeds", "must be distinct")
+    if len({abs(seed) for seed in seeds}) != len(seeds):
+        records._error("seeds",
+                       "must have distinct absolute values for RNG initialization")
+    explorations = records._array(explorations, "explorations", 1, 3)
+    for index, coefficient in enumerate(explorations):
+        records._number(coefficient, f"explorations/{index}", 0.6, 2.4)
+        if coefficient not in EXPLORATIONS:
+            records._error(f"explorations/{index}", "use 0.6, 1.2 or 2.4")
+    if len(set(explorations)) != len(explorations):
+        records._error("explorations", "must be distinct")
+    horizon = records.integer(horizon, "horizon", 1, 8)
+    calls = len(seeds) * len(explorations)
+    return {"seeds": list(seeds), "explorations": list(explorations),
+            "max_sims": 64, "horizon_rounds": horizon,
+            "max_transitions_per_cell": 64 * horizon,
+            "maximum_search_calls": calls, "maximum_simulations": calls * 64,
+            "maximum_transitions": calls * 64 * horizon}
+
+
+def _identity(action: dict) -> tuple:
+    return action["card_idx"], action["target_idx"]
+
+
+def _selector_cell(report: dict, rule: str) -> dict:
+    ranking = decision_ranking(report, rule)
+    rows = {_identity(row): row for row in report["legal_actions"]}
+    first = rows[_identity(ranking[0])]
+    primary = "mean_shaped_reward" if rule == "mean_visits" else "visits"
+    return {
+        "primary_ties": sum(rows[_identity(action)][primary] == first[primary]
+                            for action in ranking),
+        "complete_ties": sum(
+            rows[_identity(action)]["visits"] == first["visits"] and
+            rows[_identity(action)]["mean_shaped_reward"] == first["mean_shaped_reward"]
+            for action in ranking),
+        "mean_gap": (first["mean_shaped_reward"] -
+                     rows[_identity(ranking[1])]["mean_shaped_reward"]
+                     if len(ranking) > 1 else None),
+        "visit_gap": (first["visits"] - rows[_identity(ranking[1])]["visits"]
+                      if len(ranking) > 1 else None),
+    }
+
+
+def stability_diagnostics(cells: list[dict], configuration: dict) -> dict:
+    """Descriptive arithmetic from admitted saved reports; never runs search."""
+    groups = []
+    by_coefficient = {}
+    for coefficient in configuration["explorations"]:
+        group = [cell for cell in cells
+                 if cell["configuration"]["exploration"] == coefficient]
+        choices = {rule: [_identity(decision_ranking(cell, rule)[0]) for cell in group]
+                   for rule in sorted(FINAL_ACTION_RULES)}
+        result = {"exploration": coefficient,
+                  "selector_disagreements": sum(a != b for a, b in zip(
+                      choices["mean_visits"], choices["visits_mean"], strict=True)),
+                  "cells": [{"seed": cell["configuration"]["seed"],
+                             **{rule: _selector_cell(cell, rule)
+                                for rule in sorted(FINAL_ACTION_RULES)}}
+                            for cell in group]}
+        for rule, selected in choices.items():
+            counts = {identity: selected.count(identity) for identity in
+                      dict.fromkeys(selected)}
+            result[rule] = {
+                "action_frequencies": [{"card_idx": card, "target_idx": target,
+                                        "count": count}
+                                       for (card, target), count in counts.items()],
+                "modal_count": max(counts.values()),
+                "seed_pair_disagreements": sum(
+                    selected[left] != selected[right]
+                    for left in range(len(selected))
+                    for right in range(left + 1, len(selected))),
+                "seed_pair_denominator": len(selected) * (len(selected) - 1) // 2,
+            }
+        groups.append(result)
+        by_coefficient[coefficient] = choices
+    coefficients = configuration["explorations"]
+    comparisons = []
+    for left in range(len(coefficients)):
+        for right in range(left + 1, len(coefficients)):
+            a, b = coefficients[left], coefficients[right]
+            comparisons.append({"left": a, "right": b,
+                                "denominator": len(configuration["seeds"]),
+                                **{rule: sum(x != y for x, y in zip(
+                                    by_coefficient[a][rule], by_coefficient[b][rule],
+                                    strict=True))
+                                   for rule in sorted(FINAL_ACTION_RULES)}})
+    return {"groups": groups, "coefficient_disagreements": comparisons}
+
+
+def stability_work(cells: list[dict]) -> dict:
+    return {"completed_search_calls": len(cells),
+            **{name: sum(cell["work"][name] for cell in cells)
+               for name in ("simulations", "transitions", "unused_transitions")}}
+
+
+def validate_stability_report(value: Any) -> dict:
+    """Admit a complete grid or truthful completed prefix without model work."""
+    records._envelope(value, 200_000, 10**300)
+    obj = records._object(value, "/stability", {
+        "format", "schema_version", "status", "reference_decision", "configuration",
+        "cells", "work", "diagnostics", "failure",
+    })
+    records._choice(obj["format"], "/format", {"mcts-episode-stability-report"})
+    records.integer(obj["schema_version"], "/schema_version", 1, 1)
+    records._choice(obj["status"], "/status", {"complete", "incomplete"})
+    config = records._object(obj["configuration"], "/configuration", {
+        "seeds", "explorations", "max_sims", "horizon_rounds",
+        "max_transitions_per_cell", "maximum_search_calls", "maximum_simulations",
+        "maximum_transitions",
+    })
+    expected = stability_configuration(config["seeds"], config["explorations"],
+                                       config["horizon_rounds"])
+    if records.canonical(config) != records.canonical(expected):
+        records._error("/configuration", "declared work must match the supported grid")
+    reference = validate_decision_report(obj["reference_decision"])
+    if (reference["schema_version"] != 2 or reference["status"] != "no_work"
+            or reference["derivation"] is not None
+            or reference["configuration"]["final_action_rule"] != "mean_visits"
+            or reference["configuration"]["seed"] != config["seeds"][0]
+            or reference["configuration"]["exploration"] != config["explorations"][0]
+            or reference["configuration"]["horizon_rounds"] !=
+            config["horizon_rounds"]):
+        records._error("/reference_decision", "requires the admitted no-work boundary")
+    cells = records._array(obj["cells"], "/cells", 0, config["maximum_search_calls"])
+    grid = [(coefficient, seed) for coefficient in config["explorations"]
+            for seed in config["seeds"]]
+    shared = ("source_record", "selection", "selected_state", "stored_action",
+              "stored_provenance", "implementation", "identity_comparisons",
+              "value_semantics")
+    for index, cell in enumerate(cells):
+        try:
+            validate_decision_report(cell)
+        except records.EpisodeInputError as exc:
+            raise records.EpisodeInputError(f"/cells/{index}: {exc}") from exc
+        current = cell["configuration"]
+        if (cell["schema_version"] != 2 or cell["status"] != "decision"
+                or cell["derivation"] is not None
+                or current["final_action_rule"] != "mean_visits"
+                or (current["exploration"], current["seed"]) != grid[index]
+                or current["max_sims"] != 64
+                or current["horizon_rounds"] != config["horizon_rounds"]):
+            records._error(f"/cells/{index}", "does not match the declared grid cell")
+        for name in shared:
+            if records.canonical(cell[name]) != records.canonical(reference[name]):
+                records._error(f"/cells/{index}/{name}", "differs from sweep boundary")
+        choices = [{name: row[name] for name in ("card_idx", "target_idx", "label")}
+                   for row in cell["legal_actions"]]
+        reference_choices = [
+            {name: row[name] for name in ("card_idx", "target_idx", "label")}
+            for row in reference["legal_actions"]]
+        if records.canonical(choices) != records.canonical(reference_choices):
+            records._error(f"/cells/{index}/legal_actions",
+                           "differs from boundary choices")
+    if records.canonical(obj["work"]) != records.canonical(stability_work(cells)):
+        records._error("/work", "must equal completed constituent work")
+    if obj["status"] == "complete":
+        if len(cells) != len(grid) or obj["failure"] is not None:
+            records._error("/status",
+                           "complete requires every declared cell and no failure")
+        if records.canonical(obj["diagnostics"]) != records.canonical(
+                stability_diagnostics(cells, config)):
+            records._error("/diagnostics",
+                           "does not match saved constituent statistics")
+    else:
+        if obj["diagnostics"] is not None:
+            records._error("/diagnostics",
+                           "incomplete sweeps have no complete diagnostic")
+        failure = records._object(obj["failure"], "/failure",
+                                  {"stage", "cell_index", "message", "interrupted"})
+        records._choice(failure["stage"], "/failure/stage", {"search", "finalization"})
+        records._string(failure["message"], "/failure/message", high=2048)
+        records._boolean(failure["interrupted"], "/failure/interrupted")
+        if failure["stage"] == "search":
+            records.integer(failure["cell_index"], "/failure/cell_index", 0, 47)
+            if failure["cell_index"] != len(cells) or len(cells) == len(grid):
+                records._error("/failure/cell_index",
+                               "must name the next unfinished cell")
+        else:
+            if len(cells) != len(grid):
+                records._error("/failure/stage",
+                               "finalization requires every declared cell")
+            if failure["cell_index"] is not None:
+                records._error("/failure/cell_index",
+                               "finalization has no unfinished search")
+    return obj
+
+
+def extract_stability_decision(path: Path, *, cell_index: int,
+                               final_action_rule: str = "mean_visits") -> dict:
+    """Extract and optionally rerank captured statistics without observing runtime."""
+    cell_index = records.integer(cell_index, "cell_index", 0, 47)
+    records._choice(final_action_rule, "final_action_rule", FINAL_ACTION_RULES)
+    captured = records._read(path, "stability report", records.RECORD_BYTES)
+    report = validate_stability_report(records._parse(
+        captured, "stability report", 200_000, 10**300))
+    if cell_index >= len(report["cells"]):
+        records._error("cell_index", "selected cell has no completed decision")
+    source = report["cells"][cell_index]
+    decision = {**source, "configuration": {
+        **source["configuration"], "final_action_rule": final_action_rule}}
+    decision["ranking"] = decision_ranking(decision, final_action_rule)
+    chosen = decision["ranking"][0]
+    row = next(row for row in decision["legal_actions"]
+               if _identity(row) == _identity(chosen))
+    decision["recommendation"] = {**chosen, "label": row["label"]}
+    decision["derivation"] = {
+        "operation": "stability_cell_extraction",
+        "source_report": {"bytes": len(captured),
+                          "sha256": hashlib.sha256(captured).hexdigest(),
+                          "status": report["status"]},
+        "cell_index": cell_index, "source_final_action_rule": "mean_visits",
+        "new_search_performed": False,
+    }
+    validate_decision_report(decision)
+    records.output_bytes(decision)
+    return decision
 
 
 def _report_references(document: _Document, action: dict, state: dict) -> None:
@@ -727,6 +1019,17 @@ def _render_decision(record: dict, captured: bytes, appearance: str) -> bytes:
               "Complete saved report-producer implementation and runtime")
     _fragment(document, record["identity_comparisons"], "/identity_comparisons",
               "Complete saved equality claims and distinct entrypoint roles")
+    if record["schema_version"] == 2:
+        document.add("<h3>Explicit selection and derivation</h3><p>Schema 2 admits "
+                     "the declared mean/visits or visits/mean ordering using the "
+                     "saved root encounter order for complete ties. This is "
+                     "representation consistency, not policy endorsement. "
+                     "A stability extraction performs no new search. Its "
+                     "search-performed flag and counters describe the original "
+                     "cell, including when the containing sweep was incomplete.</p>")
+        for name in sorted(V2_FIELDS):
+            _fragment(document, record[name], f"/{name}",
+                      "Complete saved " + name.replace("_", " "))
     document.add("</section><footer><p>Body typography uses local Inter when its "
                  "declared faces are available, with Arial and the browser's "
                  "sans-serif fallback otherwise. JSON intentionally uses monospace. "
@@ -954,6 +1257,14 @@ def _render_pair(left: dict, right: dict, left_bytes: bytes, right_bytes: bytes,
                 "compared before choices. Shaped rewards are not calibrated win "
                 "probabilities. Different allowances or seeds prevent causal "
                 "and equal-budget conclusions.</p>")
+            if left["schema_version"] == 2 or right["schema_version"] == 2:
+                document.add("<p>Coefficient changes rerun search. A visits/mean "
+                             "selector can rerank the same captured statistics "
+                             "without search. Different coefficients or selectors "
+                             "remain declared differences; neither indicates "
+                             "stronger decisions or equivalent trajectories. "
+                             "Legacy schema 1 retains coefficient 1.2 and the "
+                             "existing mean-first report meaning.</p>")
         elif anchor == "pair-provenance":
             document.add(
                 "<p>The retained old action is distinct from the current saved "
@@ -970,6 +1281,19 @@ def _render_pair(left: dict, right: dict, left_bytes: bytes, right_bytes: bytes,
             _pair_branch(document, name, differences[name], left, right)
         if anchor == "pair-choices":
             _pair_choices(document, left, right, failed)
+        document.add("</section>")
+    if left["schema_version"] == 2 or right["schema_version"] == 2:
+        document.add('<section id="pair-selection"><h2>Selection and extraction</h2>')
+        for side, report in (("left", left), ("right", right)):
+            document.add(f"<h3>{side.capitalize()}</h3>")
+            if report["schema_version"] == 1:
+                document.add("<p>Schema 1 has no encounter-order or derivation "
+                             "fields.</p>")
+            else:
+                for name in sorted(V2_FIELDS):
+                    _fragment(document, report[name], f"/{side}/{name}",
+                              side.capitalize() + ": complete " +
+                              name.replace("_", " "))
         document.add("</section>")
     document.add(
         "<footer><p>Body typography uses local Inter when its declared faces are "

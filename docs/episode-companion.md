@@ -110,3 +110,9 @@ and sidecar from a clean committed checkout using the reader kit's bounded
 source capture and archive primitives. The existing site builder publishes
 both distinct distributions. Output writes are not atomic as a pair; a failed
 pair must not be published.
+
+The same companion supports a [bounded saved-state stability diagnostic](episode-stability.md).
+It repeats fixed-work decisions across admitted seeds and coefficients, then
+extracts a constituent for this existing inspector and comparison. Included
+baseline evidence and repeat commands preserve source identities. The engine's
+default selector, rewards and coefficient remain unchanged.
