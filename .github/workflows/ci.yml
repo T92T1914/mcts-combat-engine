@@ -61,3 +61,4 @@ jobs:
           # The runner disposes of the one mktemp directory after the job.
           timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_policy_smoke.py"
           timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_companion_smoke.py" "$GITHUB_WORKSPACE/_site/episode-companion.zip" "$consumer_root/journey"
+          timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_reference_smoke.py" "$consumer_root/journey"

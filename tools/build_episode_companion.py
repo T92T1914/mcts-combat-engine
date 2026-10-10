@@ -19,6 +19,9 @@ GUIDE = "docs/episode-companion.md"
 FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     "episode.py", "demo.py", "data/cards.json", "data/scenarios.json",
     "docs/episode-record-replay.md", GUIDE, "docs/episode-stability.md",
+    "reference_episode.py", "docs/episode-reference.md",
+    "reference/__init__.py", "reference/consumer.py", "reference/one_round.py",
+    "reference/report.py",
     "docs/stability/protocol.json", "docs/stability/exploratory-receipt.json",
     "docs/stability/confirmatory-receipt.json",
     *{"docs/stability/" + name + ".json" for name in (

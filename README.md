@@ -41,7 +41,17 @@ Elapsed time and simulations per second still vary. Without `--sims`, the demo
 keeps its time budget. The episode benchmark has the separate safety caps
 described below.
 
-Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `mypy`. CI tests Python 3.11, 3.12 and 3.13. `pip install .` installs the reusable `engine` package; `game`, `data` and the demonstration scripts remain checkout examples.
+Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `mypy`. CI tests Python 3.11, 3.12 and 3.13. `pip install .` installs the reusable `engine` package; `game`, `data` and the demonstration scripts remain separate examples.
+
+The [complete companion](docs/episode-companion.md) supports custom recording,
+replay, saved-state decisions and inspection with an installed engine and no
+development checkout. Its [independent one-round reference](docs/episode-reference.md)
+prices every supported physical action from a saved horizon-one decision,
+reports exact expectations and selected-action score loss, and generates local
+inspection/comparison pages. The probability law, model identity and cooperative
+work limits are explicit. These values describe the declared one-round objective,
+not full-encounter optimality or calibrated win probability. Engine packaging,
+search defaults and the separate saved episode reader kit remain preserved.
 
 ### Save a comparison
 
