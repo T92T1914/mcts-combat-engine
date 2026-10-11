@@ -33,7 +33,7 @@ class CompanionTests(unittest.TestCase):
                                   companion.ZIP_NAME + "\n").encode("ascii"))
         expected = companion.FIXED_PAYLOAD | {
             "game/" + name for name in reader_tests.GAME_FILES}
-        self.assertEqual(len(expected), 40)
+        self.assertEqual(len(expected), 44)
         self.assertEqual(manifest["format"], "mcts-recording-companion")
         self.assertEqual(set(manifest["payload_files"]), expected)
         self.assertEqual(set(manifest["reference_engine"]["files"]), kit.ENGINE_NAMES)
@@ -47,12 +47,32 @@ class CompanionTests(unittest.TestCase):
             self.assertFalse(any(name.startswith("engine/") or name.endswith(".whl")
                                  for name in opened.namelist()))
 
+    def test_adaptive_journey_is_literal_source_in_the_existing_companion(self) -> None:
+        archive, _, manifest = companion.prepare(self.root)
+        with zipfile.ZipFile(io.BytesIO(archive)) as opened:
+            for name in (
+                "reference/adaptive.py", "reference/adaptive_report.py",
+                "docs/episode-adaptive-reference.md",
+                "examples/adaptive-state.json",
+            ):
+                self.assertEqual(opened.read(name), self.blob(name))
+                self.assertEqual(manifest["payload_files"][name],
+                                 kit.identity(self.blob(name)))
+            modeled = json.loads(opened.read("examples/adaptive-state.json"))
+            self.assertEqual(len(modeled["hand"]), 2)
+            self.assertEqual(len(modeled["enemies"]), 1)
+            self.assertEqual(modeled["enemies"][0]["base_attack"]["damage_max"], 1)
+            self.assertNotIn("engine/state.py", opened.namelist())
+
     def test_reader_kit_preserves_its_existing_payload_and_derivation(self) -> None:
         archive, _, manifest = kit.prepare(self.root)
         with zipfile.ZipFile(io.BytesIO(archive)) as opened:
             self.assertEqual(len(opened.namelist()), 17)
             self.assertNotIn("episode.py", opened.namelist())
             self.assertNotIn("demo.py", opened.namelist())
+            self.assertNotIn("reference/adaptive.py", opened.namelist())
+            self.assertNotIn("reference/adaptive_report.py", opened.namelist())
+            self.assertNotIn("examples/adaptive-state.json", opened.namelist())
             self.assertEqual(manifest["format"], "mcts-saved-episode-example-kit")
             self.assertNotIn(kit.REPLAY_MARKER, opened.read(kit.GUIDE))
 

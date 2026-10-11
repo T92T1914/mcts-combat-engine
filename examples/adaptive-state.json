@@ -1,0 +1,85 @@
+{
+  "player": {
+    "name": "Modeled operator",
+    "element": "ember",
+    "hp": 100,
+    "max_hp": 100,
+    "pips": 0,
+    "power_pips": 0,
+    "power_pip_chance": 0,
+    "resist": {},
+    "boost": {},
+    "blades": [],
+    "traps": [],
+    "shields": [],
+    "dots": [],
+    "is_boss": false,
+    "base_attack": null,
+    "policy": null
+  },
+  "enemies": [
+    {
+      "name": "Modeled target",
+      "element": "ember",
+      "hp": 3,
+      "max_hp": 100,
+      "pips": 0,
+      "power_pips": 0,
+      "power_pip_chance": 0,
+      "resist": {},
+      "boost": {},
+      "blades": [],
+      "traps": [],
+      "shields": [],
+      "dots": [],
+      "is_boss": false,
+      "base_attack": {
+        "name": "Plain response",
+        "element": "neutral",
+        "card_type": "damage",
+        "pip_cost": 7,
+        "accuracy": 1,
+        "damage_min": 1,
+        "damage_max": 1,
+        "heal": 0,
+        "dot_tick": 0,
+        "dot_rounds": 0,
+        "modifier": 0,
+        "hits_all": false
+      },
+      "policy": null
+    }
+  ],
+  "hand": [
+    {
+      "name": "Variable hit",
+      "element": "ember",
+      "card_type": "damage",
+      "pip_cost": 0,
+      "accuracy": 1,
+      "damage_min": 1,
+      "damage_max": 2,
+      "heal": 0,
+      "dot_tick": 0,
+      "dot_rounds": 0,
+      "modifier": 0,
+      "hits_all": false
+    },
+    {
+      "name": "Fixed hit",
+      "element": "ember",
+      "card_type": "damage",
+      "pip_cost": 0,
+      "accuracy": 1,
+      "damage_min": 1,
+      "damage_max": 1,
+      "heal": 0,
+      "dot_tick": 0,
+      "dot_rounds": 0,
+      "modifier": 0,
+      "hits_all": false
+    }
+  ],
+  "round_num": 1,
+  "boss_rules": []
+}

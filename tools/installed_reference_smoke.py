@@ -68,6 +68,10 @@ def main() -> None:
         importlib.util.find_spec("reference") is None,
         "engine wheel must not install the reference companion",
     )
+    require(
+        importlib.util.find_spec("game") is None,
+        "engine wheel must not install the example helpers",
+    )
     outputs = root / "reference-results"
     outputs.mkdir(exist_ok=False)
     working = root / "unrelated-working-directory"
@@ -107,6 +111,7 @@ def main() -> None:
             "import game.episode_record as records;"
             "import reference.one_round as core;"
             "import reference.aggregation as aggregate;"
+            "import reference.adaptive as adaptive;"
             "\n"
             "def deny(*args,**kwargs):\n"
             ' raise RuntimeError("forbidden consumer work reached")\n'
@@ -116,6 +121,7 @@ def main() -> None:
             + (
                 "core.evaluate=deny;core.enumerate_action=deny;core.score=deny;"
                 "aggregate.evaluate=deny;aggregate._Budget.payoff=deny;"
+                "adaptive.evaluate=deny;"
                 if passive
                 else ""
             )
@@ -892,6 +898,284 @@ def main() -> None:
             "cross_method_complete_parity_checked": width == 3,
         })
 
+    # This supplied state is modeled, with no episode, draw tape or recording
+    # identity claimed. Exercise the added route through the relocated payload.
+    adaptive_model = "independent_two_round_adaptive_binary53_shaped_v1"
+    adaptive_format = "mcts-two-round-adaptive-reference-report"
+    adaptive_state_path = companion / "examples" / "adaptive-state.json"
+    adaptive_state_bytes = adaptive_state_path.read_bytes()
+    adaptive_state = json.loads(adaptive_state_bytes)
+    adaptive_options = [
+        "--model", "two-round-adaptive", "--method", "adaptive-physical",
+    ]
+    adaptive_reports = []
+    for label, seconds in (("a", "10"), ("b", "5")):
+        raw = call(
+            "reference_episode.py",
+            [str(adaptive_state_path), "--state-input", *adaptive_options,
+             "--max-transitions", "1000", "--max-per-action", "500",
+             "--max-work-units", "3000", "--max-seconds", seconds],
+            "adaptive-state-reference-" + label + ".json",
+        )
+        value = json.loads(raw)
+        require(
+            value["format"] == adaptive_format
+            and value["schema_version"] == 1 and value["status"] == "complete"
+            and value["model"] == adaptive_model
+            and value["computation_method"] == "adaptive-physical"
+            and value["decision_report"] is None
+            and value["selected_state"] == adaptive_state
+            and value["source_report"]["kind"] == "normalized-state"
+            and value["source_report"]["sha256"]
+            == hashlib.sha256(adaptive_state_bytes).hexdigest()
+            and value["implementation"]["decision_consumer"]["engine_import_kind"]
+            == "site-packages"
+            and value["diagnostics"]["recommendation"] is None
+            and value["diagnostics"]["same_statistics"] is None,
+            "installed direct state route changed origin, model or selection meaning",
+        )
+        evaluation = value["evaluation"]
+        require(
+            evaluation["optimal_actions"] == [1]
+            and len(evaluation["actions"]) == 3,
+            "modeled adaptive witness lost its complete physical root choices",
+        )
+        variable = evaluation["actions"][1]
+        require(
+            variable["action"] == {"card_idx": 0, "target_idx": 0}
+            and len(variable["observations"]) == 2,
+            "variable-hit witness lost distinct complete observations",
+        )
+        selected_continuations = {}
+        for observation in variable["observations"]:
+            require(
+                observation["root_hand_indices"] == [1]
+                and observation["probability"] == {"numerator": "1", "denominator": "2"}
+                and len(observation["continuations"]) == 2,
+                "observation lost probability, copy identity or a legal alternative",
+            )
+            chosen = observation["continuations"][observation["chosen"]]
+            selected_continuations[observation["state"]["enemies"][0]["hp"]] = (
+                chosen["action"], chosen["root_card_idx"]
+            )
+        require(
+            selected_continuations == {
+                2: ({"card_idx": 0, "target_idx": 0}, 1),
+                1: ({"card_idx": None, "target_idx": None}, None),
+            },
+            "second choice did not adapt while both alternatives remained legal",
+        )
+        adaptive_reports.append(value)
+    require(
+        adaptive_reports[0]["evaluation"]["actions"]
+        == adaptive_reports[1]["evaluation"]["actions"],
+        "cooperative deadline setting changed completed adaptive expectations",
+    )
+    adaptive_left = outputs / "adaptive-state-reference-a.json"
+    adaptive_right = outputs / "adaptive-state-reference-b.json"
+    retained_adaptive_reports = {
+        path: path.read_bytes() for path in (adaptive_left, adaptive_right)
+    }
+    adaptive_html = call(
+        "reference_episode.py", [str(adaptive_left), "--inspect"],
+        "adaptive-state-reference.html", passive=True,
+    )
+    adaptive_fragments = saved_fragments(adaptive_html)
+    require(
+        adaptive_fragments["/evaluation"] == adaptive_reports[0]["evaluation"]
+        and adaptive_fragments["/selected_state"] == adaptive_state
+        and adaptive_fragments["/decision_report"] is None
+        and b"<script" not in adaptive_html,
+        "passive adaptive inspection changed saved state or complete policy map",
+    )
+    adaptive_comparison = call(
+        "reference_episode.py",
+        [str(adaptive_left), "--inspect", "--compare-report", str(adaptive_right)],
+        "adaptive-state-comparison.html", passive=True,
+    )
+    comparison_fragments = saved_fragments(adaptive_comparison)
+    require(
+        comparison_fragments["/left/evaluation"] == adaptive_reports[0]["evaluation"]
+        and comparison_fragments["/right/evaluation"]
+        == adaptive_reports[1]["evaluation"]
+        and b"Complete adaptive values share the same state and objective"
+        in adaptive_comparison,
+        "passive adaptive comparison changed retained policy maps",
+    )
+    for label, old in (("physical", left),
+                       ("sum", outputs / "sum-small-reference.json")):
+        compared = call(
+            "reference_episode.py",
+            [str(adaptive_left), "--inspect", "--compare-report", str(old)],
+            "adaptive-cross-family-" + label + ".html", passive=True,
+        )
+        require(
+            b"ineligible" in compared and b"report_families_differ" in compared,
+            "different report families were offered a common quality ranking",
+        )
+    adaptive_refused = json.loads(call(
+        "reference_episode.py",
+        [str(adaptive_state_path), "--state-input", *adaptive_options,
+         "--max-transitions", "1"],
+        "adaptive-work-refused.json", 1,
+    ))
+    require(
+        adaptive_refused["format"] == adaptive_format
+        and adaptive_refused["failure"]["kind"] == "work_limit"
+        and adaptive_refused["evaluation"] is None
+        and adaptive_refused["diagnostics"] is None,
+        "adaptive work refusal leaked accepted policy values",
+    )
+    call(
+        "reference_episode.py",
+        [str(outputs / "adaptive-work-refused.json"), "--inspect"],
+        "adaptive-work-refused.html", passive=True,
+    )
+
+    # Match the existing saved-decision test's explicit modeled-envelope route.
+    # These placeholders are stored input claims, never observed provenance.
+    modeled_final = json.loads(adaptive_state_bytes)
+    modeled_final["round_num"] = 2
+    placeholder = "0" * 64
+    modeled_episode = {
+        "format": "mcts-episode-record", "schema_version": 1,
+        "content": {"kind": "custom",
+                    "cards": {"bytes": 1, "sha256": placeholder},
+                    "scenarios": {"bytes": 1, "sha256": placeholder}},
+        "scenario": {"name": "Modeled adaptive input, not recorded or replayed",
+                     "environment_seed": 7, "deck": adaptive_state["hand"]},
+        "initial_state": adaptive_state,
+        "implementation": {
+            "python": "Modeled stored interpreter",
+            "python_implementation": "Modeled stored interpreter",
+            "platform": "Modeled input, no recording run",
+            "engine_import_kind": "site-packages", "distribution_version": None,
+            "distribution_matches_import": False,
+            "engine_files_sha256": {"engine/state.py": placeholder},
+            "example_files_sha256": {"game/runner.py": placeholder},
+            "entrypoint_files_sha256": {"episode.py": placeholder},
+            "machine": "Modeled stored machine", "pointer_bits": 64,
+            "python_full_version": "Modeled stored version", "python_build": ["", ""],
+            "python_cache_tag": None, "rng_state_version": 3,
+        },
+        "configuration": {
+            "method": "mcts", "mode": "serial_clockless", "search_seed": 11,
+            "search_rng_mode": "seed_once_continue", "max_rounds": 1,
+            "max_sims_per_decision": 8, "horizon_rounds": 2,
+            "max_transitions_per_decision": 16, "exploration": 1.2,
+            "time_budget_ms": None, "parallel": False, "workers": None,
+            "priors": None,
+            "policy_rng": {"scheme": "policy-v1", "seed": 0, "used_by_policy": False},
+        },
+        "environment_rng": {
+            "checkpoint_scheme": "python-random-getstate-json-v1", "state_version": 3,
+            "after_scenario_sha256": placeholder, "final_sha256": placeholder,
+        },
+        "steps": [{"index": 0, "round_num": 1, "state": adaptive_state,
+                   "action": {"card_idx": None, "target_idx": None,
+                              "label": "Modeled Pass, not an observed action"}}],
+        "final": {"state": modeled_final, "score": 0.5, "terminal_result": None,
+                  "rounds": 1, "termination": "round_limit"},
+    }
+    modeled_episode_path = write(
+        "adaptive-modeled-episode.json", encoded(modeled_episode)
+    )
+    modeled_episode_bytes = modeled_episode_path.read_bytes()
+    adaptive_decision_path = outputs / "adaptive-selected-decision.json"
+    decision_bytes = call(
+        "decide_episode.py",
+        [str(modeled_episode_path), "--step", "0", "--seed", "19", "--sims", "16",
+         "--horizon", "2", "--final-action-rule", "mean_visits"],
+        adaptive_decision_path.name,
+    )
+    adaptive_selected = json.loads(call(
+        "reference_episode.py", [str(adaptive_decision_path), *adaptive_options],
+        "adaptive-selected-reference.json",
+    ))
+    require(
+        adaptive_selected["status"] == "complete"
+        and adaptive_selected["source_report"]["kind"] == "saved-decision"
+        and adaptive_selected["decision_report"] == json.loads(decision_bytes)
+        and adaptive_selected["selected_state"] == adaptive_state
+        and adaptive_selected["diagnostics"]["recommendation"] is not None
+        and set(adaptive_selected["diagnostics"]["same_statistics"])
+        == {"mean_visits", "visits_mean"}
+        and adaptive_selected["evaluation"]["actions"]
+        == adaptive_reports[0]["evaluation"]["actions"],
+        "saved modeled decision lost selection or common adaptive values",
+    )
+    selected_html = call(
+        "reference_episode.py",
+        [str(outputs / "adaptive-selected-reference.json"), "--inspect"],
+        "adaptive-selected-reference.html", passive=True,
+    )
+    selected_fragments = saved_fragments(selected_html)
+    require(
+        selected_fragments["/evaluation"] == adaptive_selected["evaluation"]
+        and selected_fragments["/diagnostics"] == adaptive_selected["diagnostics"]
+        and selected_fragments["/decision_report"]
+        == adaptive_selected["decision_report"],
+        "passive selected-loss inspection changed saved values or search origin",
+    )
+    # The old calculation still refuses horizon two instead of upgrading itself.
+    old_horizon = json.loads(call(
+        "reference_episode.py", [str(adaptive_decision_path)],
+        "adaptive-old-default-refused.json", 1, passive=True,
+    ))
+    require(old_horizon["failure"]["kind"] == "horizon_mismatch",
+            "old default silently expanded to two-round calculation")
+    new_horizon = json.loads(call(
+        "reference_episode.py",
+        [str(outputs / "decision-a.json"), *adaptive_options],
+        "adaptive-horizon-refused.json", 1, passive=True,
+    ))
+    require(
+        new_horizon["format"] == adaptive_format
+        and new_horizon["failure"]["kind"] == "horizon_mismatch"
+        and new_horizon["evaluation"] is None
+        and new_horizon["diagnostics"] is None,
+        "new adaptive route silently changed a retained search horizon",
+    )
+    unsupported_state = json.loads(adaptive_state_bytes)
+    unsupported_state["hand"].extend(unsupported_state["hand"])
+    unsupported_path = write(
+        "adaptive-four-card-state.json", encoded(unsupported_state)
+    )
+    unsupported = json.loads(call(
+        "reference_episode.py",
+        [str(unsupported_path), "--state-input", *adaptive_options],
+        "adaptive-subset-refused.json", 1,
+    ))
+    require(
+        unsupported["failure"]["kind"] == "unsupported_state"
+        and unsupported["evaluation"] is None and unsupported["diagnostics"] is None,
+        "adaptive calculation discarded excess physical cards instead of refusing",
+    )
+    require(
+        adaptive_state_path.read_bytes() == adaptive_state_bytes
+        and modeled_episode_path.read_bytes() == modeled_episode_bytes
+        and adaptive_decision_path.read_bytes() == decision_bytes
+        and all(path.read_bytes() == body
+                for path, body in retained_adaptive_reports.items()),
+        "new installed journey changed a supplied or retained input",
+    )
+    adaptive_acceptance = {
+        "kind": "supplied modeled state and modeled saved-decision input",
+        "captured_encounter": False, "episode_recorded_or_replayed": False,
+        "model": adaptive_model, "report_family": adaptive_format,
+        "direct_state_report": str(adaptive_left),
+        "saved_selected_report": str(outputs / "adaptive-selected-reference.json"),
+        "observed_installed_engine": str(origin),
+        "observation_dependent_second_choice_checked": True,
+        "physical_copy_mapping_checked": True,
+        "input_bytes_preserved": True, "passive_saved_fragments_checked": True,
+        "one_round_family_comparison_ineligible_checked": True,
+        "work_refusal_without_partial_values_checked": True,
+        "subset_and_horizon_refusals_without_partial_values_checked": True,
+        "selected_loss_and_same_statistics_present": True,
+        "work": adaptive_reports[0]["evaluation"]["work"],
+    }
+
     historical = None
     if len(sys.argv) == 3:
         retained = Path(sys.argv[2]).resolve().read_bytes()
@@ -931,6 +1215,7 @@ def main() -> None:
         "explicit_three_enemy_model": three_model,
         "historical_report": historical,
         "aggregation_acceptance": sum_acceptance,
+        "adaptive_acceptance": adaptive_acceptance,
         "accepted_prior_journey_preserved": True,
     }
     write("acceptance.json", encoded(summary))
