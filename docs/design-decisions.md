@@ -193,10 +193,14 @@ correction does not revise their retained study results.
 
 ## Not done, on purpose or not yet
 
-* No sensitivity sweep of the exploration constant (1.2) or the two
-  reward shaping constants.
-* No robust child selection, RAVE, progressive widening, or transposition
-  table.
+* No sensitivity sweep of the two reward shaping constants. The retained
+  [stability diagnostic](episode-stability.md#retained-baseline) compares
+  exploration coefficients 0.6/1.2/2.4 over six early states, with 216 completed
+  calls. That scoped result retains the mean-first engine rule and the
+  hand-chosen default 1.2. It does not establish stronger decisions or optimality.
+* No robust child final selection in the engine. The companion compares
+  visits-first and mean-first choices from the same captured statistics in
+  that diagnostic. No RAVE, progressive widening, or transposition table.
 * No second game to test the "game agnostic" claim beyond the one 9 card
   domain shipped here.
 * The benchmark runs the single process engine; the parallel engine is

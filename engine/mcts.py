@@ -143,8 +143,10 @@ class MCTS:
     exploration
         The UCB1 constant ``c``. Rewards here are in [0, 1], for which the
         textbook value is sqrt(2) ~ 1.41; 1.2 sits slightly on the
-        exploitation side of that. It is a hand-chosen value, and this repo
-        records no sweep of it.
+        exploitation side of that. It remains the hand-chosen default.
+        The bounded coefficient and selector diagnostic in
+        ``docs/episode-stability.md`` measures six early states and retains
+        1.2. Stability there does not establish stronger decisions or optimality.
     max_sims
         Hard cap on simulations, independent of the wall-clock budget. A
         time budget stops at a machine-dependent count, so pinning this

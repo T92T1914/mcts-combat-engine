@@ -134,6 +134,38 @@ class AggregationConsumerTests(unittest.TestCase):
         self.assertEqual(self.decision_path.read_bytes(), before)
 
     def test_passive_cross_method_comparison_keeps_raw_values_work_and_old_schema(self):
+        # Keep the synthetic legacy search claim distinct from the current
+        # qualified reference producer. Mixed engines cannot receive a ranking.
+        legacy_aggregate = self.calculate()
+        legacy_physical = consumer.reference_decision(
+            self.decision_path, model=report.THREE_ENEMY_MODEL
+        )
+        legacy_paths = [
+            self.root / "legacy-physical.json", self.root / "legacy-sum.json"
+        ]
+        for path, value in zip(
+            legacy_paths, (legacy_physical, legacy_aggregate), strict=True
+        ):
+            path.write_bytes(output_bytes(value))
+            self.assertEqual(
+                value["diagnostics"]["comparison_eligibility"],
+                {"eligible": False, "reasons": ["search_engine_identity_differs"]},
+            )
+        with patch.dict(
+            sys.modules, {"reference.aggregation": None, "reference.one_round": None}
+        ):
+            legacy_comparison = report.reference_comparison_html(*legacy_paths)
+        self.assertIn(b"No winner is declared", legacy_comparison)
+        self.assertIn(b"left_search_objective_or_engine_differs", legacy_comparison)
+        self.assertIn(b"right_search_objective_or_engine_differs", legacy_comparison)
+        self.assertNotIn(b"equal exact one-round value loss", legacy_comparison)
+
+        # This invented same-producer case uses the new qualified source map.
+        # It is not a rewritten historical search or evidence of an actual search.
+        self.decision["implementation"]["engine_files_sha256"] = copy.deepcopy(
+            report.QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256
+        )
+        self.save_decision(width=3)
         aggregate = self.calculate()
         physical = consumer.reference_decision(
             self.decision_path, model=report.THREE_ENEMY_MODEL
