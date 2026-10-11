@@ -36,6 +36,35 @@ between decisions until retirement. The default `mode="time"` retains its
 rejection of `seed`, `max_sims`, `max_transitions` and `on_work` in parallel
 mode, including with one worker.
 
+## Keep caller inputs stable
+
+The policy owns its search engine and workers. The supplied `GameState` and
+its model definitions remain caller-owned. Managed lifetime does not create
+a deep-frozen snapshot of that input.
+
+Serial simulations clone the changing combat state: combatant scalars, hand
+and enemy lists, charm-list membership and each DoT. Card and existing Charm
+objects, resist/boost maps, enemy-policy dictionaries and stateless boss-rule
+configuration remain shared under the read-only definition convention.
+The data classes and dictionaries are writable in Python. Read-only use is
+a caller responsibility, not enforcement by frozen input types. See the
+[manual clone design](design-decisions.md#7-clone-by-hand-share-what-never-mutates).
+
+Keep the root's combat state, hand order, target order, shared definitions
+and rule configuration stable until a decision returns. Custom rules should
+apply their effects to the simulated combat state without changing shared
+definition data or storing evolving state in the shared rule object. Parallel
+process serialization does not provide an atomic snapshot barrier against
+concurrent caller mutation. The same responsibility applies to serial,
+one-worker and multiple-worker decisions.
+
+A returned `Action` addresses the supplied root's physical hand slot and
+target index. Apply it to the corresponding current hand and targets before
+reordering or replacing them. Equal card values or names do not identify a
+physical copy. Two slots can reference the same Card object and still remain
+distinct actions. These input responsibilities accompany the sequential
+call, context and close contract below.
+
 ## Managed fixed work
 
 Select `parallel=True, mode="fixed", budget_ms=None` and supply nonnegative
@@ -142,3 +171,16 @@ retain the existing Pass action. A transition-capped nonterminal search without
 a complete simulation still raises `ValueError`. Mean shaped search values
 remain distinct from calibrated win probabilities. This lifecycle interface
 adds no search-quality or throughput claim.
+
+## Source identity for recorded consumers
+
+The [episode replay contract](episode-record-replay.md#compatibility-and-evidence-limits)
+compares observed raw engine source hashes along with its companion and
+runtime identity. Editing an engine docstring changes those source bytes
+even when executable behavior is unchanged. A strict historical consumer
+can therefore refuse an older record as implementation-incompatible.
+Keep historical records and receipts with their matching pinned engine,
+companion and runtime. Use that retained implementation for historical
+reproduction rather than rewriting saved hashes. Fresh diagnostics under
+a newer implementation remain distinct from reproduction of the retained
+[stability baseline](episode-stability.md#retained-baseline).
