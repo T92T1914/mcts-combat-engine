@@ -1,0 +1,40 @@
+{
+  "scenarios": {
+    "E1": {
+      "description":"Prospective exploratory modeled calibration case E1. One nonterminal round, no customer-demand claim.",
+      "player":{"name":"Modeled operator","element":"ember","hp":60,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[]},
+      "deck":["Variable hit","Fixed hit","Shield"],
+      "enemies":[{"name":"Modeled target","element":"frost","hp":16,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[],"attack":{"name":"Plain response","element":"neutral","type":"damage","pip_cost":0,"accuracy":1,"damage_min":10,"damage_max":10,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false}}]
+    },
+    "E2": {
+      "description":"Prospective exploratory modeled calibration case E2. One nonterminal round, no customer-demand claim.",
+      "player":{"name":"Modeled operator","element":"ember","hp":32,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[]},
+      "deck":["Variable hit","Fixed hit","Shield"],
+      "enemies":[{"name":"Modeled target","element":"frost","hp":22,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[],"attack":{"name":"Plain response","element":"neutral","type":"damage","pip_cost":0,"accuracy":1,"damage_min":14,"damage_max":14,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false}}]
+    },
+    "D1": {
+      "description":"Prospective deciding modeled calibration case D1. Retain the first frozen hand, including duplicates or absent card types.",
+      "player":{"name":"Modeled operator","element":"ember","hp":80,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[]},
+      "deck":["Variable hit","Fixed hit","Shield"],
+      "enemies":[{"name":"Modeled target","element":"frost","hp":18,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[],"attack":{"name":"Plain response","element":"neutral","type":"damage","pip_cost":0,"accuracy":1,"damage_min":12,"damage_max":12,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false}}]
+    },
+    "D2": {
+      "description":"Prospective deciding modeled calibration case D2. Retain the first frozen hand, including duplicates or absent card types.",
+      "player":{"name":"Modeled operator","element":"ember","hp":24,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[]},
+      "deck":["Variable hit","Fixed hit","Shield"],
+      "enemies":[{"name":"Modeled target","element":"frost","hp":18,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[],"attack":{"name":"Plain response","element":"neutral","type":"damage","pip_cost":0,"accuracy":1,"damage_min":12,"damage_max":12,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false}}]
+    },
+    "D3": {
+      "description":"Prospective deciding modeled calibration case D3. Retain the first frozen hand, including duplicates or absent card types.",
+      "player":{"name":"Modeled operator","element":"ember","hp":80,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[]},
+      "deck":["Variable hit","Fixed hit","Shield"],
+      "enemies":[{"name":"Modeled target","element":"frost","hp":24,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[],"attack":{"name":"Plain response","element":"neutral","type":"damage","pip_cost":0,"accuracy":1,"damage_min":20,"damage_max":20,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false}}]
+    },
+    "D4": {
+      "description":"Prospective deciding modeled calibration case D4. Retain the first frozen hand, including duplicates or absent card types.",
+      "player":{"name":"Modeled operator","element":"ember","hp":24,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[]},
+      "deck":["Variable hit","Fixed hit","Shield"],
+      "enemies":[{"name":"Modeled target","element":"frost","hp":24,"power_pip_chance":0,"resist":{},"boost":{},"is_boss":false,"rules":[],"attack":{"name":"Plain response","element":"neutral","type":"damage","pip_cost":0,"accuracy":1,"damage_min":20,"damage_max":20,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false}}]
+    }
+  }
+}

@@ -12,6 +12,12 @@ a supplied modeled state or an admitted saved horizon-two decision. Use that
 guide for the small installed example, observation-dependent second choices
 and transition/work-unit limits. The routes below retain their one-round meaning.
 
+The [fixed search-allowance diagnostic](episode-search-allowance.md) uses this
+existing one-round reference to compare the exact loss of decisions made with
+8 or 64 simulations on declared saved states. Its bundled original pairs can
+be inspected without calculation, and its complete result table keeps every
+declared case and seed. The finding does not change the engine's defaults.
+
 ## Calculate, inspect and compare
 
 First obtain a decision with `--horizon 1` using the existing saved-state command.

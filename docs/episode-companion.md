@@ -127,3 +127,9 @@ bundled gauntlet recording, replay, calculation and passive comparison journey.
 Saved reports retain their declared model, including historical version-1
 reports. The probability law and cooperative limits are explicit. This addition
 preserves the engine and separate reader kit.
+
+The companion includes a [fixed search-allowance comparison](episode-search-allowance.md).
+Inspect original 8/64 decision/reference pairs, replay their custom episode or
+request a fresh decision from the same state. The complete 144-cell result
+table retains exact score losses and work under the declared one-round model.
+The finding is limited to its frozen cases and leaves engine defaults unchanged.

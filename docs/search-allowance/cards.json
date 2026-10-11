@@ -1,0 +1,7 @@
+{
+  "cards": [
+    {"name":"Variable hit","element":"ember","type":"damage","pip_cost":0,"accuracy":0.75,"damage_min":8,"damage_max":10,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false},
+    {"name":"Fixed hit","element":"ember","type":"damage","pip_cost":0,"accuracy":1,"damage_min":7,"damage_max":7,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0,"hits_all":false},
+    {"name":"Shield","element":"neutral","type":"shield","pip_cost":0,"accuracy":1,"damage_min":0,"damage_max":0,"heal":0,"dot_tick":0,"dot_rounds":0,"modifier":0.5,"hits_all":false}
+  ]
+}
