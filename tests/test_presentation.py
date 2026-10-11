@@ -49,7 +49,7 @@ class PresentationTests(unittest.TestCase):
             with patch.object(build_site, "OUT", out):
                 build_site.main()
             self.assertEqual(
-                {p.name for p in out.iterdir()},
+                {p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file()},
                 set(build_site.FILES.values()) | build_site.GENERATED,
             )
             for source, target in build_site.FILES.items():
@@ -80,15 +80,28 @@ class PresentationTests(unittest.TestCase):
             )
 
     def test_unlisted_output_is_refused_before_replacing_files(self):
-        with tempfile.TemporaryDirectory() as directory:
-            out = Path(directory)
-            (out / "unrelated.txt").write_text("preserve me")
-            (out / "index.html").write_text("previous output")
-            with patch.object(build_site, "OUT", out):
-                with self.assertRaisesRegex(ValueError, "Unexpected site output"):
-                    build_site.main()
-            self.assertEqual((out / "index.html").read_text(), "previous output")
-            self.assertEqual((out / "unrelated.txt").read_text(), "preserve me")
+        for name, is_directory in (
+            ("unrelated.txt", False),
+            ("search-allowance/unrelated.txt", False),
+            ("search-allowance/unexpected", True),
+        ):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                out = Path(directory)
+                unexpected = out / name
+                unexpected.parent.mkdir(parents=True, exist_ok=True)
+                if is_directory:
+                    unexpected.mkdir()
+                else:
+                    unexpected.write_text("preserve me")
+                (out / "index.html").write_text("previous output")
+                with patch.object(build_site, "OUT", out):
+                    with self.assertRaisesRegex(ValueError, "Unexpected site output"):
+                        build_site.main()
+                self.assertEqual((out / "index.html").read_text(), "previous output")
+                if is_directory:
+                    self.assertTrue(unexpected.is_dir())
+                else:
+                    self.assertEqual(unexpected.read_text(), "preserve me")
 
     def test_text_and_focus_roles_have_readable_contrast(self):
         def luminance(color):

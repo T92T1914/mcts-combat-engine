@@ -58,6 +58,20 @@ FILES = {
     "site/same-forest-repeatability.html": "same-forest-repeatability.html",
     "docs/episode-adaptive-reference.md": "episode-adaptive-reference.md",
     "examples/adaptive-state.json": "adaptive-state.json",
+    "docs/episode-search-allowance.md": "episode-search-allowance.md",
+    **{
+        "docs/search-allowance/" + name: "search-allowance/" + name
+        for name in (
+            "cards.json", "scenarios.json", "protocol.json", "results.json",
+            *(f"{case}.{kind}.json"
+              for case in ("E1", "E2", "D1", "D2", "D3", "D4")
+              for kind in ("episode", "replay")),
+            *(f"{case}.seed-{301 if case.startswith('E') else 2001}."
+              f"sims-{sims}.{kind}.json"
+              for case in ("E1", "E2", "D1", "D2", "D3", "D4")
+              for sims in (8, 64) for kind in ("decision", "reference")),
+        )
+    },
     **{
         "docs/" + name: name
         for name in (
@@ -119,15 +133,33 @@ def main():
     check_outputs()
     check_execution_report()
     check_repeatability_figure()
+    if OUT.is_symlink():
+        raise ValueError("Site output directory must not be a symlink.")
     OUT.mkdir(exist_ok=True)
-    unexpected = {p.name for p in OUT.iterdir()} - set(FILES.values()) - GENERATED
+    expected_files = set(FILES.values()) | GENERATED
+    expected_directories = {
+        parent.as_posix()
+        for name in expected_files for parent in Path(name).parents
+        if parent != Path(".")
+    }
+    unexpected = {
+        path.relative_to(OUT).as_posix()
+        for path in OUT.rglob("*")
+        if path.is_symlink() or not (
+            path.is_file() and path.relative_to(OUT).as_posix() in expected_files
+            or path.is_dir()
+            and path.relative_to(OUT).as_posix() in expected_directories
+        )
+    }
     if unexpected:
         raise ValueError("Unexpected site output files: " + str(sorted(unexpected)))
     for source, target in FILES.items():
         path = ROOT / source
         if not path.is_file() or path.is_symlink():
             raise ValueError("Expected a regular source file: " + source)
-        shutil.copyfile(path, OUT / target)
+        destination = OUT / target
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, destination)
     (OUT / "appearance.css").write_text(appearance_css(load_tokens()), encoding="utf-8")
     build_episode_examples(ROOT, output_directory=OUT)
     build_episode_companion(ROOT, output_directory=OUT)

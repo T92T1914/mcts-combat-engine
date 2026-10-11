@@ -30,6 +30,17 @@ FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     *{"docs/stability/" + name + ".json" for name in (
         "exploratory-duel", "exploratory-gauntlet", "exploratory-boss",
         "confirmatory-duel", "confirmatory-gauntlet", "confirmatory-boss")},
+    "docs/episode-search-allowance.md",
+    *{"docs/search-allowance/" + name for name in (
+        "cards.json", "scenarios.json", "protocol.json", "results.json",
+        *(f"{case}.{kind}.json"
+          for case in ("E1", "E2", "D1", "D2", "D3", "D4")
+          for kind in ("episode", "replay")),
+        *(f"{case}.seed-{301 if case.startswith('E') else 2001}."
+          f"sims-{sims}.{kind}.json"
+          for case in ("E1", "E2", "D1", "D2", "D3", "D4")
+          for sims in (8, 64) for kind in ("decision", "reference")),
+    )},
 }
 
 
