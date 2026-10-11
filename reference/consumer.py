@@ -10,6 +10,7 @@ from game.episode_inspection import validate_decision_report
 from game.episode_record import (
     RECORD_BYTES,
     _choice,
+    _error,
     _number,
     _parse,
     _read,
@@ -18,6 +19,7 @@ from game.episode_record import (
     output_bytes,
 )
 
+from . import aggregation_domain
 from .report import (
     MODEL,
     REFERENCE_ENGINE_FILES_SHA256,
@@ -65,23 +67,73 @@ def reference_decision(
     max_total_paths: int = 1_000_000,
     max_seconds: float = 30.0,
     model: str = MODEL,
+    method: str = aggregation_domain.PHYSICAL_METHOD,
+    max_contributions: int | None = None,
+    max_payoff_evaluations: int | None = None,
 ) -> dict:
     """Return a complete report or explicit refusal, with no new search or replay."""
     _choice(model, "model", {MODEL, THREE_ENEMY_MODEL})
-    _number(max_seconds, "max_seconds", 0.000001, 30.0)
-    limits = {
-        "max_paths": integer(max_paths, "max_paths", 1, 250_000),
-        "max_total_paths": integer(max_total_paths, "max_total_paths", 1, 1_000_000),
-        "max_seconds": max_seconds,
-    }
-    from .one_round import ReferenceLimitExceeded, UnsupportedState, evaluate
+    _choice(
+        method,
+        "method",
+        {aggregation_domain.PHYSICAL_METHOD, aggregation_domain.METHOD},
+    )
+    _number(
+        max_seconds,
+        "max_seconds",
+        0.000001 if method == aggregation_domain.PHYSICAL_METHOD else 0,
+        30.0,
+    )
+    if max_seconds == 0:
+        _error("max_seconds", "require a finite positive deadline")
+    integer(max_paths, "max_paths", 1, 250_000)
+    integer(max_total_paths, "max_total_paths", 1, 1_000_000)
+    if method == aggregation_domain.PHYSICAL_METHOD:
+        if max_contributions is not None or max_payoff_evaluations is not None:
+            _error(
+                "method controls",
+                "contribution and payoff controls require sum-convolution",
+            )
+        limits = {
+            "max_paths": integer(max_paths, "max_paths", 1, 250_000),
+            "max_total_paths": integer(
+                max_total_paths, "max_total_paths", 1, 1_000_000
+            ),
+            "max_seconds": max_seconds,
+        }
+        from .one_round import evaluate
+    else:
+        if max_paths != 250_000 or max_total_paths != 1_000_000:
+            _error(
+                "method controls",
+                "physical leaf controls cannot limit sum-convolution work",
+            )
+        limits = {
+            "max_contributions": integer(
+                1_000_000 if max_contributions is None else max_contributions,
+                "max_contributions",
+                1,
+                1_000_000,
+            ),
+            "max_payoff_evaluations": integer(
+                10_000 if max_payoff_evaluations is None else max_payoff_evaluations,
+                "max_payoff_evaluations",
+                1,
+                10_000,
+            ),
+            "max_seconds": max_seconds,
+        }
+        from .aggregation import evaluate
+    from .one_round import ReferenceLimitExceeded, UnsupportedState
 
     captured = _read(path, "decision report", RECORD_BYTES)
     decision = validate_decision_report(
         _parse(captured, "decision report", 200_000, 10**300)
     )
     observed = reference_identity()
-    base = reference_report_base(decision, captured, observed, limits, model=model)
+    base = reference_report_base(
+        decision, captured, observed, limits, model=model, computation_method=method
+    )
     try:
         if (
             observed["decision_consumer"]["engine_files_sha256"]

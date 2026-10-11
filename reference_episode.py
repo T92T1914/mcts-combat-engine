@@ -42,6 +42,12 @@ def main(argv: list[str] | None = None) -> int:
         "(default); three-enemy explicitly requires exactly three",
     )
     parser.add_argument(
+        "--method",
+        choices=("physical", "sum-convolution"),
+        help="calculation method: physical enumeration (default), or explicit "
+        "integer sum convolution for the narrower nonlethal damage subset",
+    )
+    parser.add_argument(
         "--max-paths", type=int, help="leaves per action, 1..250000 (default: 250000)"
     )
     parser.add_argument(
@@ -50,9 +56,22 @@ def main(argv: list[str] | None = None) -> int:
         help="leaves for all actions, 1..1000000 (default: 1000000)",
     )
     parser.add_argument(
+        "--max-contributions",
+        type=int,
+        help="sum-convolution integer contribution updates for all actions, "
+        "1..1000000 (default: 1000000)",
+    )
+    parser.add_argument(
+        "--max-payoff-evaluations",
+        type=int,
+        help="sum-convolution source-order payoff evaluations for all actions, "
+        "1..10000 (default: 10000)",
+    )
+    parser.add_argument(
         "--max-seconds",
         type=float,
-        help="cooperative calculation deadline, 0.000001..30 "
+        help="cooperative deadline, 0.000001..30 for physical enumeration or "
+        "finite positive at most 30 for sum-convolution "
         "(default: 30, no hard wall or memory guarantee)",
     )
     args = parser.parse_args(argv)
@@ -60,12 +79,25 @@ def main(argv: list[str] | None = None) -> int:
         if any(
             value is not None
             for value in (
-                args.model, args.max_paths, args.max_total_paths, args.max_seconds
+                args.model,
+                args.method,
+                args.max_paths,
+                args.max_total_paths,
+                args.max_contributions,
+                args.max_payoff_evaluations,
+                args.max_seconds,
             )
         ):
             parser.error("inspection cannot accept model or calculation controls")
     elif args.compare_report is not None or args.appearance is not None:
         parser.error("--compare-report and --appearance require --inspect")
+    elif args.method == "sum-convolution":
+        if args.max_paths is not None or args.max_total_paths is not None:
+            parser.error("physical leaf controls cannot limit sum-convolution work")
+    elif args.max_contributions is not None or args.max_payoff_evaluations is not None:
+        parser.error(
+            "contribution and payoff controls require --method sum-convolution"
+        )
     try:
         if args.inspect:
             from reference.report import (
@@ -85,6 +117,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             exit_status = 0
         else:
+            from reference.aggregation_domain import METHOD, PHYSICAL_METHOD
             from reference.consumer import reference_decision
             from reference.report import MODEL, THREE_ENEMY_MODEL
 
@@ -96,6 +129,9 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 max_seconds=30.0 if args.max_seconds is None else args.max_seconds,
                 model=THREE_ENEMY_MODEL if args.model == "three-enemy" else MODEL,
+                method=METHOD if args.method == "sum-convolution" else PHYSICAL_METHOD,
+                max_contributions=args.max_contributions,
+                max_payoff_evaluations=args.max_payoff_evaluations,
             )
             rendered = output_bytes(report)
             exit_status = 0 if report["status"] == "complete" else 1

@@ -75,6 +75,68 @@ comparison and do not change the objective. Comparison requires matching exact
 state, model identity, law and objective. Different model identities are
 ineligible even when the remaining report fields agree.
 
+## Choose an explicit computation method
+
+The default `--method physical` retains the original transition enumeration,
+physical leaf limits and schema-version-1 reports. Selecting
+`--method sum-convolution` uses `integer_sum_convolution_v1` for a narrower
+part of the same selected mathematical model. There is no automatic fallback
+when physical enumeration reaches its limit.
+
+For an admitted three-enemy saved decision:
+
+```powershell
+& $py "$companion\reference_episode.py" C:\work\decision.json --model three-enemy --method sum-convolution --max-contributions 1000000 --max-payoff-evaluations 10000 --max-seconds 10 > C:\work\reference-sum.json
+& $py "$companion\reference_episode.py" C:\work\reference-sum.json --inspect --appearance obscur > C:\work\reference-sum.html
+& $py "$companion\reference_episode.py" C:\work\reference-physical.json --inspect --compare-report C:\work\reference-sum.json > C:\work\reference-method-comparison.html
+```
+
+This method admits nonlethal plain damage with no affordable enemy response,
+charms, damage over time, healing, resistance or boost. Explicit zero-valued
+resistance and boost entries are allowed. Every enemy must have a source threat
+factor of exactly one, with no base attack supplied and too few effective
+resources for the default response. Every hand card must deal plain damage,
+with zero heal, damage-over-time and modifier fields, including unaffordable
+cards. Every offered card's largest roll must leave every possible target
+alive. These are deliberate method limits. They do not establish that every
+excluded state is mathematically impossible to aggregate. The original model's
+normalized field, enemy, card-width and action bounds still apply.
+
+Current and maximum HP may differ among enemies, and the player may be injured.
+Damage ranges, positive accuracy, costs, names, elements and final resource
+regeneration may vary within those bounds. Duplicate cards and single-target
+choices keep their physical indices. Accuracy is one shared cast event for all
+targets, followed by independent damage rolls on success. The method groups
+damage rolls by their integer sum, evaluates the original binary64 payoff at
+each total, and sums out
+final regeneration for values and outcome masses. It does not produce a
+successor-state distribution or a draw tape for later decisions.
+
+Schema-version-2 reports retain `computation_method`, distinct limits and `work`
+counters. `contributions` counts executed integer multiplicity additions and
+`payoff_evaluations` counts executed binary64 payoff calculations, including
+pass and any positive accuracy-miss branch. `peak_bins` is the largest individual
+damage-sum distribution stored for any action. It does not count all temporary
+distributions simultaneously or measure peak memory. Represented physical
+damage tuples and positive trace leaves describe branches covered
+mathematically, including omitted regeneration. They were not enumerated.
+These counters do not establish
+a measured speedup or memory guarantee.
+
+Defaults cap whole-report work at 1,000,000 contribution updates and 10,000
+payoff evaluations, with a finite positive cooperative deadline of at most
+30 seconds. The two work flags may lower their caps. Physical leaf controls
+cannot limit sum-convolution work and the command rejects mixed controls.
+The Python consumer selects the full method identity through `method` and
+accepts the corresponding `max_contributions` and `max_payoff_evaluations`
+keywords. An unsupported action or exhausted work refuses the entire report.
+
+Inspection reads the stored method, rejects calculation controls and does no
+numerical work. Historical schema-version-1 reports retain their hashes,
+diagnostics and physical leaf meaning. Cross-method comparison is eligible
+when complete exact states, model, law, objective and values agree. Different
+work units and policies are shown without treating them as a model mismatch.
+
 ## Objective and evidence boundary
 
 Each declared model prices every legal physical action after one complete round.
