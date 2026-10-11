@@ -18,6 +18,8 @@ from typing import Any
 from game import episode_inspection as inspection
 from game import episode_record as records
 
+from . import aggregation_domain
+
 FORMAT = "mcts-one-round-reference-report"
 MODEL = "independent_one_round_binary53_shaped_v1"
 THREE_ENEMY_MODEL = "independent_one_round_three_enemy_binary53_shaped_v1"
@@ -69,6 +71,13 @@ EVALUATION_FIELDS = {
     "elapsed_seconds",
     "probability_model",
     "value_model",
+}
+AGGREGATION_WORK_FIELDS = {
+    "contributions",
+    "payoff_evaluations",
+    "peak_bins",
+    "represented_damage_combinations",
+    "represented_trace_leaves",
 }
 RUNTIME_FIELDS = (
     "python",
@@ -165,9 +174,7 @@ def _qualified_state(state: dict, *, model: str = MODEL) -> None:
         records._error(location + "/boss_rules", "rules are outside this model")
     _qualified_fighter(state["player"], location + "/player")
     minimum, maximum = (3, 3) if model == THREE_ENEMY_MODEL else (1, 2)
-    enemies = records._array(
-        state["enemies"], location + "/enemies", minimum, maximum
-    )
+    enemies = records._array(state["enemies"], location + "/enemies", minimum, maximum)
     affordable = 0
     for index, enemy in enumerate(enemies):
         _qualified_fighter(enemy, f"{location}/enemies/{index}")
@@ -339,6 +346,33 @@ def _limits(value: Any) -> dict:
     return obj
 
 
+def _aggregation_limits(value: Any) -> dict:
+    obj = records._object(
+        value,
+        "/limits",
+        {"max_contributions", "max_payoff_evaluations", "max_seconds"},
+    )
+    records.integer(obj["max_contributions"], "/limits/max_contributions", 1, 1_000_000)
+    records.integer(
+        obj["max_payoff_evaluations"], "/limits/max_payoff_evaluations", 1, 10_000
+    )
+    records._number(obj["max_seconds"], "/limits/max_seconds", 0, 30)
+    if obj["max_seconds"] == 0:
+        records._error("/limits/max_seconds", "require a finite positive deadline")
+    return obj
+
+
+def _base_fields(value: Any) -> set[str]:
+    fields = BASE_FIELDS.copy()
+    if isinstance(value, dict) and value.get("schema_version") == 2:
+        fields.add("computation_method")
+    return fields
+
+
+def _computation_method(value: dict) -> str:
+    return value.get("computation_method", aggregation_domain.PHYSICAL_METHOD)
+
+
 def _model(value: dict, location: str = "", *, model: str | None = None) -> None:
     records._choice(value["model"], location + "/model", {MODEL, THREE_ENEMY_MODEL})
     if model is not None and value["model"] != model:
@@ -355,16 +389,25 @@ def _model(value: dict, location: str = "", *, model: str | None = None) -> None
 def _validate_base(value: Any, *, envelope: bool = True) -> dict:
     if envelope:
         records._envelope(value, 250_000, 10**300)
-    obj = records._object(value, "/report", BASE_FIELDS)
+    obj = records._object(value, "/report", _base_fields(value))
     records._choice(obj["format"], "/format", {FORMAT})
-    records.integer(obj["schema_version"], "/schema_version", 1, 1)
+    records.integer(obj["schema_version"], "/schema_version", 1, 2)
+    if obj["schema_version"] == 2:
+        records._choice(
+            obj["computation_method"],
+            "/computation_method",
+            {aggregation_domain.METHOD},
+        )
     _model(obj)
     if not _same(obj["reference_engine_files_sha256"], REFERENCE_ENGINE_FILES_SHA256):
         records._error(
             "/reference_engine_files_sha256",
             "must identify the engine bodies qualified for this model",
         )
-    _limits(obj["limits"])
+    if obj["schema_version"] == 2:
+        _aggregation_limits(obj["limits"])
+    else:
+        _limits(obj["limits"])
     if obj["new_search_performed"] is not False:
         records._error("/new_search_performed", "reference evaluation runs no search")
     decision = inspection.validate_decision_report(obj["decision_report"])
@@ -394,6 +437,14 @@ def _validate_base(value: Any, *, envelope: bool = True) -> dict:
     if obj["selected_state_sha256"] != state_digest:
         records._error("/selected_state_sha256", "does not bind the exact saved state")
     implementation = _implementation(obj["implementation"])
+    if obj["schema_version"] == 2 and not {
+        "reference/aggregation.py",
+        "reference/aggregation_domain.py",
+    } <= set(implementation["reference_files_sha256"]):
+        records._error(
+            "/implementation/reference_files_sha256",
+            "the aggregation producer must identify its calculation and domain modules",
+        )
     expected = _comparisons(decision, implementation)
     if not _same(obj["identity_comparisons"], expected):
         records._error(
@@ -409,9 +460,15 @@ def reference_report_base(
     limits: dict,
     *,
     model: str = MODEL,
+    computation_method: str = aggregation_domain.PHYSICAL_METHOD,
 ) -> dict:
     """Bind a validated saved decision and observed producer before evaluation."""
     records._choice(model, "/model", {MODEL, THREE_ENEMY_MODEL})
+    records._choice(
+        computation_method,
+        "/computation_method",
+        {aggregation_domain.PHYSICAL_METHOD, aggregation_domain.METHOD},
+    )
     decision = inspection.validate_decision_report(decision)
     if (
         not isinstance(captured, bytes)
@@ -447,13 +504,27 @@ def reference_report_base(
         "new_search_performed": False,
         "reference_engine_files_sha256": copy.deepcopy(REFERENCE_ENGINE_FILES_SHA256),
     }
+    if computation_method == aggregation_domain.METHOD:
+        base["schema_version"] = 2
+        base["computation_method"] = computation_method
     return _validate_base(base)
 
 
 def _evaluation(
-    value: Any, decision: dict, limits: dict, *, model: str = MODEL
+    value: Any,
+    decision: dict,
+    limits: dict,
+    *,
+    model: str = MODEL,
+    computation_method: str = aggregation_domain.PHYSICAL_METHOD,
 ) -> dict:
-    obj = records._object(value, "/evaluation", EVALUATION_FIELDS)
+    aggregate = computation_method == aggregation_domain.METHOD
+    fields = (
+        EVALUATION_FIELDS - {"total_leaves"} | {"work"}
+        if aggregate
+        else EVALUATION_FIELDS
+    )
+    obj = records._object(value, "/evaluation", fields)
     _model(obj, "/evaluation", model=model)
     if decision["configuration"]["horizon_rounds"] != 1:
         records._error(
@@ -462,6 +533,11 @@ def _evaluation(
         )
     state = decision["selected_state"]
     _qualified_state(state, model=model)
+    if aggregate:
+        try:
+            aggregation_domain.qualify(state)
+        except ValueError as exc:
+            records._error("/decision_report/selected_state", str(exc))
     action_limit = 22 if model == THREE_ENEMY_MODEL else 15
     expected_actions = _physical_actions(state)
     saved_actions = [
@@ -476,23 +552,25 @@ def _evaluation(
     values = []
     actions = []
     total = 0
+    total_work = dict.fromkeys(AGGREGATION_WORK_FIELDS, 0)
     for index, row in enumerate(
         records._array(obj["actions"], "/evaluation/actions", 1, action_limit)
     ):
         path = f"/evaluation/actions/{index}"
+        row_fields = {
+            "action",
+            "expected_value",
+            "expected_value_float",
+            "mass",
+            "win_mass",
+            "loss_mass",
+            "ongoing_mass",
+            "work" if aggregate else "leaves",
+        }
         row = records._object(
             row,
             path,
-            {
-                "action",
-                "expected_value",
-                "expected_value_float",
-                "mass",
-                "win_mass",
-                "loss_mass",
-                "ongoing_mass",
-                "leaves",
-            },
+            row_fields,
         )
         _action(row["action"], path + "/action")
         actions.append(row["action"])
@@ -525,9 +603,37 @@ def _evaluation(
                 path + "/expected_value",
                 "must respect terminal payoffs and ongoing score bounds",
             )
-        total += records.integer(
-            row["leaves"], path + "/leaves", 1, limits["max_paths"]
-        )
+        if aggregate:
+            if masses != [Fraction(0), Fraction(0), Fraction(1)]:
+                records._error(
+                    path, "the sum-convolution domain retains only ongoing outcomes"
+                )
+            if index >= len(expected_actions) or not _same(
+                row["action"], expected_actions[index]
+            ):
+                records._error(
+                    path + "/action",
+                    "must retain the legal physical action at this index",
+                )
+            work = records._object(row["work"], path + "/work", AGGREGATION_WORK_FIELDS)
+            expected_work = aggregation_domain.action_work(state, row["action"])
+            for name in AGGREGATION_WORK_FIELDS:
+                records.integer(work[name], path + "/work/" + name, 0, 10**300)
+            if not _same(work, expected_work):
+                records._error(
+                    path + "/work",
+                    "must retain the declared method's exact work accounting",
+                )
+            for name in AGGREGATION_WORK_FIELDS:
+                total_work[name] = (
+                    max(total_work[name], work[name])
+                    if name == "peak_bins"
+                    else total_work[name] + work[name]
+                )
+        else:
+            total += records.integer(
+                row["leaves"], path + "/leaves", 1, limits["max_paths"]
+            )
     if not _same(actions, expected_actions):
         records._error(
             "/evaluation/actions", "must price the complete ordered physical action set"
@@ -547,11 +653,29 @@ def _evaluation(
             "/evaluation/best_actions",
             "must retain every exact maximum in physical action order",
         )
-    records.integer(
-        obj["total_leaves"], "/evaluation/total_leaves", 1, limits["max_total_paths"]
-    )
-    if obj["total_leaves"] != total:
-        records._error("/evaluation/total_leaves", "must equal the action leaf sum")
+    if aggregate:
+        work = records._object(obj["work"], "/evaluation/work", AGGREGATION_WORK_FIELDS)
+        for name in AGGREGATION_WORK_FIELDS:
+            records.integer(work[name], "/evaluation/work/" + name, 0, 10**300)
+        if not _same(work, total_work):
+            records._error(
+                "/evaluation/work",
+                "must sum action work and retain the maximum individual bin support",
+            )
+        for name in ("contributions", "payoff_evaluations"):
+            if work[name] > limits["max_" + name]:
+                records._error(
+                    "/evaluation/work/" + name, "exceeds the declared work limit"
+                )
+    else:
+        records.integer(
+            obj["total_leaves"],
+            "/evaluation/total_leaves",
+            1,
+            limits["max_total_paths"],
+        )
+        if obj["total_leaves"] != total:
+            records._error("/evaluation/total_leaves", "must equal the action leaf sum")
     records._number(
         obj["elapsed_seconds"], "/evaluation/elapsed_seconds", 0, limits["max_seconds"]
     )
@@ -604,7 +728,11 @@ def complete_reference_report(base: dict, evaluation: dict) -> dict:
     """Finish only after every admitted action has a complete finite value."""
     base = _validate_base(base)
     evaluation = _evaluation(
-        evaluation, base["decision_report"], base["limits"], model=base["model"]
+        evaluation,
+        base["decision_report"],
+        base["limits"],
+        model=base["model"],
+        computation_method=_computation_method(base),
     )
     value = {
         **copy.deepcopy(base),
@@ -635,7 +763,7 @@ def validate_reference_report(value: Any) -> dict:
     obj = records._object(
         value,
         "/report",
-        BASE_FIELDS
+        _base_fields(value)
         | {
             "status",
             "evaluation",
@@ -643,7 +771,9 @@ def validate_reference_report(value: Any) -> dict:
             "failure",
         },
     )
-    base = _validate_base({name: obj[name] for name in BASE_FIELDS}, envelope=False)
+    base = _validate_base(
+        {name: obj[name] for name in _base_fields(obj)}, envelope=False
+    )
     records._choice(obj["status"], "/status", {"complete", "refused"})
     if obj["status"] == "refused":
         if obj["evaluation"] is not None or obj["diagnostics"] is not None:
@@ -674,6 +804,7 @@ def validate_reference_report(value: Any) -> dict:
             base["decision_report"],
             base["limits"],
             model=base["model"],
+            computation_method=_computation_method(base),
         )
         if not _same(obj["diagnostics"], _diagnostics(base, evaluation)):
             records._error(
@@ -726,7 +857,7 @@ def _meaning(document: inspection._Document, record: dict, *, prefix: str) -> No
     document.add(
         f'<section id="{prefix}meaning"><h2>Model, objective and limits</h2>'
         "<p>These are complete finite expectations after one round under "
-        "the declared independent draw law. Each leaf uses the source "
+        "the declared independent draw law. Every payoff preserves the source "
         "order binary64 shaped reward. A loss is the best expected shaped "
         "value minus the chosen action's value. It is not lost win "
         "probability, full encounter optimality or proof of a stronger "
@@ -738,6 +869,7 @@ def _meaning(document: inspection._Document, record: dict, *, prefix: str) -> No
         [
             ("Report status", record["status"]),
             ("Model", record["model"]),
+            ("Computation method", _computation_method(record)),
             (
                 "Admitted initial enemy subset",
                 "Exactly three living enemies"
@@ -755,9 +887,21 @@ def _meaning(document: inspection._Document, record: dict, *, prefix: str) -> No
     document.add(
         "<p>The time limit is cooperative. It is checked by the numerical "
         "consumer and is not a hard external wall or memory bound. A "
-        "leaf cap or cancellation refuses the whole report. An admitted "
-        "wide action can still exceed the work limit.</p></section>"
+        "work cap or cancellation refuses the whole report. An admitted "
+        "wide action can still exceed the work limit.</p>"
     )
+    if record["schema_version"] == 2:
+        document.add(
+            "<p>Integer sum convolution counts damage multiplicities and evaluates "
+            "the source-order payoff at every total. The narrower admitted domain "
+            "has no responses, effects or lethal damage. Final regeneration is "
+            "summed out for values and outcome masses only. Executed contribution "
+            "updates and payoff evaluations are separate from represented damage "
+            "tuples and positive physical trace leaves. Represented traces were "
+            "not enumerated. This report supplies no successor distribution, "
+            "draw tape, measured speedup or stronger decision claim.</p>"
+        )
+    document.add("</section>")
 
 
 def _values(document: inspection._Document, record: dict, *, prefix: str) -> None:
@@ -776,11 +920,16 @@ def _values(document: inspection._Document, record: dict, *, prefix: str) -> Non
         )
         return
     evaluation = record["evaluation"]
+    work_facts = (
+        _work_facts(evaluation["work"])
+        if record["schema_version"] == 2
+        else [("Total complete leaves", evaluation["total_leaves"])]
+    )
     inspection._facts(
         document,
         [
             ("Exact best-action tie set", evaluation["best_actions"]),
-            ("Total complete leaves", evaluation["total_leaves"]),
+            *work_facts,
             ("Reported numerical elapsed seconds", evaluation["elapsed_seconds"]),
             ("Comparison eligibility", record["diagnostics"]["comparison_eligibility"]),
         ],
@@ -808,7 +957,11 @@ def _values(document: inspection._Document, record: dict, *, prefix: str) -> Non
             [
                 ("Physical indices", row["action"]),
                 ("Displayed decimal", row["expected_value_float"]),
-                ("Complete leaves", row["leaves"]),
+                *(
+                    _work_facts(row["work"])
+                    if record["schema_version"] == 2
+                    else [("Complete leaves", row["leaves"])]
+                ),
                 ("Terminal win mass", row["win_mass"]),
                 ("Terminal loss mass", row["loss_mass"]),
                 ("Ongoing mass", row["ongoing_mass"]),
@@ -823,6 +976,19 @@ def _values(document: inspection._Document, record: dict, *, prefix: str) -> Non
         "Complete stored action values and exact fractions",
     )
     document.add("</section>")
+
+
+def _work_facts(work: dict) -> list[tuple[str, Any]]:
+    return [
+        ("Executed integer contribution updates", work["contributions"]),
+        ("Executed binary64 payoff evaluations", work["payoff_evaluations"]),
+        ("Largest stored damage-sum support", work["peak_bins"]),
+        ("Represented physical damage tuples", work["represented_damage_combinations"]),
+        (
+            "Represented positive physical trace leaves",
+            work["represented_trace_leaves"],
+        ),
+    ]
 
 
 def _choices(document: inspection._Document, record: dict, *, prefix: str) -> None:
@@ -985,6 +1151,8 @@ def reference_comparison_html(
             ("Right captured SHA-256", hashlib.sha256(right_bytes).hexdigest()),
             ("Comparison eligible", not reasons),
             ("Remaining boundaries", reasons),
+            ("Left computation method", _computation_method(left_report)),
+            ("Right computation method", _computation_method(right_report)),
             (
                 "Producer identities equal",
                 _same(left_report["implementation"], right_report["implementation"]),
@@ -1004,6 +1172,13 @@ def reference_comparison_html(
         '<a href="#right-values">Right values</a></nav>'
         '<section id="comparison"><h2>One-round value loss comparison</h2>'
     )
+    if _computation_method(left_report) != _computation_method(right_report):
+        document.add(
+            "<p>The computation methods and work units differ. That difference "
+            "does not change the declared mathematical model. Eligibility still "
+            "requires equal exact states, law, objective and complete saved values. "
+            "The work counters do not establish a measured performance ratio.</p>"
+        )
     if reasons:
         document.add(
             "<p>These reports are ineligible for a common quality ranking. "

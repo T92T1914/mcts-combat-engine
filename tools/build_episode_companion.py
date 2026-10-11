@@ -21,7 +21,8 @@ FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     "docs/episode-record-replay.md", GUIDE, "docs/episode-stability.md",
     "reference_episode.py", "docs/episode-reference.md",
     "reference/__init__.py", "reference/consumer.py", "reference/one_round.py",
-    "reference/report.py",
+    "reference/report.py", "reference/aggregation.py",
+    "reference/aggregation_domain.py",
     "docs/stability/protocol.json", "docs/stability/exploratory-receipt.json",
     "docs/stability/confirmatory-receipt.json",
     *{"docs/stability/" + name + ".json" for name in (
