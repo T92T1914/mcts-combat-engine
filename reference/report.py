@@ -759,6 +759,13 @@ def refused_reference_report(base: dict, kind: str, message: str) -> dict:
 
 def validate_reference_report(value: Any) -> dict:
     """Check saved schema and derived fractions without running the reference."""
+    if (
+        isinstance(value, dict)
+        and value.get("format") == "mcts-two-round-adaptive-reference-report"
+    ):
+        from .adaptive_report import validate_reference_report as validate_adaptive
+
+        return validate_adaptive(value)
     records._envelope(value, 250_000, 10**300)
     obj = records._object(
         value,
@@ -1035,6 +1042,10 @@ def reference_inspection_html(path: Path, appearance: str = "obscur") -> bytes:
     """Read one complete or refused saved report as self-contained passive HTML."""
     _appearance(appearance)
     record, captured = _capture(path, "reference report")
+    if record["format"] != FORMAT:
+        from .adaptive_report import render_inspection
+
+        return render_inspection(record, captured, appearance)
     document = _start("One-round reference inspection", appearance)
     document.add(
         '<header id="overview"><h1>One-round reference inspection</h1>'
@@ -1135,6 +1146,12 @@ def reference_comparison_html(
     _appearance(appearance)
     left_report, left_bytes = _capture(left, "left reference report")
     right_report, right_bytes = _capture(right, "right reference report")
+    if left_report["format"] != FORMAT or right_report["format"] != FORMAT:
+        from .adaptive_report import render_comparison
+
+        return render_comparison(
+            left_report, left_bytes, right_report, right_bytes, appearance
+        )
     inspection._pair_values(left_report, right_report)
     reasons = _pair_eligibility(left_report, right_report)
     document = _start("One-round reference comparison", appearance)

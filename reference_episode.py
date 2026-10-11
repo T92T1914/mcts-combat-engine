@@ -1,4 +1,4 @@
-"""Compute or passively inspect the companion's independent one-round report."""
+"""Compute an explicit finite reference or passively inspect a saved report."""
 
 from __future__ import annotations
 
@@ -11,13 +11,20 @@ from game.episode_record import EpisodeInputError, output_bytes
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Price a saved decision with the bounded independent one-round "
-        "reference, or inspect already saved reference data."
+        description="Price a saved decision with an explicit bounded reference, "
+        "evaluate a supplied adaptive state, or inspect saved reference data."
     )
     parser.add_argument(
         "report",
         type=Path,
-        help="saved decision JSON, or reference JSON with --inspect",
+        help="saved decision JSON, normalized state with --state-input, "
+        "or reference JSON with --inspect",
+    )
+    parser.add_argument(
+        "--state-input",
+        action="store_true",
+        help="read a complete supplied normalized state "
+        "with the explicit two-round adaptive model and method",
     )
     parser.add_argument(
         "--inspect",
@@ -37,15 +44,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--model",
-        choices=("one-round", "three-enemy"),
+        choices=("one-round", "three-enemy", "two-round-adaptive"),
         help="calculation subset: one-round retains one/two initial enemies "
-        "(default); three-enemy explicitly requires exactly three",
+        "(default); three-enemy requires exactly three; two-round-adaptive "
+        "requires one enemy and at most three plain damage/heal cards",
     )
     parser.add_argument(
         "--method",
-        choices=("physical", "sum-convolution"),
+        choices=("physical", "sum-convolution", "adaptive-physical"),
         help="calculation method: physical enumeration (default), or explicit "
-        "integer sum convolution for the narrower nonlethal damage subset",
+        "integer sum convolution for the narrower nonlethal damage subset, "
+        "or adaptive-physical for the explicit two-round model",
     )
     parser.add_argument(
         "--max-paths", type=int, help="leaves per action, 1..250000 (default: 250000)"
@@ -68,29 +77,83 @@ def main(argv: list[str] | None = None) -> int:
         "1..10000 (default: 10000)",
     )
     parser.add_argument(
+        "--max-transitions",
+        type=int,
+        help="adaptive executed first/second transition leaves, "
+        "1..1000000 (default: 1000000)",
+    )
+    parser.add_argument(
+        "--max-per-action",
+        type=int,
+        help="adaptive transition leaves per root action including continuations, "
+        "1..250000 (default: 250000)",
+    )
+    parser.add_argument(
+        "--max-work-units",
+        type=int,
+        help="adaptive transitions plus payoff and observation operations, "
+        "1..3000000 (default: 3000000)",
+    )
+    parser.add_argument(
         "--max-seconds",
         type=float,
         help="cooperative deadline, 0.000001..30 for physical enumeration or "
-        "finite positive at most 30 for sum-convolution "
+        "finite positive at most 30 for sum-convolution and adaptive-physical "
         "(default: 30, no hard wall or memory guarantee)",
     )
     args = parser.parse_args(argv)
     if args.inspect:
-        if any(
-            value is not None
-            for value in (
-                args.model,
-                args.method,
-                args.max_paths,
-                args.max_total_paths,
-                args.max_contributions,
-                args.max_payoff_evaluations,
-                args.max_seconds,
+        if (
+            any(
+                value is not None
+                for value in (
+                    args.model,
+                    args.method,
+                    args.max_paths,
+                    args.max_total_paths,
+                    args.max_contributions,
+                    args.max_payoff_evaluations,
+                    args.max_transitions,
+                    args.max_per_action,
+                    args.max_work_units,
+                    args.max_seconds,
+                )
             )
+            or args.state_input
         ):
             parser.error("inspection cannot accept model or calculation controls")
     elif args.compare_report is not None or args.appearance is not None:
         parser.error("--compare-report and --appearance require --inspect")
+    elif (
+        args.model == "two-round-adaptive"
+        or args.method == "adaptive-physical"
+        or args.state_input
+    ):
+        if args.model != "two-round-adaptive" or args.method != "adaptive-physical":
+            parser.error(
+                "adaptive calculation requires --model two-round-adaptive "
+                "and --method adaptive-physical"
+            )
+        if any(
+            value is not None
+            for value in (
+                args.max_paths,
+                args.max_total_paths,
+                args.max_contributions,
+                args.max_payoff_evaluations,
+            )
+        ):
+            parser.error(
+                "adaptive calculation requires its own transition and work controls"
+            )
+    elif any(
+        value is not None
+        for value in (args.max_transitions, args.max_per_action, args.max_work_units)
+    ):
+        parser.error(
+            "adaptive transition and work controls require "
+            "the two-round adaptive model and method"
+        )
     elif args.method == "sum-convolution":
         if args.max_paths is not None or args.max_total_paths is not None:
             parser.error("physical leaf controls cannot limit sum-convolution work")
@@ -118,7 +181,11 @@ def main(argv: list[str] | None = None) -> int:
             exit_status = 0
         else:
             from reference.aggregation_domain import METHOD, PHYSICAL_METHOD
-            from reference.consumer import reference_decision
+            from reference.consumer import (
+                ADAPTIVE_METHOD,
+                ADAPTIVE_MODEL,
+                reference_decision,
+            )
             from reference.report import MODEL, THREE_ENEMY_MODEL
 
             report = reference_decision(
@@ -128,10 +195,22 @@ def main(argv: list[str] | None = None) -> int:
                     1_000_000 if args.max_total_paths is None else args.max_total_paths
                 ),
                 max_seconds=30.0 if args.max_seconds is None else args.max_seconds,
-                model=THREE_ENEMY_MODEL if args.model == "three-enemy" else MODEL,
-                method=METHOD if args.method == "sum-convolution" else PHYSICAL_METHOD,
+                model=ADAPTIVE_MODEL
+                if args.model == "two-round-adaptive"
+                else THREE_ENEMY_MODEL
+                if args.model == "three-enemy"
+                else MODEL,
+                method=ADAPTIVE_METHOD
+                if args.method == "adaptive-physical"
+                else METHOD
+                if args.method == "sum-convolution"
+                else PHYSICAL_METHOD,
                 max_contributions=args.max_contributions,
                 max_payoff_evaluations=args.max_payoff_evaluations,
+                max_transitions=args.max_transitions,
+                max_per_action=args.max_per_action,
+                max_work_units=args.max_work_units,
+                state_input=args.state_input,
             )
             rendered = output_bytes(report)
             exit_status = 0 if report["status"] == "complete" else 1

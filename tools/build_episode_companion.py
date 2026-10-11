@@ -20,9 +20,11 @@ FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     "episode.py", "demo.py", "data/cards.json", "data/scenarios.json",
     "docs/episode-record-replay.md", GUIDE, "docs/episode-stability.md",
     "reference_episode.py", "docs/episode-reference.md",
+    "docs/episode-adaptive-reference.md", "examples/adaptive-state.json",
     "reference/__init__.py", "reference/consumer.py", "reference/one_round.py",
     "reference/report.py", "reference/aggregation.py",
-    "reference/aggregation_domain.py",
+    "reference/aggregation_domain.py", "reference/adaptive.py",
+    "reference/adaptive_report.py",
     "docs/stability/protocol.json", "docs/stability/exploratory-receipt.json",
     "docs/stability/confirmatory-receipt.json",
     *{"docs/stability/" + name + ".json" for name in (

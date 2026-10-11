@@ -56,6 +56,8 @@ FILES = {
     "docs/same-forest-protocol.json": "same-forest-protocol.json",
     "docs/same-forest-results.md": "same-forest-results.md",
     "site/same-forest-repeatability.html": "same-forest-repeatability.html",
+    "docs/episode-adaptive-reference.md": "episode-adaptive-reference.md",
+    "examples/adaptive-state.json": "adaptive-state.json",
     **{
         "docs/" + name: name
         for name in (

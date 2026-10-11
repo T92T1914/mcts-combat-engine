@@ -6,6 +6,12 @@ decision report, including a passively extracted stability cell. It does not
 start another search or replay the encounter. This addition is separate from
 the engine wheel and the saved episode reader kit.
 
+The companion also provides an explicit [bounded two-round adaptive
+reference](episode-adaptive-reference.md). Its separate report family prices
+a supplied modeled state or an admitted saved horizon-two decision. Use that
+guide for the small installed example, observation-dependent second choices
+and transition/work-unit limits. The routes below retain their one-round meaning.
+
 ## Calculate, inspect and compare
 
 First obtain a decision with `--horizon 1` using the existing saved-state command.
@@ -139,7 +145,7 @@ work units and policies are shown without treating them as a model mismatch.
 
 ## Objective and evidence boundary
 
-Each declared model prices every legal physical action after one complete round.
+Each one-round model in this guide prices every legal physical action after one complete round.
 Terminal depth and horizon are both one.
 A win uses the source binary64 value `1.0 - 0.045`, a loss uses `0.15`, including
 simultaneous death, and an ongoing state uses the original HP/setup score in
