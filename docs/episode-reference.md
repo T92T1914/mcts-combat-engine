@@ -169,8 +169,12 @@ win/loss objective.
 
 The report binds the qualified nine engine body hashes, observed installation,
 saved decision producer, reference producer and exact state representation.
-A different installed engine is refused. A decision from different engine code
-can have its supported state priced, but its quality comparison is ineligible.
+An unqualified installed engine is refused. The two explicitly qualified raw
+source maps identify the original engine and its documentation-only MCTS
+docstring correction. A complete report binds its observed engine to its own
+declared qualified map. Historical reports keep that original declaration.
+A decision from different engine code can have its supported state priced,
+but its quality comparison is ineligible.
 Original source-byte hashes remain retained claims. Hashes identify bytes, not
 trusted authorship. Historical episode admission and replay remain unchanged.
 

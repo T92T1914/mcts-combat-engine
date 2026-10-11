@@ -229,12 +229,10 @@ def _validate_base(value: Any, *, envelope: bool = True) -> dict:
     _limits(obj["limits"])
     if obj["new_search_performed"] is not False:
         records._error("/new_search_performed", "the reference runs no search")
-    if not _same(
-        obj["reference_engine_files_sha256"], legacy.REFERENCE_ENGINE_FILES_SHA256
-    ):
+    if not legacy.qualified_engine_files(obj["reference_engine_files_sha256"]):
         records._error(
             "/reference_engine_files_sha256",
-            "require the originally qualified engine hash map",
+            "require a qualified engine hash map",
         )
     source = records._object(
         obj["source_report"],
@@ -313,6 +311,12 @@ def reference_report_base(
         records._error("source input", "require bounded nonempty captured bytes")
     decision = None if state_input else source
     state = source if state_input else source["selected_state"]
+    observed_engine = implementation["decision_consumer"]["engine_files_sha256"]
+    qualified_engine = (
+        observed_engine
+        if legacy.qualified_engine_files(observed_engine)
+        else legacy.REFERENCE_ENGINE_FILES_SHA256
+    )
     base = {
         "format": FORMAT,
         "schema_version": 1,
@@ -336,9 +340,7 @@ def reference_report_base(
         "computation_method": METHOD,
         "limits": copy.deepcopy(limits),
         "new_search_performed": False,
-        "reference_engine_files_sha256": copy.deepcopy(
-            legacy.REFERENCE_ENGINE_FILES_SHA256
-        ),
+        "reference_engine_files_sha256": copy.deepcopy(qualified_engine),
     }
     return _validate_base(base)
 
@@ -934,7 +936,7 @@ def validate_reference_report(value: Any) -> dict:
         records._string(failure["message"], "/failure/message", high=2048)
         if failure["kind"] == "engine_mismatch" and _same(
             obj["implementation"]["decision_consumer"]["engine_files_sha256"],
-            legacy.REFERENCE_ENGINE_FILES_SHA256,
+            obj["reference_engine_files_sha256"],
         ):
             records._error(
                 "/failure/kind",
@@ -953,11 +955,11 @@ def validate_reference_report(value: Any) -> dict:
             records._error("/failure", "complete reports require null")
         if not _same(
             obj["implementation"]["decision_consumer"]["engine_files_sha256"],
-            legacy.REFERENCE_ENGINE_FILES_SHA256,
+            obj["reference_engine_files_sha256"],
         ):
             records._error(
                 "/implementation/decision_consumer/engine_files_sha256",
-                "complete calculation requires the originally qualified engine bodies",
+                "complete calculation requires its declared qualified engine bodies",
             )
         evaluation = _evaluation(obj["evaluation"], base)
         if not _same(obj["diagnostics"], _diagnostics(base, evaluation)):

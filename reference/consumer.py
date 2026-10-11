@@ -22,9 +22,9 @@ from game.episode_record import (
 from . import aggregation_domain
 from .report import (
     MODEL,
-    REFERENCE_ENGINE_FILES_SHA256,
     THREE_ENEMY_MODEL,
     complete_reference_report,
+    qualified_engine_files,
     reference_report_base,
     refused_reference_report,
 )
@@ -171,9 +171,8 @@ def reference_decision(
         decision, captured, observed, limits, model=model, computation_method=method
     )
     try:
-        if (
+        if not qualified_engine_files(
             observed["decision_consumer"]["engine_files_sha256"]
-            != REFERENCE_ENGINE_FILES_SHA256
         ):
             report = refused_reference_report(
                 base,
@@ -274,9 +273,8 @@ def _adaptive_reference(
         source, captured, observed, limits, state_input=state_input
     )
     try:
-        if (
+        if not qualified_engine_files(
             observed["decision_consumer"]["engine_files_sha256"]
-            != REFERENCE_ENGINE_FILES_SHA256
         ):
             report = reports.refused_reference_report(
                 base,

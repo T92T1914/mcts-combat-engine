@@ -36,6 +36,19 @@ REFERENCE_ENGINE_FILES_SHA256 = {
     "simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
     "state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
 }
+# The ownership documentation revision changes only the raw mcts.py docstring.
+# Keep the original declaration available for passive historical report admission.
+QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256 = {
+    "__init__.py": "099f37529017f01fe133417497ca038d72377633e8d8af98ef104b27b014b071",
+    "actions.py": "468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618",
+    "decider.py": "8d5c994f80abef9c8d6f1f83d524bb1bdd9792869b6d7f98770cb4318fcc0c3f",
+    "mcts.py": "4cadf249dee661a535cd2d7eae0c9009caf91da88de69550292ca75b04b3c8ca",
+    "parallel.py": "69769589192e740edaab83252766fb4dfb3d36a1d159571b4d415f2759d9f64b",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rules.py": "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b",
+    "simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
+    "state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
+}
 SEARCH_VALUE_SEMANTICS = (
     "MCTS terminal wins score 1 - 0.045 * min(6, depth); "
     "terminal losses score 0.15 * min(depth, h) / h, where "
@@ -195,6 +208,17 @@ def _qualified_state(state: dict, *, model: str = MODEL) -> None:
 
 def _same(left: Any, right: Any) -> bool:
     return records.canonical(left) == records.canonical(right)
+
+
+def qualified_engine_files(value: Any) -> bool:
+    """Admit one of two independently qualified complete raw-source maps."""
+    return isinstance(value, dict) and any(
+        _same(value, admitted)
+        for admitted in (
+            REFERENCE_ENGINE_FILES_SHA256,
+            QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256,
+        )
+    )
 
 
 def _fraction(value: Any, location: str, *, probability: bool = False) -> Fraction:
@@ -399,7 +423,7 @@ def _validate_base(value: Any, *, envelope: bool = True) -> dict:
             {aggregation_domain.METHOD},
         )
     _model(obj)
-    if not _same(obj["reference_engine_files_sha256"], REFERENCE_ENGINE_FILES_SHA256):
+    if not qualified_engine_files(obj["reference_engine_files_sha256"]):
         records._error(
             "/reference_engine_files_sha256",
             "must identify the engine bodies qualified for this model",
@@ -481,6 +505,12 @@ def reference_report_base(
     if not _same(parsed, decision):
         records._error("source report", "captured input differs from supplied decision")
     implementation = _implementation(implementation)
+    observed_engine = implementation["decision_consumer"]["engine_files_sha256"]
+    qualified_engine = (
+        observed_engine
+        if qualified_engine_files(observed_engine)
+        else REFERENCE_ENGINE_FILES_SHA256
+    )
     base = {
         "format": FORMAT,
         "schema_version": 1,
@@ -502,7 +532,7 @@ def reference_report_base(
         "value_model": VALUE_MODEL,
         "limits": copy.deepcopy(limits),
         "new_search_performed": False,
-        "reference_engine_files_sha256": copy.deepcopy(REFERENCE_ENGINE_FILES_SHA256),
+        "reference_engine_files_sha256": copy.deepcopy(qualified_engine),
     }
     if computation_method == aggregation_domain.METHOD:
         base["schema_version"] = 2
@@ -800,7 +830,7 @@ def validate_reference_report(value: Any) -> dict:
             records._error("/failure", "a complete report requires null")
         if not _same(
             obj["implementation"]["decision_consumer"]["engine_files_sha256"],
-            REFERENCE_ENGINE_FILES_SHA256,
+            obj["reference_engine_files_sha256"],
         ):
             records._error(
                 "/implementation/decision_consumer/engine_files_sha256",
