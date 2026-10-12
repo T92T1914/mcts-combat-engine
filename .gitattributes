@@ -12,3 +12,5 @@ docs/same-forest-repeatability-public-failed-attempt.json -text
 docs/mcts-decision-clair-wide.svg text eol=lf
 docs/mcts-decision-obscur-wide.svg text eol=lf
 docs/same-forest-repeatability-*.svg text eol=lf
+docs/request-edge-reuse-clair.svg text eol=lf
+docs/request-edge-reuse-obscur.svg text eol=lf

@@ -131,7 +131,9 @@ def add_svg_accessibility(path):
         group.remove(child)
         anchor.append(child)
     group.append(anchor)
-    tree.write(path, encoding="utf-8", xml_declaration=True)
+    # Receipts bind delivered bytes, including line endings on every host.
+    payload = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    path.write_bytes(payload.replace(b"\r\n", b"\n"))
 
 
 def draw(values, tokens, mode, files, output):

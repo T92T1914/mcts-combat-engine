@@ -52,7 +52,7 @@
     "presentation/tokens.json": "96a3b9d2e35e074069b7a70213327b1f79ca898454c6e64906899e5d59ae0feb",
     "tools/presentation.py": "81fc98ae0c4389f62fdc1fca34b92e1a1d8b1ae5b80ee2438f05834947fd2931",
     "tools/render_decision_figure.py": "94eaf72b4a3c17552cfdef6a32a41121ff1847f36a148878b12d7aeaa7a4b635",
-    "tools/render_evidence_figure.py": "422d4eae1a248419116f18682faac263f5d6087c803371a7c7aa469c2086431e"
+    "tools/render_evidence_figure.py": "02aaf106e0a14af6bf14e19914201bb247502416032bb6a9c9a82e605a2432ed"
   },
   "editions": {
     "clair": {
@@ -64,7 +64,7 @@
       },
       "svg": {
         "path": "docs/request-edge-reuse-clair.svg",
-        "sha256": "6cd0fa452599d566d5b62c80313ccb3885e057503c113fd3a69fd09c8e297f1d"
+        "sha256": "cbf5b77fd69d6bf6986c21c892fae69afdb37f2f28bfb502777b1aa2902cacef"
       }
     },
     "obscur": {
@@ -76,7 +76,7 @@
       },
       "svg": {
         "path": "docs/request-edge-reuse-obscur.svg",
-        "sha256": "4345eb1035c40cf2dbd8ba392e02f516083d32e2d193dbf77aa1ece1c2be2aba"
+        "sha256": "bf6a4115833ec0c95b538d24d0a69816f946dfead83b6b519d9f24a9b89b7694"
       }
     }
   },
