@@ -104,16 +104,33 @@ class Node:
         return self.mean + c * math.sqrt(math.log(self.parent.visits) / self.visits)
 
 
-def _available_actions(state: GameState, slots: list[int]) -> dict[Action, Action]:
+def _available_actions(
+    state: GameState, slots: list[int],
+    edge_pool: dict[tuple[int, int | None], Action] | None = None,
+) -> dict[Action, Action]:
     """Map stable root-slot edges to current hand-index actions.
 
     Names and Card equality cannot identify a physical copy: duplicate cards
     are legal, including two references to the same immutable Card instance.
     """
-    return {
-        Action(slots[a.card_idx], a.target_idx) if a.card_idx is not None else a: a
-        for a in legal_actions(state)
-    }
+    if edge_pool is None:
+        return {
+            Action(slots[a.card_idx], a.target_idx) if a.card_idx is not None else a: a
+            for a in legal_actions(state)
+        }
+    available: dict[Action, Action] = {}
+    edge: Action | None
+    for action in legal_actions(state):
+        if action.card_idx is None:
+            edge = action
+        else:
+            key = (slots[action.card_idx], action.target_idx)
+            edge = edge_pool.get(key)
+            if edge is None:
+                edge = Action(*key)
+                edge_pool[key] = edge
+        available[edge] = action
+    return available
 
 
 @dataclass
@@ -240,6 +257,8 @@ class MCTS:
         deadline = (time.perf_counter() + time_budget_ms / 1000.0
                     if time_budget_ms is not None else None)
         root = Node(action=None, parent=None)
+        # Reuse coordinate values within this search, never current legality.
+        edge_pool: dict[tuple[int, int | None], Action] = {}
         if priors:
             for a in legal_actions(root_state):
                 name = (root_state.hand[a.card_idx].name
@@ -276,7 +295,7 @@ class MCTS:
             # and living targets vary; newly legal options must be expanded
             # even at a node visited under a different realization before.
             while depth < self.horizon_rounds and not state.is_terminal():
-                available = _available_actions(state, slots)
+                available = _available_actions(state, slots, edge_pool)
                 tried = {ch.action for ch in node.children}
                 untried = [a for a in available if a not in tried]
                 expanded = bool(untried)
