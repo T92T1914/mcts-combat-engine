@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import tempfile
 import unittest
+from itertools import permutations
 from pathlib import Path
 from unittest.mock import patch
 
@@ -25,6 +26,7 @@ from reference import adaptive, adaptive_report, consumer, one_round, report
 QUALIFIED_MAPS = (
     report.REFERENCE_ENGINE_FILES_SHA256,
     report.QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256,
+    report.QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
 )
 PHYSICAL_LIMITS = {"max_paths": 100, "max_total_paths": 1000, "max_seconds": 1}
 ADAPTIVE_LIMITS = {
@@ -85,12 +87,14 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
         self.decision_path.write_bytes(records.output_bytes(literal_decision()))
         self.state_path.write_bytes(records.output_bytes(adaptation_state()))
 
-    def test_only_the_two_complete_literal_maps_are_qualified(self):
-        old, documented = QUALIFIED_MAPS
-        self.assertEqual(set(old), set(documented))
-        self.assertEqual(
-            [name for name in old if old[name] != documented[name]], ["mcts.py"]
-        )
+    def test_only_the_three_complete_literal_maps_are_qualified(self):
+        old, documented, reused = QUALIFIED_MAPS
+        self.assertEqual(len(old), 9)
+        for later in (documented, reused):
+            self.assertEqual(set(old), set(later))
+            self.assertEqual(
+                [name for name in old if old[name] != later[name]], ["mcts.py"]
+            )
         self.assertEqual(
             old["mcts.py"],
             "86902c63ed6a2f5bb8acb26413167947dbf2687bf4e7dfb911743851be35c04d",
@@ -98,6 +102,10 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
         self.assertEqual(
             documented["mcts.py"],
             "4cadf249dee661a535cd2d7eae0c9009caf91da88de69550292ca75b04b3c8ca",
+        )
+        self.assertEqual(
+            reused["mcts.py"],
+            "2a53a16dc96dfaba6ed408a54598bfb61257fe42194d8cf828e11db68761c927",
         )
         for admitted in QUALIFIED_MAPS:
             with self.subTest(admitted=admitted["mcts.py"]):
@@ -145,7 +153,7 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                         reader.validate_reference_report(tampered)
 
     def test_physical_complete_reports_require_their_own_qualified_map(self):
-        for admitted, other in (QUALIFIED_MAPS, tuple(reversed(QUALIFIED_MAPS))):
+        for admitted, other in permutations(QUALIFIED_MAPS, 2):
             base = physical_base(admitted)
             completed = report.complete_reference_report(
                 base, literal_evaluation(base["decision_report"])
@@ -161,7 +169,7 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
 
     def test_adaptive_complete_reports_require_their_own_qualified_map(self):
         evaluation = adaptive.evaluate(adaptation_state(), **ADAPTIVE_LIMITS)
-        for admitted, other in (QUALIFIED_MAPS, tuple(reversed(QUALIFIED_MAPS))):
+        for admitted, other in permutations(QUALIFIED_MAPS, 2):
             completed = adaptive_report.complete_reference_report(
                 adaptive_base(admitted), evaluation
             )
@@ -225,7 +233,7 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
             (self.decision_path.read_bytes(), self.state_path.read_bytes()), before
         )
 
-    def test_both_qualified_maps_reach_each_existing_calculation_path(self):
+    def test_each_qualified_map_reaches_each_existing_calculation_path(self):
         for admitted in QUALIFIED_MAPS:
             observed = consumer.reference_identity()
             observed["decision_consumer"]["engine_files_sha256"] = copy.deepcopy(

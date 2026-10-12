@@ -59,6 +59,9 @@ FILES = {
     "docs/episode-adaptive-reference.md": "episode-adaptive-reference.md",
     "examples/adaptive-state.json": "adaptive-state.json",
     "docs/episode-search-allowance.md": "episode-search-allowance.md",
+    "docs/request-edge-reuse.md": "request-edge-reuse.md",
+    "docs/request-edge-reuse/protocol.json": "request-edge-reuse/protocol.json",
+    "docs/request-edge-reuse/results.json": "request-edge-reuse/results.json",
     **{
         "docs/search-allowance/" + name: "search-allowance/" + name
         for name in (
