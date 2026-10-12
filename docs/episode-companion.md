@@ -133,3 +133,8 @@ Inspect original 8/64 decision/reference pairs, replay their custom episode or
 request a fresh decision from the same state. The complete 144-cell result
 table retains exact score losses and work under the declared one-round model.
 The finding is limited to its frozen cases and leaves engine defaults unchanged.
+
+The [request-local action reuse guide](request-edge-reuse.md) documents the
+qualified installed search comparison and a fresh capture, replay, decision,
+reference and inspection journey with the same companion. Its source identity,
+local timing boundary and two adverse individual measurements remain explicit.

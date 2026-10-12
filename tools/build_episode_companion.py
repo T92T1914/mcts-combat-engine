@@ -31,6 +31,8 @@ FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
         "exploratory-duel", "exploratory-gauntlet", "exploratory-boss",
         "confirmatory-duel", "confirmatory-gauntlet", "confirmatory-boss")},
     "docs/episode-search-allowance.md",
+    "docs/request-edge-reuse.md", "docs/request-edge-reuse/protocol.json",
+    "docs/request-edge-reuse/results.json",
     *{"docs/search-allowance/" + name for name in (
         "cards.json", "scenarios.json", "protocol.json", "results.json",
         *(f"{case}.{kind}.json"

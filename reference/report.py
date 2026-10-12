@@ -49,6 +49,19 @@ QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256 = {
     "simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
     "state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
 }
+# Request-local reuse changes only construction of stable physical Action edges.
+# Retain both earlier source declarations for historical report admission.
+QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256 = {
+    "__init__.py": "099f37529017f01fe133417497ca038d72377633e8d8af98ef104b27b014b071",
+    "actions.py": "468e9fd7373d91e285d2173acf89510bd11692419c80bc6aec4b0d0e04fcd618",
+    "decider.py": "8d5c994f80abef9c8d6f1f83d524bb1bdd9792869b6d7f98770cb4318fcc0c3f",
+    "mcts.py": "2a53a16dc96dfaba6ed408a54598bfb61257fe42194d8cf828e11db68761c927",
+    "parallel.py": "69769589192e740edaab83252766fb4dfb3d36a1d159571b4d415f2759d9f64b",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rules.py": "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b",
+    "simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
+    "state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
+}
 SEARCH_VALUE_SEMANTICS = (
     "MCTS terminal wins score 1 - 0.045 * min(6, depth); "
     "terminal losses score 0.15 * min(depth, h) / h, where "
@@ -211,12 +224,13 @@ def _same(left: Any, right: Any) -> bool:
 
 
 def qualified_engine_files(value: Any) -> bool:
-    """Admit one of two independently qualified complete raw-source maps."""
+    """Admit one of three independently qualified complete raw-source maps."""
     return isinstance(value, dict) and any(
         _same(value, admitted)
         for admitted in (
             REFERENCE_ENGINE_FILES_SHA256,
             QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256,
+            QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
         )
     )
 

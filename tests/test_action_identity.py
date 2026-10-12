@@ -21,28 +21,56 @@ def position():
 
 class ActionIdentityTests(unittest.TestCase):
     def test_stable_edges_survive_hand_removal_and_duplicate_instances(self):
-        state = position()
-        state.player.pips = 7
-        duplicate = state.hand[0]
-        state.hand = [duplicate, duplicate, state.hand[1]]
-        slots = [0, 1, 2]
-        before = _available_actions(state, slots)
-        advance_round(state, before[Action(0, 0)], random.Random(0))
-        slots.pop(0)
-        state.player.pips = 7
-        after = _available_actions(state, slots)
-        self.assertNotIn(Action(0, 0), after)
-        self.assertEqual(after[Action(1, 0)], Action(0, 0))
-        self.assertEqual(after[Action(2)], Action(1))
-        self.assertIs(state.hand[after[Action(1, 0)].card_idx], duplicate)
+        for pooled in (False, True):
+            with self.subTest(pooled=pooled):
+                state = position()
+                state.player.pips = 7
+                duplicate = state.hand[0]
+                state.hand = [duplicate, duplicate, state.hand[1]]
+                slots = [0, 1, 2]
+                edge_pool = {} if pooled else None
+                before = _available_actions(state, slots, edge_pool)
+                advance_round(state, before[Action(0, 0)], random.Random(0))
+                slots.pop(0)
+                state.player.pips = 7
+                after = _available_actions(state, slots, edge_pool)
+                self.assertNotIn(Action(0, 0), after)
+                self.assertEqual(after[Action(1, 0)], Action(0, 0))
+                self.assertEqual(after[Action(2)], Action(1))
+                self.assertIs(state.hand[after[Action(1, 0)].card_idx], duplicate)
 
     def test_availability_is_recomputed_after_pips_and_targets_change(self):
+        for pooled in (False, True):
+            with self.subTest(pooled=pooled):
+                state = position()
+                slots = [0, 1, 2]
+                edge_pool = {} if pooled else None
+                self.assertNotIn(
+                    Action(0, 0), _available_actions(state, slots, edge_pool))
+                state.player.power_pips = 1
+                self.assertIn(Action(0, 0), _available_actions(state, slots, edge_pool))
+                state.enemies[0].hp = 0
+                self.assertNotIn(
+                    Action(0, 0), _available_actions(state, slots, edge_pool))
+                state.enemies.append(Combatant('New target', Element.FROST, 100, 100))
+                self.assertIn(Action(0, 1), _available_actions(state, slots, edge_pool))
+
+    def test_search_does_not_intern_returned_edges_across_requests(self):
         state = position()
-        self.assertNotIn(Action(0, 0), _available_actions(state, [0, 1, 2]))
-        state.player.power_pips = 1
-        self.assertIn(Action(0, 0), _available_actions(state, [0, 1, 2]))
-        state.enemies[0].hp = 0
-        self.assertNotIn(Action(0, 0), _available_actions(state, [0, 1, 2]))
+        state.player.pips = 7
+        search = MCTS(horizon_rounds=2, max_sims=16, rng=random.Random(0))
+        first = {
+            row.action: row.action
+            for row in search.search(state, time_budget_ms=None)
+            if not row.action.is_pass}
+        second = {
+            row.action: row.action
+            for row in search.search(state, time_budget_ms=None)
+            if not row.action.is_pass}
+        self.assertEqual(set(first), {Action(0, 0), Action(1), Action(2, 0)})
+        self.assertEqual(set(first), set(second))
+        for action in first:
+            self.assertIsNot(action, second[action])
 
     def test_invalid_indices_and_targets_behave_exactly_like_pass(self):
         for action in [Action(-1, 0), Action(100, 0), Action(2),
