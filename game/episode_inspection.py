@@ -321,12 +321,16 @@ DECISION_FIELDS = (
     "work", "elapsed_seconds", "legal_actions", "ranking", "recommendation",
 )
 V2_FIELDS = {"root_encounter_order", "derivation"}
+V3_FIELDS = {"root_allocation"}
 EXPLORATIONS = (0.6, 1.2, 2.4)
 FINAL_ACTION_RULES = {"mean_visits", "visits_mean"}
 
 
 def decision_ranking(report: dict, rule: str) -> list[dict]:
     """Rerank saved sufficient statistics only, preserving encounter ties."""
+    if report.get("schema_version") == 3:
+        records._error("final_action_rule",
+                       "schema 3 retains its complete allocation treatment")
     records._choice(rule, "final_action_rule", FINAL_ACTION_RULES)
     rows = {(row["card_idx"], row["target_idx"]): row
             for row in report["legal_actions"]}
@@ -436,6 +440,9 @@ def _report_configuration(value: Any, version: int = 1) -> dict:
     }
     if version == 2:
         required |= {"final_action_rule", "tie_break"}
+    elif version == 3:
+        required |= {"root_allocation", "sampling_policy", "final_action_rule",
+                     "tie_break"}
     obj = records._object(value, location, required)
     for name, expected in (
         ("method", "mcts"), ("mode", "serial_clockless"),
@@ -449,7 +456,7 @@ def _report_configuration(value: Any, version: int = 1) -> dict:
                               f"{location}/horizon_rounds", 1, 8)
     records.integer(obj["max_transitions"], f"{location}/max_transitions",
                     sims * horizon, sims * horizon)
-    if version == 1:
+    if version in (1, 3):
         records._number(obj["exploration"], f"{location}/exploration", 1.2, 1.2)
     else:
         records._number(obj["exploration"], f"{location}/exploration", 0.6, 2.4)
@@ -459,6 +466,15 @@ def _report_configuration(value: Any, version: int = 1) -> dict:
                         FINAL_ACTION_RULES)
         records._choice(obj["tie_break"], f"{location}/tie_break",
                         {"root_encounter_order"})
+    if version == 3:
+        from .root_allocation_report import FINAL_RULE, POLICY, TIE_BREAK
+
+        records.integer(obj["horizon_rounds"], f"{location}/horizon_rounds", 1, 1)
+        for name, expected in (("root_allocation", "sequential_halving"),
+                               ("sampling_policy", POLICY),
+                               ("final_action_rule", FINAL_RULE),
+                               ("tie_break", TIE_BREAK)):
+            records._choice(obj[name], f"{location}/{name}", {expected})
     for name in ("time_budget_ms", "priors", "workers"):
         if obj[name] is not None:
             records._error(f"{location}/{name}", "must be null")
@@ -568,9 +584,10 @@ def validate_decision_report(value: Any) -> dict:
     records._envelope(value, 200_000, 10**300)
     if not isinstance(value, dict):
         records._error("/report", "must be an object")
-    version = records.integer(value.get("schema_version"), "/schema_version", 1, 2)
+    version = records.integer(value.get("schema_version"), "/schema_version", 1, 3)
     obj = records._object(value, "/report", set(DECISION_FIELDS) |
-                          (V2_FIELDS if version == 2 else set()))
+                          (V2_FIELDS if version == 2 else
+                           V3_FIELDS if version == 3 else set()))
     records._choice(obj["format"], "/format", {"mcts-episode-decision-report"})
     records._choice(obj["status"], "/status", {"decision", "no_work"})
     records._boolean(obj["search_performed"], "/search_performed")
@@ -650,6 +667,10 @@ def validate_decision_report(value: Any) -> dict:
                             path + "/source_final_action_rule", {"mean_visits"})
             if derived["new_search_performed"] is not False:
                 records._error(path + "/new_search_performed", "must be false")
+    elif version == 3:
+        from .root_allocation_report import validate_root_allocation
+
+        validate_root_allocation(obj)
     return obj
 
 
@@ -889,6 +910,48 @@ def _report_references(document: _Document, action: dict, state: dict) -> None:
     document.add("</dl>")
 
 
+def _allocation_fragment(document: _Document, report: dict, prefix: str = "") -> None:
+    allocation = report["root_allocation"]
+    document.add("<p>Schema 3 declares horizon-one staged root sampling. Completed "
+                 "halving puts the final survivor first, then orders other sampled "
+                 "actions by cumulative mean, visits and physical canonical order. "
+                 "An insufficient allowance uses uniform sweeps and that raw "
+                 "ordering. This differs from the ordinary mean-first policy. "
+                 "Saved arithmetic is admitted without running the producer.</p>")
+    _facts(document, [
+        ("Declared sampling policy", allocation["policy"]),
+        ("Final action treatment", report["configuration"]["final_action_rule"]),
+        ("Physical tie order", report["configuration"]["tie_break"]),
+        ("Reported allocation mode", allocation["mode"]),
+        ("Usable sample allowance", allocation["usable_allowance"]),
+        ("Reported selections", allocation["selections"]),
+        ("Reported reward updates", allocation["reward_updates"]),
+        ("Completed elimination rounds", allocation["elimination_rounds"]),
+        ("Elimination sorting key evaluations",
+         allocation["elimination_key_evaluations"]),
+        ("Samples after a single survivor", allocation["remainder_samples"]),
+        ("Reported final winner", allocation["winner"]),
+    ])
+    if not report["search_performed"]:
+        document.add("<p>No producer work is reported. This is the declared zero "
+                     "schedule, with no phase, reward, sampled mean or winner.</p>")
+    for index, phase in enumerate(allocation["phases"]):
+        document.add(f"<h3>Elimination phase {index}</h3>")
+        _facts(document, [("Active physical choices", phase["active"]),
+                          ("Samples per active choice", phase["quota"]),
+                          ("Completed phase samples", phase["completed_samples"]),
+                          ("Survivors in physical order", phase["survivors"])])
+        _fragment(document, phase, f"{prefix}/root_allocation/phases/{index}",
+                  f"Complete phase {index} and its separate sums and means")
+    document.add("<p>Phase means govern elimination. The alternatives retain "
+                 "separately accumulated cumulative sums and means. Their "
+                 "floating-point grouping need not agree literally. Allocation "
+                 "counts and key evaluations are declared arithmetic work, not "
+                 "machine instruction counts or latency measurements.</p>")
+    _fragment(document, allocation, prefix + "/root_allocation",
+              "Complete reported root allocation")
+
+
 def _render_decision(record: dict, captured: bytes, appearance: str) -> bytes:
     document = _Document()
     document.add('<!doctype html><html lang="en"><head><meta charset="utf-8">'
@@ -918,6 +981,8 @@ def _render_decision(record: dict, captured: bytes, appearance: str) -> bytes:
         ("work", "Reported work"), ("provenance", "Saved provenance"),
     ):
         document.add(f'<a href="#{name}">{title}</a>')
+    if record["schema_version"] == 3:
+        document.add('<a href="#root-allocation">Root allocation</a>')
     document.add("</nav>")
     for name, title in (
         ("format", "Stored format"), ("schema_version", "Stored version"),
@@ -1006,6 +1071,10 @@ def _render_decision(record: dict, captured: bytes, appearance: str) -> bytes:
         ("value_semantics", "Complete saved value explanation"),
     ):
         _fragment(document, record[name], f"/{name}", title)
+    if record["schema_version"] == 3:
+        document.add('</section><section id="root-allocation"><h2>Root allocation '
+                     "and final treatment</h2>")
+        _allocation_fragment(document, record)
     document.add('</section><section id="provenance"><h2>Saved provenance roles</h2>'
                  "<p>Stored recording provenance includes content, scenario, "
                  "configuration, episode.py implementation and environment RNG "
@@ -1240,6 +1309,8 @@ def _render_pair(left: dict, right: dict, left_bytes: bytes, right_bytes: bytes,
         '<nav aria-label="Comparison sections"><a href="#overview">Overview</a>')
     for anchor, title, _ in _PAIR_GROUPS:
         document.add(f'<a href="#{anchor}">{title}</a>')
+    if left["schema_version"] == 3 or right["schema_version"] == 3:
+        document.add('<a href="#pair-allocation">Root allocation and treatment</a>')
     document.add("</nav>")
     failed = _pair_alignment(left, right)
     for anchor, title, names in _PAIR_GROUPS:
@@ -1257,6 +1328,14 @@ def _render_pair(left: dict, right: dict, left_bytes: bytes, right_bytes: bytes,
                 "compared before choices. Shaped rewards are not calibrated win "
                 "probabilities. Different allowances or seeds prevent causal "
                 "and equal-budget conclusions.</p>")
+            if left["schema_version"] == 3 or right["schema_version"] == 3:
+                document.add("<p>Schema 3 changes both root sampling and final "
+                             "survivor treatment. Its saved stages cannot be "
+                             "reranked or interpreted as an ordinary mean-first "
+                             "search. Different sampling policies and physical "
+                             "tie controls remain explicit settings differences. "
+                             "Matching work does not isolate the effect of "
+                             "allocation alone or establish stronger play.</p>")
             if left["schema_version"] == 2 or right["schema_version"] == 2:
                 document.add("<p>Coefficient changes rerun search. A visits/mean "
                              "selector can rerank the same captured statistics "
@@ -1286,14 +1365,33 @@ def _render_pair(left: dict, right: dict, left_bytes: bytes, right_bytes: bytes,
         document.add('<section id="pair-selection"><h2>Selection and extraction</h2>')
         for side, report in (("left", left), ("right", right)):
             document.add(f"<h3>{side.capitalize()}</h3>")
-            if report["schema_version"] == 1:
-                document.add("<p>Schema 1 has no encounter-order or derivation "
-                             "fields.</p>")
-            else:
+            if report["schema_version"] == 2:
                 for name in sorted(V2_FIELDS):
                     _fragment(document, report[name], f"/{side}/{name}",
                               side.capitalize() + ": complete " +
                               name.replace("_", " "))
+            else:
+                document.add(f"<p>Schema {report['schema_version']} has no "
+                             "encounter-order or derivation fields.</p>")
+        document.add("</section>")
+    if left["schema_version"] == 3 or right["schema_version"] == 3:
+        document.add('<section id="pair-allocation"><h2>Root allocation and '
+                     "final treatment</h2>")
+        left_allocation = left.get("root_allocation")
+        right_allocation = right.get("root_allocation")
+        difference = records.first_difference(left_allocation, right_allocation,
+                                              "/root_allocation")
+        _facts(document, [("Typed allocation branch comparison",
+                           "same" if difference is None else "different"),
+                          ("First differing allocation pointer", difference)])
+        for side, report in (("left", left), ("right", right)):
+            document.add(f"<h3>{side.capitalize()}</h3>")
+            if report["schema_version"] == 3:
+                _allocation_fragment(document, report, "/" + side)
+            else:
+                document.add(f"<p>Schema {report['schema_version']} has no staged "
+                             "root allocation. Its original policy and selection "
+                             "meaning are retained.</p>")
         document.add("</section>")
     document.add(
         "<footer><p>Body typography uses local Inter when its declared faces are "

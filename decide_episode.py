@@ -37,6 +37,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="explicit single-decision coefficient; emits schema 2")
     parser.add_argument("--final-action-rule", choices=("mean_visits", "visits_mean"),
                         help="explicit single/extracted report rule; emits schema 2")
+    parser.add_argument("--root-allocation", choices=("sequential_halving",),
+                        help="optional fixed-work horizon-one allocation; "
+                             "emits schema 3")
     parser.add_argument("--seeds", type=int, nargs="+",
                         help="stability only: 2..16 distinct signed seeds with "
                              "unique magnitudes")
@@ -45,6 +48,15 @@ def main(argv: list[str] | None = None) -> int:
                         help="stability only: unique coefficient subset "
                              "(default: all three)")
     args = parser.parse_args(argv)
+    if args.root_allocation is not None:
+        if args.stability or args.extract_cell is not None:
+            parser.error("--root-allocation cannot combine with stability "
+                         "or extraction")
+        if args.horizon != 1:
+            parser.error("--root-allocation requires --horizon 1")
+        if args.final_action_rule is not None or args.exploration not in (None, 1.2):
+            parser.error("--root-allocation uses its own final rule "
+                         "and coefficient 1.2")
     if args.extract_cell is not None:
         if any(value is not None for value in (
                 args.step, args.seed, args.sims, args.horizon, args.exploration,
@@ -73,11 +85,14 @@ def main(argv: list[str] | None = None) -> int:
                 explorations=args.explorations,
                 horizon=4 if args.horizon is None else args.horizon)
         else:
+            allocation_options = ({"root_allocation": args.root_allocation}
+                                  if args.root_allocation is not None else {})
             report = episode_decision(
                 args.record, step=args.step, seed=7 if args.seed is None else args.seed,
                 sims=16 if args.sims is None else args.sims,
                 horizon=4 if args.horizon is None else args.horizon,
-                exploration=args.exploration, final_action_rule=args.final_action_rule)
+                exploration=args.exploration, final_action_rule=args.final_action_rule,
+                **allocation_options)
         rendered = output_bytes(report)
         written = sys.stdout.buffer.write(rendered)
         if written != len(rendered):

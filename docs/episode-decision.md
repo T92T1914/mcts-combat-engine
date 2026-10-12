@@ -1,5 +1,11 @@
 # A fresh decision from a saved episode state
 
+The optional `--root-allocation sequential_halving --horizon 1` route emits
+schema 3 with its sampling stages and survivor-first final treatment. Read the
+[root allocation guide](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/root-allocation.md) for controls, zero/tiny work,
+inspection, reference use, fixed-allowance evidence and adverse results.
+Omitting this new control preserves the schema 1 and 2 behavior below.
+
 The existing command and schema 1 defaults remain supported. Explicit
 `--exploration 0.6|1.2|2.4` or `--final-action-rule mean_visits|visits_mean`
 produces schema 2, including when the chosen values equal the old defaults.

@@ -33,7 +33,7 @@ class CompanionTests(unittest.TestCase):
                                   companion.ZIP_NAME + "\n").encode("ascii"))
         expected = companion.FIXED_PAYLOAD | {
             "game/" + name for name in reader_tests.GAME_FILES}
-        self.assertEqual(len(expected), 88)
+        self.assertEqual(len(expected), 94)
         self.assertEqual(manifest["format"], "mcts-recording-companion")
         self.assertEqual(set(manifest["payload_files"]), expected)
         self.assertEqual(set(manifest["reference_engine"]["files"]), kit.ENGINE_NAMES)
@@ -67,7 +67,7 @@ class CompanionTests(unittest.TestCase):
     def test_reader_kit_preserves_its_existing_payload_and_derivation(self) -> None:
         archive, _, manifest = kit.prepare(self.root)
         with zipfile.ZipFile(io.BytesIO(archive)) as opened:
-            self.assertEqual(len(opened.namelist()), 17)
+            self.assertEqual(len(opened.namelist()), 18)
             self.assertNotIn("episode.py", opened.namelist())
             self.assertNotIn("demo.py", opened.namelist())
             self.assertNotIn("reference/adaptive.py", opened.namelist())

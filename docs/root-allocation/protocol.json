@@ -1,0 +1,128 @@
+{
+  "acceptance": {
+    "complete": "all cases fully priced and all declared searches complete exactly32 simulations/transitions, immutable input/source joins, no missing/refused/discarded cells; failed attempts retained and do not count",
+    "defaults": "unchanged, optional product mode only if promote and normal delivery/installed/public acceptance",
+    "harm_definition": "harm_s=meanCandidateLoss-meanBaselineLoss=-delta_s; use candidate upper minusbaseline lower for harmupper and candidate lower minusbaseline upper for harmlower",
+    "inconclusive": "all other non-promoting complete results, missingness, inadequate uncertainty or unsupported applicability; do not assert equality",
+    "max_per_state_harm_upper_bound": 0.01,
+    "nonadoption": "a complete qualified experiment showing practical benefit unsupported with evidence of failure: pooled upperbound below practical0.005 OR a simultaneous perstate harm lowerbound>0.01; document narrower descriptive findings",
+    "pooled_delta_lower_bound_positive": true,
+    "practical_absolute_loss_reduction": 0.005,
+    "practical_relative_loss_reduction": 0.25,
+    "promote": "all completeness/reference/source/boundary/review gates plus practical absolute and relative reductions, positive pooled lower bound and simultaneous perstate harm upperbounds<=0.01; confidence certifiespositive benefit; practical magnitude criteria are observed point estimates, not a confidence claim of at least0.005 or25percent",
+    "relative_zero_baseline": "relative reduction undefined if baseline pooled loss is zero; promotionfalse, no equalityclaim",
+    "threshold_rationale": "0.005 is halfonepercent of the shaped-score unit as an engineering minimum benefit, 25percent relative prevents a marginalchange to appreciable baseline loss, perstate0.01 protects against onepercent-score harm. These gate policy adoption, never numericalties."
+  },
+  "baseline_revision": "825496207b3f8e5a0db3da65fb6d946238627e9c",
+  "candidate_selection": {
+    "max_candidates": 1,
+    "method_not_selected_yet": true,
+    "trigger": "exploratory baseline has at least two positive-loss decisions with selected sampled mean above its exact expectation and selected visits at most ceil(32/K), retaining every counterexample; diagnosis must support allocation/mean optimism rather than objective mismatch",
+    "tuning": "one justified mechanism after exploratory diagnosis; no candidate parameter, exploration, selector or budget sweep; candidate semantics/source frozen before deciding execution; all deciding oracle values unavailable to search",
+    "when_no_trigger": "evidence-backed no candidate/no change in this domain"
+  },
+  "domain": {
+    "constraints": {
+      "boss_rules": false,
+      "damage_integer_width_max": 9,
+      "dots": false,
+      "enemies": [
+        1,
+        2
+      ],
+      "hand_max": 7,
+      "initially_affordable_enemy_responses_max": 1,
+      "modifiers": false,
+      "physical_actions_max": 12,
+      "regeneration_chance": 0
+    },
+    "constraints_scope": "The plain-damage envelope applies to the16 prospective deciding states only; inherited exploratory fields remain literal including the existing shield action.",
+    "deciding": "sixteen prospective roots, four each in duel ongoing variance, duel kill threshold, two-enemy asymmetric response, and two-enemy area/physical duplicates; frozen source-defined grid, not selected by answers",
+    "exploratory": "six previously public PR54 roots E1 E2 D1 D2 D3 D4, literal original steps[0].state; all historical deciding material is now exploratory",
+    "generator": "generate_inputs.py",
+    "input_answers_used_for_selection": false,
+    "inputs": "inputs.json",
+    "kind": "controlled modeled finite corpus; no population or encounter claim"
+  },
+  "format": "mcts-root-allocation-qualification",
+  "metrics": {
+    "primary": "equal-case mean exact loss maxQ-Qselected over16cases and4096 independent initialized runs perpolicy; four equal-size families hence equal-family weighting",
+    "secondary": [
+      "exact optimal-set hit",
+      "every per-state mean loss and adverse difference",
+      "root action visits, binary64 sums/means and selected optimism",
+      "actual sims/transitions/unused/stop/time",
+      "initialization and elimination arithmetic counters, distinct from simulator transitions"
+    ],
+    "ties": "exact Qref equality defines best set; no epsilon",
+    "unvisited": "retained explicitly, never merged physical duplicates"
+  },
+  "question": "Can one root-specific policy reduce first-action exact reference loss with the same 32 completed horizon-one simulator transitions?",
+  "reference_method": "existing_physical",
+  "reference_model": "independent_one_round_binary53_shaped_v1",
+  "resources": {
+    "cleanup_seconds": 5,
+    "committed_memory_mib": 512,
+    "execution": "existing root-owned serial Windows Job owner",
+    "foreground": "none; SHARED_PC",
+    "max_reference_paths_per_action": 250000,
+    "max_reference_paths_total": 1000000,
+    "max_reference_seconds": 30,
+    "replication_rationale": "R4096 chosen beforefirstsearch because Theorem4 simultaneous zero-variance radius sum <=0.00975*B_s permits the0.01 harmguard even for full[0,1] losses; retains useful precision without requiring a huge range-onlyHoeffding corpus. No sequential stopping or data-dependent sample extension.",
+    "stdout_stderr_mib_each": 2,
+    "stopping": "whole-report refusal/time/memory/interruption retained; no result-based selective reruns; recovery repair attempts labelled before deciding freeze",
+    "wall_seconds_per_operation": 60
+  },
+  "rng": {
+    "independence": "distinct independently initialized streams per case/policy/run; labels do not imply identical draw tapes or matched trajectories",
+    "pairing": "case-level finite corpus comparison only",
+    "policy_labels": [
+      "baseline",
+      "candidate"
+    ],
+    "run_labels": {
+      "deciding": [
+        0,
+        4095
+      ],
+      "exploratory": [
+        0,
+        31
+      ]
+    },
+    "scheme": "sha256(root-allocation-v1|phase|caseid|policy|runlabel), last eight digest bytes interpreted unsigned big endian, masked to63bits; retain full digest and check no seed collision across planned cells"
+  },
+  "schema_version": 1,
+  "search": {
+    "baseline_final": "raw mean, then visits, then root encounter insertion order",
+    "dynamic_legality": "existing available physical edges recomputed for each simulation",
+    "exploration": 1.2,
+    "horizon_rounds": 1,
+    "max_sims": 32,
+    "max_transitions": 32,
+    "objective": "source-order binary64 shaped terminal and ongoing rewards, no stronger-play claim",
+    "parallel": false,
+    "priors": null,
+    "rollout": "accepted unchanged",
+    "time_budget_ms": null
+  },
+  "status": "frozen_before_first_search",
+  "uncertainty": {
+    "coverage": "total failure probability <=0.05 under declared independence; individual simulation rewards are not decision-loss replications",
+    "negative_controls": "all adverse cases retained; no post-result variance method switch",
+    "per_state": {
+      "alpha": 0.025,
+      "events": "64 one-sided events:16cases*2policies*2tails; delta_event=alpha/64; union bound",
+      "formula": "radius_policy=sqrt(2*unbiased_sample_variance(loss)*log(2/delta_event)/4096)+7*B_s*log(2/delta_event)/(3*(4096-1)); mean interval clipped to[0,B_s]; harm interval =candidate interval -baseline interval",
+      "method": "Maurer/Pontil2009 Theorem4 empirical Bernstein, applied to final loss normalized by exact Bs",
+      "source": "https://arxiv.org/pdf/0907.3740",
+      "source_access": "Theorem1 and4 inspected original PDFp1-2 before any search; independent review pending"
+    },
+    "pooled": {
+      "alpha": 0.025,
+      "formula": "sqrt(log(2/alpha)*sum_s(B_s^2)/(16^2*4096)) for delta=baseline_loss-candidate_loss, two independent sets perstate"
+    },
+    "population": "Monte Carlo seed variation on these fixed inputs only, treating independent hash-initialized PRNG streams as independent replications; not a population interval over states",
+    "range": "B_s=max_aQref(s,a)-min_aQref(s,a), evaluation-only exact bounds"
+  }
+}

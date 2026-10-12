@@ -1,0 +1,3632 @@
+{
+  "cases": [
+    {
+      "construction_parameters": [
+        120,
+        120,
+        160,
+        8,
+        14,
+        16,
+        1.0,
+        10,
+        18,
+        0.75,
+        13
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_ongoing_variance",
+      "id": "NEW-OV1",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 8,
+              "damage_min": 8,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 160,
+            "is_boss": false,
+            "max_hp": 160,
+            "name": "Modeled target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 13,
+            "damage_min": 13,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 13,
+            "damage_min": 13,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 120,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-OV1",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "c7b8e64f0ca5e535d35db333ebf7c386f7e603c4ddfe16fc8a6d51aebe41b938"
+    },
+    {
+      "construction_parameters": [
+        90,
+        120,
+        140,
+        12,
+        14,
+        16,
+        0.75,
+        10,
+        18,
+        1.0,
+        15
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_ongoing_variance",
+      "id": "NEW-OV2",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 12,
+              "damage_min": 12,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 140,
+            "is_boss": false,
+            "max_hp": 140,
+            "name": "Modeled target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 15,
+            "damage_min": 15,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 15,
+            "damage_min": 15,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 90,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-OV2",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "809dba28cd576de04b2aac25b5e337197ca6f7fb46989ca35bd92689ff978036"
+    },
+    {
+      "construction_parameters": [
+        120,
+        120,
+        180,
+        16,
+        18,
+        20,
+        1.0,
+        14,
+        22,
+        0.5,
+        17
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_ongoing_variance",
+      "id": "NEW-OV3",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 16,
+              "damage_min": 16,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 180,
+            "is_boss": false,
+            "max_hp": 180,
+            "name": "Modeled target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 17,
+            "damage_min": 17,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 17,
+            "damage_min": 17,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 120,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-OV3",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "39e09b5261449e0433272ba66d0f7a0b233654d386ed0a6b082919c0b9b251c8"
+    },
+    {
+      "construction_parameters": [
+        100,
+        120,
+        150,
+        10,
+        16,
+        18,
+        0.5,
+        12,
+        20,
+        0.75,
+        16
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_ongoing_variance",
+      "id": "NEW-OV4",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 10,
+              "damage_min": 10,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 150,
+            "is_boss": false,
+            "max_hp": 150,
+            "name": "Modeled target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 100,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-OV4",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "664c62cb37e5989a9adcd8ee83a429983c3b83c884defa70b09a418393bb0f15"
+    },
+    {
+      "construction_parameters": [
+        48,
+        96,
+        18,
+        12,
+        1.0,
+        0.5
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_kill_threshold",
+      "id": "NEW-KT1",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 12,
+              "damage_min": 12,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled threshold response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 18,
+            "is_boss": false,
+            "max_hp": 18,
+            "name": "Modeled threshold target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 17,
+            "damage_min": 17,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 17,
+            "damage_min": 17,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 48,
+          "is_boss": false,
+          "max_hp": 96,
+          "name": "Modeled operator NEW-KT1",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "e47402db3741f057a2015497f7364a03f39744d5b63b2f37ab9e1ee929e4d278"
+    },
+    {
+      "construction_parameters": [
+        60,
+        96,
+        20,
+        16,
+        0.75,
+        0.75
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_kill_threshold",
+      "id": "NEW-KT2",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 16,
+              "damage_min": 16,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled threshold response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 20,
+            "is_boss": false,
+            "max_hp": 20,
+            "name": "Modeled threshold target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 19,
+            "damage_min": 19,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 19,
+            "damage_min": 19,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 60,
+          "is_boss": false,
+          "max_hp": 96,
+          "name": "Modeled operator NEW-KT2",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "de45317e560d6eed42d0ec6d3c965ad2fda8f7f721c788b7704a9f23f9f1dce9"
+    },
+    {
+      "construction_parameters": [
+        72,
+        96,
+        22,
+        20,
+        1.0,
+        0.75
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_kill_threshold",
+      "id": "NEW-KT3",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 20,
+              "damage_min": 20,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled threshold response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 22,
+            "is_boss": false,
+            "max_hp": 22,
+            "name": "Modeled threshold target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 26,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 26,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 26,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 21,
+            "damage_min": 21,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 21,
+            "damage_min": 21,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 72,
+          "is_boss": false,
+          "max_hp": 96,
+          "name": "Modeled operator NEW-KT3",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "7d40315dfd1ada061c059a40f8fe74901fcf4a7743e9ca81615ed6bf3aab479d"
+    },
+    {
+      "construction_parameters": [
+        84,
+        96,
+        24,
+        24,
+        0.5,
+        1.0
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 5,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 6,
+          "target_idx": 0
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "duel_kill_threshold",
+      "id": "NEW-KT4",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 24,
+              "damage_min": 24,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled threshold response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 24,
+            "is_boss": false,
+            "max_hp": 24,
+            "name": "Modeled threshold target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 22,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 22,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold narrow attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 28,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 28,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 28,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold wide attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 23,
+            "damage_min": 23,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 23,
+            "damage_min": 23,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Threshold fixed attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 84,
+          "is_boss": false,
+          "max_hp": 96,
+          "name": "Modeled operator NEW-KT4",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "c80d3341212e75da1036302eba6679ef3f2245f0a45c4abb6a8e3b5ec030bd6b"
+    },
+    {
+      "construction_parameters": [
+        90,
+        120,
+        28,
+        18,
+        16,
+        7,
+        0,
+        10,
+        20,
+        12,
+        20,
+        0.5
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 1
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_asymmetric_response",
+      "id": "NEW-AR1",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 18,
+              "damage_min": 18,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 28,
+            "is_boss": false,
+            "max_hp": 28,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 7,
+              "damage_min": 7,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 16,
+            "is_boss": false,
+            "max_hp": 16,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 10,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 10,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Variable targeted attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 90,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AR1",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "f9c79af1d1d25a5a90c3f9277af77940651d45794d1e9baf0878c84c887d9af1"
+    },
+    {
+      "construction_parameters": [
+        60,
+        120,
+        20,
+        24,
+        32,
+        8,
+        1,
+        12,
+        18,
+        14,
+        22,
+        0.75
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 1
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_asymmetric_response",
+      "id": "NEW-AR2",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 8,
+              "damage_min": 8,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 32,
+            "is_boss": false,
+            "max_hp": 32,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 24,
+              "damage_min": 24,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 20,
+            "is_boss": false,
+            "max_hp": 20,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 12,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 12,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Variable targeted attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 60,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AR2",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "ac91df588a11d1b01853d0115eb9b1dcf8035116afdaa8f28a8acc171b7ddeb4"
+    },
+    {
+      "construction_parameters": [
+        100,
+        120,
+        36,
+        30,
+        18,
+        10,
+        0,
+        14,
+        24,
+        16,
+        24,
+        1.0
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 1
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_asymmetric_response",
+      "id": "NEW-AR3",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 30,
+              "damage_min": 30,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 36,
+            "is_boss": false,
+            "max_hp": 36,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 10,
+              "damage_min": 10,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 18,
+            "is_boss": false,
+            "max_hp": 18,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 14,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 14,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 24,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 24,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Variable targeted attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 100,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AR3",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "5de679b257bb7f49625e599afdc1ae9d4a48222282b30fa34a97ef95d98b4261"
+    },
+    {
+      "construction_parameters": [
+        75,
+        120,
+        24,
+        16,
+        40,
+        12,
+        1,
+        16,
+        22,
+        18,
+        26,
+        0.75
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 4,
+          "target_idx": 1
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_asymmetric_response",
+      "id": "NEW-AR4",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 12,
+              "damage_min": 12,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 40,
+            "is_boss": false,
+            "max_hp": 40,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 16,
+              "damage_min": 16,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 24,
+            "is_boss": false,
+            "max_hp": 24,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Small targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 22,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 22,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Large targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 26,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Variable targeted attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 75,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AR4",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "61305f43349e49f5910971ee4436a8af06be01c7a890e54d0691426ca711dff8"
+    },
+    {
+      "construction_parameters": [
+        100,
+        120,
+        30,
+        12,
+        24,
+        6,
+        0,
+        12,
+        20,
+        8,
+        10,
+        1.0,
+        7,
+        11,
+        0.75
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": null
+        },
+        {
+          "card_idx": 5,
+          "target_idx": null
+        },
+        {
+          "card_idx": 6,
+          "target_idx": null
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_area_target_duplicates",
+      "id": "NEW-AT1",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 12,
+              "damage_min": 12,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 30,
+            "is_boss": false,
+            "max_hp": 30,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 6,
+              "damage_min": 6,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 24,
+            "is_boss": false,
+            "max_hp": 24,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 12,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 12,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 20,
+            "damage_min": 20,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 10,
+            "damage_min": 8,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 10,
+            "damage_min": 8,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 11,
+            "damage_min": 7,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Wide area attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 100,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AT1",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "866e53aeebbc37cae1edf431c8bc2e4dbb24c1e6735840d4e57e1378cb165040"
+    },
+    {
+      "construction_parameters": [
+        75,
+        120,
+        22,
+        18,
+        38,
+        8,
+        1,
+        14,
+        24,
+        10,
+        12,
+        0.75,
+        9,
+        13,
+        0.5
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": null
+        },
+        {
+          "card_idx": 5,
+          "target_idx": null
+        },
+        {
+          "card_idx": 6,
+          "target_idx": null
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_area_target_duplicates",
+      "id": "NEW-AT2",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 8,
+              "damage_min": 8,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 38,
+            "is_boss": false,
+            "max_hp": 38,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 18,
+              "damage_min": 18,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 22,
+            "is_boss": false,
+            "max_hp": 22,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 14,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 14,
+            "damage_min": 14,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 24,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 24,
+            "damage_min": 24,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 12,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 12,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 13,
+            "damage_min": 9,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Wide area attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 75,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AT2",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "dc1146347d0dd4ba036b547311e54cfe7afb30577c42515f32e6eb8ce4bcebba"
+    },
+    {
+      "construction_parameters": [
+        110,
+        120,
+        40,
+        24,
+        18,
+        10,
+        0,
+        10,
+        18,
+        12,
+        14,
+        0.5,
+        11,
+        15,
+        1.0
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": null
+        },
+        {
+          "card_idx": 5,
+          "target_idx": null
+        },
+        {
+          "card_idx": 6,
+          "target_idx": null
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_area_target_duplicates",
+      "id": "NEW-AT3",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 24,
+              "damage_min": 24,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 40,
+            "is_boss": false,
+            "max_hp": 40,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 10,
+              "damage_min": 10,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 18,
+            "is_boss": false,
+            "max_hp": 18,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 10,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 10,
+            "damage_min": 10,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 18,
+            "damage_min": 18,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 14,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.5,
+            "card_type": "damage",
+            "damage_max": 14,
+            "damage_min": 12,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 15,
+            "damage_min": 11,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Wide area attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 110,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AT3",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "aa551dd456ce486641b5da0b9fb767f1f4851e4e294f29bc90512bb53b59d9a7"
+    },
+    {
+      "construction_parameters": [
+        65,
+        120,
+        28,
+        16,
+        32,
+        12,
+        1,
+        16,
+        22,
+        9,
+        11,
+        1.0,
+        8,
+        16,
+        0.75
+      ],
+      "declared_physical_actions": [
+        {
+          "card_idx": null,
+          "target_idx": null
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 0,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 1,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 2,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 0
+        },
+        {
+          "card_idx": 3,
+          "target_idx": 1
+        },
+        {
+          "card_idx": 4,
+          "target_idx": null
+        },
+        {
+          "card_idx": 5,
+          "target_idx": null
+        },
+        {
+          "card_idx": 6,
+          "target_idx": null
+        }
+      ],
+      "exposure": "prospective_source_defined_grid_in_familiar_domains_not_population_holdout",
+      "family": "two_enemy_area_target_duplicates",
+      "id": "NEW-AT4",
+      "kind": "modeled_new_input",
+      "provenance": null,
+      "role": "deciding",
+      "state": {
+        "boss_rules": [],
+        "enemies": [
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 12,
+              "damage_min": 12,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled inactive response",
+              "pip_cost": 1
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 32,
+            "is_boss": false,
+            "max_hp": 32,
+            "name": "Modeled inactive target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          },
+          {
+            "base_attack": {
+              "accuracy": 1.0,
+              "card_type": "damage",
+              "damage_max": 16,
+              "damage_min": 16,
+              "dot_rounds": 0,
+              "dot_tick": 0,
+              "element": "neutral",
+              "heal": 0,
+              "hits_all": false,
+              "modifier": 0.0,
+              "name": "Modeled active response",
+              "pip_cost": 0
+            },
+            "blades": [],
+            "boost": {},
+            "dots": [],
+            "element": "neutral",
+            "hp": 28,
+            "is_boss": false,
+            "max_hp": 28,
+            "name": "Modeled active target",
+            "pips": 0,
+            "policy": null,
+            "power_pip_chance": 0.0,
+            "power_pips": 0,
+            "resist": {},
+            "shields": [],
+            "traps": []
+          }
+        ],
+        "hand": [
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 16,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Light targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 22,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 22,
+            "damage_min": 22,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": false,
+            "modifier": 0.0,
+            "name": "Heavy targeted attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 11,
+            "damage_min": 9,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 1.0,
+            "card_type": "damage",
+            "damage_max": 11,
+            "damage_min": 9,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Narrow area attack",
+            "pip_cost": 0
+          },
+          {
+            "accuracy": 0.75,
+            "card_type": "damage",
+            "damage_max": 16,
+            "damage_min": 8,
+            "dot_rounds": 0,
+            "dot_tick": 0,
+            "element": "neutral",
+            "heal": 0,
+            "hits_all": true,
+            "modifier": 0.0,
+            "name": "Wide area attack",
+            "pip_cost": 0
+          }
+        ],
+        "player": {
+          "base_attack": null,
+          "blades": [],
+          "boost": {},
+          "dots": [],
+          "element": "neutral",
+          "hp": 65,
+          "is_boss": false,
+          "max_hp": 120,
+          "name": "Modeled operator NEW-AT4",
+          "pips": 0,
+          "policy": null,
+          "power_pip_chance": 0.0,
+          "power_pips": 0,
+          "resist": {},
+          "shields": [],
+          "traps": []
+        },
+        "round_num": 1
+      },
+      "state_sha256": "3cbdab74a2e0fe6c14a959ca44f1a5392f2560e7251e966c4edb846c5ed82900"
+    }
+  ],
+  "format": "mcts-root-allocation-deciding-inputs",
+  "kind": "modeled controlled corpus",
+  "original_full_input_sha256": "80d489da31da8ab13f7ddcfd5868b04d9ac2465aea59e41ab1b7fb87580e7326",
+  "schema_version": 1
+}

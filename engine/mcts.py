@@ -133,6 +133,155 @@ def _available_actions(
     return available
 
 
+def _action_coordinates(action: Action) -> dict[str, int | None]:
+    return {"card_idx": action.card_idx, "target_idx": action.target_idx}
+
+
+class _RootHalving:
+    """Budget-aware root allocation for a clockless horizon-one search.
+
+    These phase means serve elimination only. Raw Node sums keep their
+    existing sequential backup order and remain the reported action values.
+    The counters describe allocation work, not machine instructions.
+    """
+    actions: list[Action]
+    indices: dict[Action, int]
+    allowance: int
+    active: list[int]
+    counts: list[int]
+    sums: list[float]
+    quota: int
+    pending: int | None
+    phase: dict | None
+    diagnostic: dict
+    fallback: bool
+
+    def __init__(self, actions: list[Action], allowance: int):
+        self.actions = actions
+        self.indices = {action: i for i, action in enumerate(actions)}
+        self.allowance = allowance
+        self.active = list(range(len(actions)))
+        self.counts = [0] * len(actions)
+        self.sums = [0.0] * len(actions)
+        self.quota = 0
+        self.pending = None
+        self.phase = None
+        minimum = 0
+        size = len(actions)
+        while size > 1:
+            minimum += size
+            size = (size + 1) // 2
+        self.fallback = allowance < minimum
+        self.diagnostic = {
+            "policy": "budget_aware_sequential_halving_v1",
+            "mode": "uniform_fallback" if self.fallback else "halving",
+            "usable_allowance": allowance,
+            "selections": 0,
+            "reward_updates": 0,
+            "elimination_rounds": 0,
+            "elimination_key_evaluations": 0,
+            "remainder_samples": 0,
+            "phases": [],
+            "winner": None,
+            "complete": False,
+        }
+        if not self.fallback and len(self.active) > 1:
+            self._start_phase()
+
+    def _start_phase(self) -> None:
+        rounds = 0
+        size = len(self.active)
+        while size > 1:
+            rounds += 1
+            size = (size + 1) // 2
+        remaining = self.allowance - self.diagnostic["reward_updates"]
+        self.quota = max(1, remaining // (rounds * len(self.active)))
+        self.counts = [0] * len(self.actions)
+        self.sums = [0.0] * len(self.actions)
+        self.phase = {
+            "active": [_action_coordinates(self.actions[i]) for i in self.active],
+            "quota": self.quota,
+            "completed_samples": 0,
+            "statistics": [
+                {"action": _action_coordinates(self.actions[i]), "visits": 0,
+                 "value_sum": 0.0, "mean": None}
+                for i in self.active
+            ],
+            "survivors": [],
+        }
+        self.diagnostic["phases"].append(self.phase)
+
+    def select(self, available: dict[Action, Action]) -> Action:
+        if self.pending is not None:
+            raise RuntimeError("root allocation has an unfinished sample")
+        if self.diagnostic["selections"] >= self.allowance:
+            raise RuntimeError("root allocation exhausted its allowance")
+        if self.fallback:
+            index = self.diagnostic["selections"] % len(self.actions)
+        elif len(self.active) == 1:
+            index = self.active[0]
+        else:
+            assert self.phase is not None
+            index = self.active[self.phase["completed_samples"] % len(self.active)]
+        action = self.actions[index]
+        if action not in available:
+            raise RuntimeError("scheduled root action is no longer available")
+        self.pending = index
+        self.diagnostic["selections"] += 1
+        return action
+
+    def _elimination_key(self, index: int) -> tuple[float, int]:
+        self.diagnostic["elimination_key_evaluations"] += 1
+        return (-self.sums[index] / self.counts[index], index)
+
+    def observe(self, action: Action, reward: float) -> None:
+        index = self.pending
+        if index is None or self.actions[index] != action:
+            raise RuntimeError("root reward does not match its scheduled action")
+        self.pending = None
+        self.diagnostic["reward_updates"] += 1
+        if self.fallback:
+            return
+        if len(self.active) == 1:
+            self.diagnostic["remainder_samples"] += 1
+            return
+        assert self.phase is not None
+        position = self.active.index(index)
+        self.counts[index] += 1
+        self.sums[index] += reward
+        self.phase["completed_samples"] += 1
+        statistic = self.phase["statistics"][position]
+        statistic["visits"] = self.counts[index]
+        statistic["value_sum"] = self.sums[index]
+        statistic["mean"] = self.sums[index] / self.counts[index]
+        if self.phase["completed_samples"] == self.quota * len(self.active):
+            survivors = sorted(self.active, key=self._elimination_key)[
+                :(len(self.active) + 1) // 2]
+            # Elimination chooses by phase mean. The next sweep still uses
+            # physical canonical order, independent of those sampled values.
+            self.active = sorted(survivors)
+            self.phase["survivors"] = [
+                _action_coordinates(self.actions[i]) for i in self.active]
+            self.diagnostic["elimination_rounds"] += 1
+            self.phase = None
+            if len(self.active) > 1:
+                self._start_phase()
+
+    def survivor(self) -> Action | None:
+        if not self.fallback and len(self.active) == 1:
+            return self.actions[self.active[0]]
+        return None
+
+    def finish(self, winner: Action | None) -> None:
+        if (self.pending is not None or self.phase is not None
+                or self.diagnostic["reward_updates"] != self.allowance
+                or self.diagnostic["selections"] != self.allowance):
+            raise RuntimeError("root allocation did not complete its schedule")
+        self.diagnostic["winner"] = (
+            _action_coordinates(winner) if winner is not None else None)
+        self.diagnostic["complete"] = True
+
+
 @dataclass
 class RankedAction:
     """One root action: label, mean shaped reward, and simulation count.
@@ -178,6 +327,16 @@ class MCTS:
         rollout. A simulation starts only with a full horizon left. It always
         finishes normally, so a final remainder smaller than the horizon is
         unused. This counts simulator calls, not elapsed compute time.
+    root_allocation
+        ``uct`` retains ordinary search. Experimental ``sequential_halving``
+        uses phase-local means to allocate a fixed horizon-one allowance and
+        ranks its final survivor first. It requires no priors and no clock.
+        Its named budget-aware schedule carries no optimality guarantee.
+    last_root_allocation
+        Candidate allocation counts and phase-local statistics. Unfinished
+        searches leave ``complete=False`` and unsampled phase means as None.
+        ``uct`` mode leaves allocation-specific counters at zero and its
+        usable allowance as None. Existing work counters still describe UCT.
 
     Counts must be integers (not booleans): a positive horizon and a
     nonnegative simulation cap. Exploration and time budgets must be finite
@@ -189,12 +348,14 @@ class MCTS:
     max_sims: int = 10_000
     rng: random.Random = field(default_factory=random.Random)
     max_transitions: int | None = None
+    root_allocation: str = "uct"
     last_sims: int = field(init=False, default=0)
     last_transitions: int = field(init=False, default=0)
     last_unused_transitions: int | None = field(init=False, default=None)
     last_stop_reasons: tuple[str, ...] = field(init=False, default=())
     last_root_statistics: list[tuple[Action, int, float]] = field(
         init=False, default_factory=list)
+    last_root_allocation: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self) -> None:
         self._validate_configuration()
@@ -212,6 +373,11 @@ class MCTS:
                 or isinstance(self.max_transitions, bool)
                 or self.max_transitions < 0):
             raise ValueError("max_transitions must be a nonnegative integer or None")
+        if (not isinstance(self.root_allocation, str)
+                or self.root_allocation not in ("uct", "sequential_halving")):
+            raise ValueError("root_allocation must be uct or sequential_halving")
+        if self.root_allocation == "sequential_halving" and self.horizon_rounds != 1:
+            raise ValueError("sequential_halving requires horizon_rounds=1")
 
     def search(self, root_state: GameState, time_budget_ms: float | None = 450,
                priors: "dict[str, tuple[int, float]] | None" = None,
@@ -224,6 +390,12 @@ class MCTS:
         child" rule) means a lightly visited action with a lucky mean can
         outrank a well-explored one; the visit column is reported so a
         reader can see when that is happening.
+
+        Experimental ``sequential_halving`` instead ranks its completed
+        survivor first, followed by other sampled actions by raw mean,
+        visits and physical canonical order. Below the minimum elimination
+        allowance it samples uniform sweeps and uses that raw ordering for
+        every sampled action. It never invents values for unvisited actions.
 
         ``priors``: ``{card_name: (games, win_rate)}`` from a self-play
         opening book. Book moves enter the root with VIRTUAL visits, so
@@ -243,22 +415,54 @@ class MCTS:
         self.last_unused_transitions = None
         self.last_stop_reasons = ()
         self.last_root_statistics = []
+        self.last_root_allocation = {
+            "policy": (self.root_allocation
+                       if isinstance(self.root_allocation, str) else "invalid"),
+            "mode": "uct",
+            "usable_allowance": None, "selections": 0, "reward_updates": 0,
+            "elimination_rounds": 0, "elimination_key_evaluations": 0,
+            "remainder_samples": 0, "phases": [], "winner": None,
+            "complete": False,
+        }
         # Configuration is mutable; check again before advancing the RNG.
         self._validate_configuration()
         if time_budget_ms is not None:
             _validate_nonnegative_finite(time_budget_ms, "time_budget_ms")
         _validate_priors(priors)
+        if self.root_allocation == "sequential_halving":
+            if time_budget_ms is not None:
+                raise ValueError("sequential_halving requires time_budget_ms=None")
+            if priors is not None:
+                raise ValueError("sequential_halving requires priors=None")
         self.last_unused_transitions = self.max_transitions
         if root_state.is_terminal():
             # No decision remains; priors must not manufacture one or spend
             # the full simulation budget repeatedly scoring a finished state.
             self.last_stop_reasons = ("terminal",)
+            if self.root_allocation == "sequential_halving":
+                allowance = self.max_sims
+                if self.max_transitions is not None:
+                    allowance = min(allowance, self.max_transitions)
+                self.last_root_allocation.update({
+                    "policy": "budget_aware_sequential_halving_v1",
+                    "mode": "terminal", "usable_allowance": allowance,
+                })
+            self.last_root_allocation["complete"] = True
             return []
         deadline = (time.perf_counter() + time_budget_ms / 1000.0
                     if time_budget_ms is not None else None)
         root = Node(action=None, parent=None)
         # Reuse coordinate values within this search, never current legality.
         edge_pool: dict[tuple[int, int | None], Action] = {}
+        allocation: _RootHalving | None = None
+        if self.root_allocation == "sequential_halving":
+            allowance = self.max_sims
+            if self.max_transitions is not None:
+                allowance = min(allowance, self.max_transitions)
+            # Existing legal order is Pass, physical card slot, then target.
+            # Equal card values remain distinct arms through their coordinates.
+            allocation = _RootHalving(legal_actions(root_state), allowance)
+            self.last_root_allocation = allocation.diagnostic
         if priors:
             for a in legal_actions(root_state):
                 name = (root_state.hand[a.card_idx].name
@@ -296,16 +500,27 @@ class MCTS:
             # even at a node visited under a different realization before.
             while depth < self.horizon_rounds and not state.is_terminal():
                 available = _available_actions(state, slots, edge_pool)
-                tried = {ch.action for ch in node.children}
-                untried = [a for a in available if a not in tried]
-                expanded = bool(untried)
-                if untried:
-                    edge = untried[self.rng.randrange(len(untried))]
-                    child = Node(edge, node)
-                    node.children.append(child)
+                if allocation is not None and node is root:
+                    edge = allocation.select(available)
+                    existing = [ch for ch in node.children if ch.action == edge]
+                    expanded = not existing
+                    if expanded:
+                        child = Node(edge, node)
+                        node.children.append(child)
+                    else:
+                        child = existing[0]
                 else:
-                    child = max((ch for ch in node.children if ch.action in available),
-                                key=lambda n: n.ucb1(self.exploration))
+                    tried = {ch.action for ch in node.children}
+                    untried = [a for a in available if a not in tried]
+                    expanded = bool(untried)
+                    if untried:
+                        edge = untried[self.rng.randrange(len(untried))]
+                        child = Node(edge, node)
+                        node.children.append(child)
+                    else:
+                        child = max(
+                            (ch for ch in node.children if ch.action in available),
+                            key=lambda n: n.ucb1(self.exploration))
                 assert child.action is not None
                 action = available[child.action]
                 advance_round(state, action, self.rng)
@@ -329,6 +544,9 @@ class MCTS:
             sims += 1
             # Preserve completed work if a later simulation raises an error.
             self.last_sims = sims
+            if allocation is not None:
+                assert node.action is not None
+                allocation.observe(node.action, reward)
 
         ranked = [
             RankedAction(
@@ -340,7 +558,13 @@ class MCTS:
             for ch in root.children
             if ch.action is not None      # always true below the root
         ]
-        ranked.sort(key=lambda r: (r.win_rate, r.visits), reverse=True)
+        if allocation is None:
+            ranked.sort(key=lambda r: (r.win_rate, r.visits), reverse=True)
+        else:
+            survivor = allocation.survivor()
+            ranked.sort(key=lambda r: (
+                r.action != survivor, -r.win_rate, -r.visits,
+                allocation.indices[r.action]))
         self.last_root_statistics = [
             (ch.action, ch.visits, ch.value_sum) for ch in root.children
             if ch.action is not None]
@@ -355,6 +579,10 @@ class MCTS:
         if time_stopped:
             reasons.append("time_limit")
         self.last_stop_reasons = tuple(reasons)
+        if allocation is not None:
+            allocation.finish(ranked[0].action if ranked else None)
+        else:
+            self.last_root_allocation["complete"] = True
         return ranked
 
     def _rollout(self, state: GameState, depth: int) -> float:

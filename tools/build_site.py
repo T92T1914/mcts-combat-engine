@@ -66,6 +66,10 @@ FILES = {
     "examples/adaptive-state.json": "adaptive-state.json",
     "docs/episode-search-allowance.md": "episode-search-allowance.md",
     "docs/request-edge-reuse.md": "request-edge-reuse.md",
+    "docs/root-allocation.md": "root-allocation.md",
+    **{"docs/root-allocation/" + name: "root-allocation/" + name
+       for name in ("results.json", "inputs.json", "protocol.json",
+                    "candidate-contract.json")},
     "docs/request-edge-reuse/protocol.json": "request-edge-reuse/protocol.json",
     "docs/request-edge-reuse/results.json": "request-edge-reuse/results.json",
     "docs/request-edge-reuse-figure.json": "request-edge-reuse-figure.json",
