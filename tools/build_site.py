@@ -56,12 +56,24 @@ FILES = {
     "docs/same-forest-protocol.json": "same-forest-protocol.json",
     "docs/same-forest-results.md": "same-forest-results.md",
     "site/same-forest-repeatability.html": "same-forest-repeatability.html",
+    "docs/episode-companion.md": "episode-companion.md",
+    "docs/episode-record-replay.md": "episode-record-replay.md",
+    "docs/episode-inspection.md": "episode-inspection.md",
+    "docs/episode-decision.md": "episode-decision.md",
+    "docs/episode-stability.md": "episode-stability.md",
+    "docs/episode-reference.md": "episode-reference.md",
     "docs/episode-adaptive-reference.md": "episode-adaptive-reference.md",
     "examples/adaptive-state.json": "adaptive-state.json",
     "docs/episode-search-allowance.md": "episode-search-allowance.md",
     "docs/request-edge-reuse.md": "request-edge-reuse.md",
     "docs/request-edge-reuse/protocol.json": "request-edge-reuse/protocol.json",
     "docs/request-edge-reuse/results.json": "request-edge-reuse/results.json",
+    "docs/request-edge-reuse-figure.json": "request-edge-reuse-figure.json",
+    **{
+        f"docs/request-edge-reuse-{mode}.{extension}":
+        f"request-edge-reuse-{mode}.{extension}"
+        for mode in ("clair", "obscur") for extension in ("png", "svg")
+    },
     **{
         "docs/search-allowance/" + name: "search-allowance/" + name
         for name in (
@@ -124,6 +136,7 @@ def provenance(data):
 
 
 def main():
+    from tools.render_evidence_figure import check_outputs as check_evidence_figure
     from tools.render_same_forest_repeatability_figure import (
         check_outputs as check_repeatability_figure,
     )
@@ -136,6 +149,7 @@ def main():
     check_outputs()
     check_execution_report()
     check_repeatability_figure()
+    check_evidence_figure()
     if OUT.is_symlink():
         raise ValueError("Site output directory must not be a symlink.")
     OUT.mkdir(exist_ok=True)
