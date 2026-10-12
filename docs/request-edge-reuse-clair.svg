@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns2="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" width="864pt" height="600pt" viewBox="0 0 864 600" version="1.1" role="img" aria-labelledby="evidence-title evidence-description">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    <dc:description>{"adverse_individual_pairs": 2, "aggregate_ratio": 1.1331546109842285, "baseline": 100, "conditions": [{"condition": "Duel, horizon 3", "median_baseline_over_candidate": 1.152042404732763, "relative_search_time": 86.80236038984762}, {"condition": "Duel, horizon 6", "median_baseline_over_candidate": 1.1059543856841143, "relative_search_time": 90.41964234188794}, {"condition": "Gauntlet, horizon 3", "median_baseline_over_candidate": 1.1770673192759307, "relative_search_time": 84.95690803947788}, {"condition": "Gauntlet, horizon 6", "median_baseline_over_candidate": 1.127111207007619, "relative_search_time": 88.72238992769063}, {"condition": "Boss, horizon 3", "median_baseline_over_candidate": 1.1254676937100012, "relative_search_time": 88.85195066804553}, {"condition": "Boss, horizon 6", "median_baseline_over_candidate": 1.1128284977216887, "relative_search_time": 89.86110636520505}], "individual_timing_pairs": 30, "lower_search_time_percent": 11.750789318023768}</dc:description>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.11.1, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 600  L 864 600  L 864 0  L 0 0  z " style="fill: #f8f7f3" />
+  </g>
+  <g id="condition-bar-0">
+   <path d="M 293.76 190.8  L 635.265286 190.8  L 635.265286 163.2  L 293.76 163.2  z " style="fill: #365f78" />
+  </g>
+  <g id="condition-bar-1">
+   <path d="M 293.76 239.4  L 649.496707 239.4  L 649.496707 211.8  L 293.76 211.8  z " style="fill: #365f78" />
+  </g>
+  <g id="condition-bar-2">
+   <path d="M 293.76 288  L 628.00475 288  L 628.00475 260.4  L 293.76 260.4  z " style="fill: #365f78" />
+  </g>
+  <g id="condition-bar-3">
+   <path d="M 293.76 336.6  L 642.819231 336.6  L 642.819231 309  L 293.76 309  z " style="fill: #365f78" />
+  </g>
+  <g id="condition-bar-4">
+   <path d="M 293.76 385.2  L 643.32896 385.2  L 643.32896 357.6  L 293.76 357.6  z " style="fill: #365f78" />
+  </g>
+  <g id="condition-bar-5">
+   <path d="M 293.76 433.8  L 647.299267 433.8  L 647.299267 406.2  L 293.76 406.2  z " style="fill: #365f78" />
+  </g>
+  <g id="line2d_1">
+   <path d="M 687.188571 447  L 687.188571 138  " style="fill: none; stroke-dasharray: 7.4,3.2; stroke-dashoffset: 0; stroke: #805100; stroke-width: 2" />
+  </g>
+  <g id="text_1">
+   <text style="font-weight: 700; font-size: 38px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="46.823242" transform="rotate(-0 34.56 46.823242)">MCTS.search timing</text>
+  </g>
+  <g id="text_2">
+   <text style="font-size: 25px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="90.094238" transform="rotate(-0 34.56 90.094238)">Same declared work. Retained PR55 results.</text>
+  </g>
+  <g id="text_3">
+   <text style="font-weight: 600; font-size: 22px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle; fill: #242424" x="687.188571" y="131.00293" transform="rotate(-0 687.188571 131.00293)">100 baseline</text>
+  </g>
+  <g id="text_4">
+   <text style="font-weight: 600; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="187.913086" transform="rotate(-0 34.56 187.913086)">Duel H3</text>
+  </g>
+  <g id="condition-value-0">
+   <text style="font-weight: 700; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #242424" x="829.44" y="187.913086" transform="rotate(-0 829.44 187.913086)">86.80</text>
+  </g>
+  <g id="text_5">
+   <text style="font-weight: 600; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="236.513086" transform="rotate(-0 34.56 236.513086)">Duel H6</text>
+  </g>
+  <g id="condition-value-1">
+   <text style="font-weight: 700; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #242424" x="829.44" y="236.513086" transform="rotate(-0 829.44 236.513086)">90.42</text>
+  </g>
+  <g id="text_6">
+   <text style="font-weight: 600; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="285.113086" transform="rotate(-0 34.56 285.113086)">Gauntlet H3</text>
+  </g>
+  <g id="condition-value-2">
+   <text style="font-weight: 700; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #242424" x="829.44" y="285.113086" transform="rotate(-0 829.44 285.113086)">84.96</text>
+  </g>
+  <g id="text_7">
+   <text style="font-weight: 600; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="333.713086" transform="rotate(-0 34.56 333.713086)">Gauntlet H6</text>
+  </g>
+  <g id="condition-value-3">
+   <text style="font-weight: 700; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #242424" x="829.44" y="333.713086" transform="rotate(-0 829.44 333.713086)">88.72</text>
+  </g>
+  <g id="text_8">
+   <text style="font-weight: 600; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="382.313086" transform="rotate(-0 34.56 382.313086)">Boss H3</text>
+  </g>
+  <g id="condition-value-4">
+   <text style="font-weight: 700; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #242424" x="829.44" y="382.313086" transform="rotate(-0 829.44 382.313086)">88.85</text>
+  </g>
+  <g id="text_9">
+   <text style="font-weight: 600; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="430.913086" transform="rotate(-0 34.56 430.913086)">Boss H6</text>
+  </g>
+  <g id="condition-value-5">
+   <text style="font-weight: 700; font-size: 30px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #242424" x="829.44" y="430.913086" transform="rotate(-0 829.44 430.913086)">89.86</text>
+  </g>
+  <g id="text_10">
+   <text style="font-size: 22px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="473.00293" transform="rotate(-0 34.56 473.00293)">Index = 100 / median paired ratio. H = horizon.</text>
+  </g>
+  <g id="text_11">
+   <text style="font-weight: 600; font-size: 27px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="510.821777" transform="rotate(-0 34.56 510.821777)">11.75% lower by declared aggregate</text>
+  </g>
+  <g id="text_12">
+   <text style="font-size: 22px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="545.00293" transform="rotate(-0 34.56 545.00293)">Two of 30 pairs were slower. One shared host.</text>
+  </g>
+  <g id="source-link">
+   <a href="https://github.com/T92T1914/mcts-combat-engine/blob/56120034dcb34a9c1321eec5fc27437e5bc4deca/docs/request-edge-reuse.md"><text style="font-size: 22px; font-family: 'Inter', 'Arial', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #242424" x="34.56" y="578.00293" transform="rotate(-0 34.56 578.00293)">Search only. Source and limits: guide</text>
+  </a></g>
+ </g>
+<title id="evidence-title">MCTS.search timing</title><desc id="evidence-description">Six retained PR55 condition indices, each 100 divided by its median paired baseline/candidate search-time ratio. Baseline is 100. The declared aggregate is 11.75% lower search time on one shared host. Two of thirty pairs were slower. Not CLI latency or stronger play.</desc></svg>

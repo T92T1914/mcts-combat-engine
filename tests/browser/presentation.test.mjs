@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {before, after, test} from 'node:test';
 import {createServer} from 'node:http';
+import {createHash} from 'node:crypto';
 import {readFile, mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -8,27 +9,41 @@ import {chromium} from 'playwright';
 
 // Only an owned loopback server and fresh headless contexts. No saved profiles,
 // visible fallback, desktop input or connection to an existing browser.
-const root = fileURLToPath(new URL('../../_site/', import.meta.url));
+const root = path.resolve(fileURLToPath(new URL('../../_site/', import.meta.url)));
 const mime = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript',
   '.mjs':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png'};
 let browser, server, base;
 before(async () => {
-  server = createServer(async (request, response) => {
-    const pathname = new URL(request.url, 'http://localhost').pathname;
-    if (pathname === '/favicon.ico') { response.writeHead(204).end(); return; }
-    const name = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!/^[a-z0-9.-]+$/i.test(name)) { response.writeHead(404).end(); return; }
-    try {
-      const bytes = await readFile(path.join(root, name));
-      response.writeHead(200, {'Content-Type': mime[path.extname(name)] ?? 'text/plain'});
-      response.end(bytes);
-    } catch (_) { response.writeHead(404).end(); }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  base = `http://127.0.0.1:${server.address().port}`;
+  const published = process.env.MCTS_BROWSER_BASE_URL;
+  if (published) {
+    if (published !== 'https://t92t1914.github.io/mcts-combat-engine/')
+      throw Error('Only the published MCTS project base is supported');
+    base = published.slice(0,-1);
+  } else {
+    const presentation = JSON.parse(await readFile(path.join(root,'presentation.json'),'utf8'));
+    const allowed = new Set([...Object.keys(presentation.files),'presentation.json']);
+    server = createServer(async (request, response) => {
+      const raw = request.url.split('?')[0];
+      if (raw === '/favicon.ico') { response.writeHead(204).end(); return; }
+      const name = raw === '/' ? 'index.html' : raw.slice(1);
+      const segments = name.split('/');
+      if (!raw.startsWith('/') || segments.some(s => !/^[a-z0-9._-]+$/i.test(s) || s === '.' || s === '..') || !allowed.has(name)) {
+        response.writeHead(404).end(); return;
+      }
+      const file = path.resolve(root,...segments);
+      if (!file.startsWith(root + path.sep)) { response.writeHead(404).end(); return; }
+      try {
+        const bytes = await readFile(file);
+        response.writeHead(200, {'Content-Type': mime[path.extname(name)] ?? 'text/plain'});
+        response.end(bytes);
+      } catch (_) { response.writeHead(404).end(); }
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    base = `http://127.0.0.1:${server.address().port}`;
+  }
   const channel = process.env.MCTS_BROWSER_CHANNEL;
   if (channel && !['chrome','chromium'].includes(channel)) throw Error('Unsupported channel');
-  browser = await chromium.launch({headless:true, chromiumSandbox:true, ...(channel ? {channel} : {})});
+  browser = await chromium.launch({headless:true, chromiumSandbox:true, args:['--mute-audio','--disable-gpu'], ...(channel ? {channel} : {})});
   console.log(`Isolated headless browser ${browser.version()}; sandbox requested; fresh contexts`);
 });
 after(async () => {
@@ -38,8 +53,11 @@ after(async () => {
 async function fixture(t, options = {}, blockedStorage = false) {
   const context = await browser.newContext({viewport:{width:1280,height:900}, ...options});
   const failures = [], external = [];
+  const admitted = new URL(base);
   await context.route('**/*', route => {
-    if (new URL(route.request().url()).origin !== base) {
+    const requested = new URL(route.request().url());
+    const inProject = admitted.pathname === '/' || requested.pathname === admitted.pathname || requested.pathname.startsWith(admitted.pathname + '/');
+    if (requested.origin !== admitted.origin || !inProject) {
       external.push(route.request().url()); return route.abort();
     }
     return route.continue();
@@ -281,10 +299,10 @@ test('blocked storage keeps an in-memory override and no-script Auto preserves e
   await noScript.goto(base);
   assert.equal(await background(noScript), 'rgb(9, 9, 9)');
   assert.equal(await noScript.locator('#appearance').isDisabled(), true);
-  await noScript.locator('figure img:visible').scrollIntoViewIfNeeded();
-  assert.equal(await noScript.locator('figure img:visible').evaluate(async e => { await e.decode(); return e.naturalWidth > 0; }), true);
-  assert.equal(await noScript.locator('figure a[href="data.json"]').count(), 1);
-  assert.equal(await noScript.locator('figure a[href="example.svg"]').count(), 1);
+  await noScript.locator('#decision-figure img:visible').scrollIntoViewIfNeeded();
+  assert.equal(await noScript.locator('#decision-figure img:visible').evaluate(async e => { await e.decode(); return e.naturalWidth > 0; }), true);
+  assert.equal(await noScript.locator('#decision-figure a[href="data.json"]').count(), 1);
+  assert.equal(await noScript.locator('#decision-figure a[href="example.svg"]').count(), 1);
   await noScript.emulateMedia({colorScheme:'light'});
   assert.equal(await background(noScript), 'rgb(248, 247, 243)');
 });
@@ -304,7 +322,7 @@ for (const mode of ['clair','obscur']) test(`${mode} preserves every action, fig
   assert.equal(await page.locator('#table tbody tr').count(), data.actions.length);
   assert.match(await page.locator('#context').textContent(), /safety cap not reached/);
   assert.match(await page.locator('main').textContent(), /not a probability of winning/);
-  assert.equal(await page.locator('figure img:visible').evaluate(e => getComputedStyle(e).filter), 'none');
+  assert.equal(await page.locator('#decision-figure img:visible').evaluate(e => getComputedStyle(e).filter), 'none');
   await capture(page, `${mode}-wide`);
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
@@ -323,8 +341,8 @@ for (const mode of ['clair','obscur']) test(`${mode} preserves every action, fig
   // Increase the root text size so rem-based headings and labels scale too.
   await page.addStyleTag({content:'html{font-size:200% !important}'});
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
-  await page.locator('.table-wrap').focus();
-  assert.equal(await page.locator('.table-wrap').evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+  await page.locator('#table').focus();
+  assert.equal(await page.locator('#table').evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
   await capture(page, `${mode}-large-text`);
 });
 
@@ -543,4 +561,159 @@ test('wide figure follows its container and preserves every delivered file', asy
       assert.deepEqual(await response.body(),await readFile(path.join(root,file)));
     }
   }
+});
+
+for (const mode of ['clair','obscur']) test(`${mode} accepted evidence routes preserve source values and narrow reading`, async t => {
+  const page = await fixture(t,{viewport:{width:390,height:844},colorScheme:'dark'});
+  await ready(page);
+  await page.locator('#appearance').selectOption(mode);
+  // Exercise keyboard navigation so :focus-visible tests keyboard modality.
+  // A mouse click followed by focus() does not request a keyboard focus ring.
+  await page.locator('#appearance').focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.getByRole('link',{name:'Run the Python project',exact:true})
+    .evaluate(e=>document.activeElement===e),true);
+  await page.keyboard.press('Tab');
+  const entry = page.getByRole('link',{name:'Inspect the accepted evidence',exact:true});
+  assert.equal(await entry.evaluate(e=>document.activeElement===e),true);
+  await page.keyboard.press('Enter');
+  assert.equal(new URL(page.url()).hash,'#accepted-evidence');
+  const routes = page.locator('#accepted-evidence');
+  const links = {
+    'Install the engine and separate companion':'episode-companion.md',
+    'Read the one-round and aggregation guide':'episode-reference.md',
+    'Run the two-round adaptive example':'episode-adaptive-reference.md',
+    'Download the modeled adaptive state':'adaptive-state.json',
+    'Inspect the 8-versus-64 allowance study':'episode-search-allowance.md',
+    'Read the same-work timing study':'request-edge-reuse.md',
+  };
+  for (const [label,name] of Object.entries(links)) {
+    const link = routes.getByRole('link',{name:label,exact:true});
+    assert.equal(await link.getAttribute('href'),name);
+    await page.keyboard.press('Tab');
+    assert.equal(await link.evaluate(e=>document.activeElement===e),true);
+    assert.equal(await link.evaluate(e=>getComputedStyle(e).outlineStyle),'solid');
+    const response = await page.request.get(base+'/'+name);
+    assert.equal(response.status(),200,name);
+    assert.deepEqual(await response.body(),await readFile(path.join(root,name)),name);
+  }
+  // The newly exposed one-round guide links to the companion. Its existing
+  // setup/inspection siblings are literal files, not a second guide renderer.
+  for (const name of ['episode-record-replay.md','episode-inspection.md','episode-decision.md','episode-stability.md']) {
+    const response = await page.request.get(base+'/'+name);
+    assert.equal(response.status(),200,name);
+    assert.deepEqual(await response.body(),await readFile(path.join(root,name)),name);
+  }
+  const allowance = JSON.parse(await readFile(path.join(root,'search-allowance/results.json'),'utf8'));
+  const fraction = allowance.deciding_gate.relative_reduction;
+  const reduction = 100*Number(fraction.numerator)/Number(fraction.denominator);
+  assert.ok((await routes.textContent()).includes(reduction.toFixed(2)+'%'));
+  assert.match(await routes.textContent(),/22 improved, 3 worsened and 39 tied/);
+  assert.match(await routes.textContent(),/adverse exploratory E2/);
+  assert.match(await routes.textContent(),/Eight times the declared simulations/);
+  assert.match(await routes.textContent(),/second choice can depend on the complete first-round observation/);
+  assert.match(await routes.textContent(),/do not establish general optimal play or calibrated win odds/);
+
+  const sourceName = 'request-edge-reuse/results.json';
+  const sourceResponse = await page.request.get(base+'/'+sourceName);
+  assert.equal(sourceResponse.status(),200);
+  const sourceBytes = await sourceResponse.body();
+  assert.deepEqual(sourceBytes,await readFile(path.join(root,sourceName)));
+  const source = JSON.parse(sourceBytes.toString('utf8'));
+  const receiptResponse = await page.request.get(base+'/request-edge-reuse-figure.json');
+  assert.equal(receiptResponse.status(),200);
+  const receiptBytes = await receiptResponse.body();
+  assert.deepEqual(receiptBytes,await readFile(path.join(root,'request-edge-reuse-figure.json')));
+  const receipt = JSON.parse(receiptBytes.toString('utf8'));
+  assert.equal(receipt.source.revision,'56120034dcb34a9c1321eec5fc27437e5bc4deca');
+  const sourceText = sourceBytes.toString('utf8').replace(/\r\n?/g,'\n');
+  assert.equal(receipt.source.sha256,createHash('sha256').update(sourceText).digest('hex'));
+  assert.equal(receipt.values.baseline,100);
+  assert.equal(receipt.values.aggregate_ratio,source.geometric_mean_condition_median_paired_baseline_over_candidate);
+  assert.equal(receipt.values.lower_search_time_percent.toFixed(2),(100*source.elapsed_reduction_from_geometric_mean_paired_ratio).toFixed(2));
+  assert.equal(receipt.values.individual_timing_pairs,30);
+  assert.equal(source.conditions.reduce((sum,c)=>sum+c.pairs.length,0),30);
+  assert.equal(receipt.values.adverse_individual_pairs,source.adverse_individual_pairs.length);
+  const expected = source.conditions.map(condition => {
+    const ratios = condition.pairs.map(pair=>pair.baseline_seconds/pair.candidate_seconds).sort((a,b)=>a-b);
+    const median = ratios[2];
+    assert.equal(median,condition.median_paired_baseline_over_candidate);
+    return [condition.controls.scenario[0].toUpperCase()+condition.controls.scenario.slice(1),
+      String(condition.controls.horizon),String(median),(100/median).toFixed(2)];
+  });
+  assert.deepEqual(receipt.values.conditions.map(c=>[c.condition,String(c.median_baseline_over_candidate),c.relative_search_time.toFixed(2)]),
+    expected.map(row=>[row[0]+', horizon '+row[1],row[2],row[3]]));
+  const table = page.getByRole('region',{name:'Same-work relative search timing'});
+  assert.deepEqual(await table.locator('tbody tr').evaluateAll(rows=>rows.map(row=>[...row.cells].map(cell=>cell.textContent))),expected);
+  const study = page.locator('#request-edge-reuse-study');
+  const before = await study.textContent();
+  assert.match(before,/not raw milliseconds or confidence intervals/);
+  assert.match(before,/11\.75% lower search time/);
+  assert.match(before,/one shared Windows host/);
+  assert.match(before,/two slower pairs remain in the data/);
+  assert.match(before,/do not establish whole-command speed/);
+  const visible = page.locator('#request-edge-reuse-figure img:visible');
+  assert.equal(await visible.count(),1);
+  assert.equal(await visible.getAttribute('src'),`request-edge-reuse-${mode}.png`);
+  for (const row of expected) assert.ok((await visible.getAttribute('alt')).includes(row[3]));
+  await visible.scrollIntoViewIfNeeded();
+  await visible.evaluate(e=>e.decode());
+  assert.deepEqual(await visible.evaluate(e=>[e.naturalWidth,e.naturalHeight]),[1440,1000]);
+  for (const edition of ['clair','obscur']) for (const extension of ['png','svg']) {
+    const name = `request-edge-reuse-${edition}.${extension}`;
+    const response = await page.request.get(base+'/'+name);
+    assert.equal(response.status(),200,name);
+    const bytes = await response.body();
+    assert.deepEqual(bytes,await readFile(path.join(root,name)),name);
+    assert.equal(createHash('sha256').update(bytes).digest('hex'),receipt.editions[edition][extension].sha256);
+    if (extension === 'svg') {
+      assert.match(bytes.toString('utf8'),/<title[ >]/);
+      assert.match(bytes.toString('utf8'),/<desc[ >]/);
+      assert.match(bytes.toString('utf8'),/<text[ >]/);
+    }
+  }
+  const [download] = await Promise.all([page.waitForEvent('download'),
+    study.getByRole('link',{name:mode==='clair'?'Clair timing SVG':'Obscur timing SVG',exact:true}).click()]);
+  assert.equal(download.suggestedFilename(),`request-edge-reuse-${mode}.svg`);
+  assert.deepEqual(await readFile(await download.path()),await readFile(path.join(root,download.suggestedFilename())));
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  const contrast = await routes.evaluate(e=>{
+    const style=getComputedStyle(e);
+    const luminance=color=>{
+      const channels=color.match(/[\d.]+/g).slice(0,3).map(Number).map(value=>{
+        const channel=value/255;
+        return channel<=0.04045?channel/12.92:((channel+0.055)/1.055)**2.4;
+      });
+      return 0.2126*channels[0]+0.7152*channels[1]+0.0722*channels[2];
+    };
+    const text=luminance(style.color),background=luminance(style.backgroundColor);
+    return (Math.max(text,background)+0.05)/(Math.min(text,background)+0.05);
+  });
+  assert.ok(contrast>=4.5,`Evidence text contrast ${contrast}`);
+  await page.setViewportSize({width:320,height:844});
+  await page.addStyleTag({content:'html{font-size:200% !important}'});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  const headingLines = await table.locator('th').evaluateAll(nodes=>nodes.map(node=>{
+    const range=document.createRange();range.selectNodeContents(node);
+    return range.getClientRects().length;
+  }));
+  assert.ok(headingLines.every(lines=>lines===1),'Timing labels stay on one readable line inside local scrolling');
+  await table.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(()=>document.querySelector('[aria-label="Same-work relative search timing"]').scrollLeft>0);
+  assert.equal(await table.evaluate(e=>getComputedStyle(e).outlineStyle),'solid');
+  await capture(page,`${mode}-accepted-evidence-narrow`,'#accepted-evidence');
+  await capture(page,`${mode}-search-time-narrow`,'#request-edge-reuse-study');
+  await page.locator('#appearance').selectOption(mode==='clair'?'obscur':'clair');
+  assert.equal(await study.textContent(),before);
+  assert.equal(await visible.getAttribute('src'),`request-edge-reuse-${mode==='clair'?'obscur':'clair'}.png`);
+  await page.emulateMedia({media:'print'});
+  assert.equal(await visible.getAttribute('src'),'request-edge-reuse-clair.png');
+  const noScript = await fixture(t,{javaScriptEnabled:false,colorScheme:mode==='clair'?'light':'dark',viewport:{width:390,height:844}});
+  await noScript.goto(base+'/');
+  assert.equal(await noScript.locator('#accepted-evidence').isVisible(),true);
+  assert.deepEqual(await noScript.getByRole('region',{name:'Same-work relative search timing'}).locator('tbody tr').evaluateAll(rows=>rows.map(row=>[...row.cells].map(cell=>cell.textContent))),expected);
+  assert.equal(await noScript.locator('#request-edge-reuse-figure img:visible').getAttribute('src'),`request-edge-reuse-${mode}.png`);
+  assert.match(await noScript.locator('#decision-figure').textContent(),/earlier saved decision from source a82e1a6/);
+  assert.equal(await noScript.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
 });
