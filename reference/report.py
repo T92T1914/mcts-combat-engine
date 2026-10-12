@@ -62,6 +62,21 @@ QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256 = {
     "simulator.py": "401390cd3373a063fe4a5c57f950617f598ec8d48fa5c680d1ae83a0c7c3a71d",
     "state.py": "b059f43ecb253bd03172bdd36b95420c0736d47a32e837c31ab747369a9e8cdc",
 }
+# Root-specific allocation changes sampling and final selection only. Its
+# horizon-one payoff, simulator, rollout and ordinary default were independently
+# qualified against the retained one-round reference before product integration.
+# Admission remains an exact complete source map, including all dependencies.
+QUALIFIED_ROOT_ALLOCATION_ENGINE_FILES_SHA256 = {
+    **QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
+    "mcts.py": "9be3ddafc78bbb617b232f733bc5dc7932b02ebafdd5d205273f604269af2c12",
+}
+# Git's literal committed body uses LF. The exact CRLF-to-LF source conversion
+# was separately qualified, preserving the evaluated body above and every
+# dependency. Both complete maps remain explicit, with no generic normalization.
+QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256 = {
+    **QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
+    "mcts.py": "153e0c6b2f1b5ab1baeb92496ec19860b97b48008b177ce924c134d190cbf0f8",
+}
 SEARCH_VALUE_SEMANTICS = (
     "MCTS terminal wins score 1 - 0.045 * min(6, depth); "
     "terminal losses score 0.15 * min(depth, h) / h, where "
@@ -224,13 +239,15 @@ def _same(left: Any, right: Any) -> bool:
 
 
 def qualified_engine_files(value: Any) -> bool:
-    """Admit one of three independently qualified complete raw-source maps."""
+    """Admit an independently qualified complete raw-source map."""
     return isinstance(value, dict) and any(
         _same(value, admitted)
         for admitted in (
             REFERENCE_ENGINE_FILES_SHA256,
             QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256,
             QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
+            QUALIFIED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+            QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
         )
     )
 
@@ -1060,7 +1077,20 @@ def _choices(document: inspection._Document, record: dict, *, prefix: str) -> No
         inspection._facts(
             document, [("Saved recommendation", diagnostics["recommendation"])]
         )
-    if diagnostics["same_statistics"] is None:
+    if record["decision_report"]["schema_version"] == 3:
+        document.add(
+            "<p>The saved schema 3 decision declares root-specific sampling and "
+            "survivor-first selection. Its recommendation is priced here. "
+            "Ordinary encounter-order selectors do not describe that treatment "
+            "and are not substituted or guessed.</p>"
+        )
+        inspection._facts(document, [
+            ("Saved sampling policy",
+             record["decision_report"]["configuration"]["sampling_policy"]),
+            ("Saved final treatment",
+             record["decision_report"]["configuration"]["final_action_rule"]),
+        ])
+    elif diagnostics["same_statistics"] is None:
         document.add(
             "<p>Version 1 did not retain encounter ties. Alternate "
             "selectors are unavailable rather than guessed.</p>"

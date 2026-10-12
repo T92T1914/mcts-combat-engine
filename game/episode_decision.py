@@ -313,11 +313,13 @@ def _statistics(search: MCTS, ranked: list[RankedAction], state: GameState,
 def _decision_from_record(data: bytes, record: dict, *, step: int, seed: int,
                           sims: int, horizon: int, exploration: float | None,
                           final_action_rule: str | None,
+                          root_allocation: str | None = None,
                           implementation: dict | None = None) -> dict:
     """Use one already captured/admitted episode, never rereading its path."""
     from .episode_inspection import decision_ranking, validate_decision_report
 
-    version = 2 if exploration is not None or final_action_rule is not None else 1
+    version = (3 if root_allocation is not None else
+               2 if exploration is not None or final_action_rule is not None else 1)
     coefficient = 1.2 if exploration is None else exploration
     rule = "mean_visits" if final_action_rule is None else final_action_rule
     pointer = f"/steps/{step}/state"
@@ -344,20 +346,36 @@ def _decision_from_record(data: bytes, record: dict, *, step: int, seed: int,
         if version == 2:
             configuration.update(final_action_rule=rule,
                                  tie_break="root_encounter_order")
+        allocation = None
+        if version == 3:
+            from .root_allocation_report import (
+                FINAL_RULE,
+                POLICY,
+                TIE_BREAK,
+                zero_allocation,
+            )
+            configuration.update(root_allocation=root_allocation,
+                                 sampling_policy=POLICY,
+                                 final_action_rule=FINAL_RULE, tie_break=TIE_BREAK)
+            allocation = zero_allocation(len(legal_actions(state)))
         statistics: list = []
         ranking: list[Action] = []
         elapsed = 0.0
         work = {"simulations": 0, "transitions": 0, "unused_transitions": 0,
                 "stop_reasons": ["zero_requested_simulations"]}
         if sims:
+            options: dict[str, Any] = (
+                {"root_allocation": root_allocation} if version == 3 else {})
             search = MCTS(horizon_rounds=horizon, max_sims=sims,
-                          exploration=coefficient,
-                          max_transitions=sims * horizon, rng=random.Random(seed))
+                          exploration=coefficient, max_transitions=sims * horizon,
+                          rng=random.Random(seed), **options)
             started = time.perf_counter()
             ranked = search.search(state, time_budget_ms=None, priors=None)
             elapsed = time.perf_counter() - started
             statistics, ranking, work = _statistics(
                 search, ranked, state, sims, horizon)
+            if version == 3:
+                allocation = normalized(search.last_root_allocation)
         if not math.isfinite(elapsed) or elapsed < 0:
             raise DecisionRuntimeError("invalid elapsed search observation")
         if canonical(normalized(state)) != saved_state:
@@ -407,6 +425,9 @@ def _decision_from_record(data: bytes, record: dict, *, step: int, seed: int,
                              row["target_idx"] == chosen["target_idx"])
                 report["recommendation"] = {**chosen, "label": label}
             validate_decision_report(report)
+        elif version == 3:
+            report["root_allocation"] = allocation
+            validate_decision_report(report)
         output_bytes(report)
         if (canonical(normalized(state)) != saved_state
                 or canonical(current_identity()) != canonical(implementation)):
@@ -424,8 +445,9 @@ def _decision_from_record(data: bytes, record: dict, *, step: int, seed: int,
 def episode_decision(record_path: Path, *, step: int, seed: int = 7,
                      sims: int = 16, horizon: int = 4,
                      exploration: float | None = None,
-                     final_action_rule: str | None = None) -> dict:
-    """Legacy V1 by default; explicit companion controls produce a V2 report."""
+                     final_action_rule: str | None = None,
+                     root_allocation: str | None = None) -> dict:
+    """Legacy V1 by default; explicit controls select the V2 or V3 contract."""
     from .episode_inspection import EXPLORATIONS, FINAL_ACTION_RULES
     from .episode_record import _choice, _number
 
@@ -439,11 +461,19 @@ def episode_decision(record_path: Path, *, step: int, seed: int = 7,
             _input("exploration", "use 0.6, 1.2 or 2.4")
     if final_action_rule is not None:
         _choice(final_action_rule, "final_action_rule", FINAL_ACTION_RULES)
+    if root_allocation is not None:
+        _choice(root_allocation, "root_allocation", {"sequential_halving"})
+        if horizon != 1:
+            _input("root_allocation", "requires horizon 1")
+        if final_action_rule is not None or exploration not in (None, 1.2):
+            _input("root_allocation", "requires coefficient 1.2 "
+                   "and its own final rule")
     data = _read(record_path, "record", RECORD_BYTES)
     record = validate_record(_parse(data, "record", 200_000, 10**300))
     return _decision_from_record(data, record, step=step, seed=seed, sims=sims,
                                  horizon=horizon, exploration=exploration,
-                                 final_action_rule=final_action_rule)
+                                 final_action_rule=final_action_rule,
+                                 root_allocation=root_allocation)
 
 
 def episode_stability(record_path: Path, *, step: int, seeds: list[int],

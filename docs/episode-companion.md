@@ -138,3 +138,9 @@ The [request-local action reuse guide](request-edge-reuse.md) documents the
 qualified installed search comparison and a fresh capture, replay, decision,
 reference and inspection journey with the same companion. Its source identity,
 local timing boundary and two adverse individual measurements remain explicit.
+
+The optional [root allocation mode](root-allocation.md) makes a horizon-one
+saved-state decision through the same command, with a separate sampling and
+final-selection report. Its fixed-allowance qualification retains every modeled
+case, uncertainty and two adverse exact-best hit rates. It changes sampling
+trajectories and leaves the ordinary default unchanged.

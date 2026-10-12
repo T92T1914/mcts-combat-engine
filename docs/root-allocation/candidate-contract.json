@@ -1,0 +1,66 @@
+{
+  "chosen_after": {
+    "complete_decisions": 192,
+    "deciding_answers_seen": false,
+    "frozen_trigger_hits": 13,
+    "phase": "baseline-exploratory-r1",
+    "reason": "Accepted high exploration leaves a selected optimistic suboptimal mean with few visits in these exposed cases. Test staged sampling that spends more of the same root allowance on surviving arms.",
+    "simulator_transitions": 6144,
+    "states": [
+      "E2",
+      "D2",
+      "D3",
+      "D4"
+    ]
+  },
+  "diagnostic_api": {
+    "attribute": "last_root_allocation",
+    "coordinates": "JSON dictionaries {card_idx,target_idx}, no labels used for identity",
+    "phases": "active action coordinates, quota, completed samples, phase-local sums/means, survivors at elimination",
+    "required": [
+      "policy",
+      "mode",
+      "usable_allowance",
+      "selections",
+      "reward_updates",
+      "elimination_rounds",
+      "elimination_key_evaluations",
+      "remainder_samples",
+      "phases",
+      "winner",
+      "complete"
+    ],
+    "work_units": "selections/reward_updates/elimination key evaluations are arithmetic accounting; all simulator samples counted in existing last_sims,last_transitions including first coverage and remainder; no claims of exact machine instruction count"
+  },
+  "final_rule": {
+    "fallback": "sampled mean then visits then canonical physical order; unsampled legal actions remain explicitly unsampled in study rows",
+    "halving": "completed final survivor first; all other sampled physical actions retained and ordered by raw cumulative mean, visits, canonical physical order",
+    "identity": "candidate-dependent selection/ties are part of treatment; not an allocation-only causal estimate or PR48 selector sweep"
+  },
+  "format": "mcts-root-allocation-candidate-contract",
+  "gate": "candidate source, wrapper and boundary acceptance frozen separately before deciding collection; original protocol and data freeze remain unchanged",
+  "policy": "budget_aware_sequential_halving_v1",
+  "publication": "private prototype only unless frozen promote criteria and review/CI/installed/affected-public acceptance justify delivery; no public consumer source-map loosening now",
+  "schedule": {
+    "elimination": "retain ceil(active_count/2) greatest phase-local binary64 means; exact sampled-mean ties use canonical physical order; no epsilon/no reference",
+    "minimum": "sum of survivor counts K,ceil(K/2),... down to2; when budget insufficient use uniform round-robin fallback without elimination",
+    "phase": "r is number of remaining ceil-half rounds; q=max(1,floor(remaining_allowance/(r*active_count))); each active arm sampled q times in canonical round-robin; phase-local sums and counts only",
+    "physical_actions": "existing canonical legal action order; coordinates include separate duplicate card slots, targets and Pass; compare current availability each simulation",
+    "remainder": "after a single survivor, spend all remaining samples on it; no hidden initialization or test draws",
+    "usable_allowance": "min(max_sims,max_transitions) if transitions supplied, else max_sims; h1 each completed sample one transition"
+  },
+  "schema_version": 1,
+  "scope": {
+    "deeper_tree": "unchanged",
+    "default": "uct unchanged",
+    "horizon": 1,
+    "parallel": false,
+    "payoff": "unchanged",
+    "priors": null,
+    "rollout": "unchanged",
+    "simulator": "unchanged",
+    "source": "isolated actual existing MCTS.search; only root edge choice and explicit final treatment differ",
+    "theory": "Named budget-aware variant motivated by sequential halving, not the published theorem or a full-encounter claim",
+    "time_budget_ms": null
+  }
+}

@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 import sysconfig
+from fractions import Fraction
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -72,6 +73,16 @@ def main() -> None:
         importlib.util.find_spec("game") is None,
         "engine wheel must not install the example helpers",
     )
+    installed_files = {
+        path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(origin.parent.glob("*.py"))
+    }
+    installed_files["py.typed"] = hashlib.sha256(
+        (origin.parent / "py.typed").read_bytes()).hexdigest()
+    require(set(installed_files) == {
+        "__init__.py", "actions.py", "decider.py", "mcts.py", "parallel.py",
+        "py.typed", "rules.py", "simulator.py", "state.py",
+    }, "installed engine source map must remain complete and engine-only")
     outputs = root / "reference-results"
     outputs.mkdir(exist_ok=False)
     working = root / "unrelated-working-directory"
@@ -84,7 +95,7 @@ def main() -> None:
     environment["PYTHONNOUSERSITE"] = "1"
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
 
-    def encoded(value: dict) -> bytes:
+    def encoded(value: object) -> bytes:
         return (
             json.dumps(value, sort_keys=True, indent=2, allow_nan=False) + "\n"
         ).encode()
@@ -107,7 +118,7 @@ def main() -> None:
         # Guards deny numerical work in passive modes and all search in compute.
         guarded = (
             "import sys,runpy;sys.path.insert(0,sys.argv.pop(1));"
-            "import engine,engine.mcts,engine.simulator;"
+            "import engine,engine.mcts,engine.simulator,engine.parallel;"
             "import game.episode_record as records;"
             "import reference.one_round as core;"
             "import reference.aggregation as aggregate;"
@@ -116,6 +127,8 @@ def main() -> None:
             "def deny(*args,**kwargs):\n"
             ' raise RuntimeError("forbidden consumer work reached")\n'
             "engine.MCTS.__init__=deny;engine.MCTS.search=deny;"
+            "engine.parallel.ParallelMCTS.__init__=deny;"
+            "engine.parallel.ParallelMCTS.search=deny;"
             "engine.mcts.advance_round=deny;engine.simulator.advance_round=deny;"
             "engine.advance_round=deny;records._record_owner=deny;"
             + (
@@ -127,7 +140,8 @@ def main() -> None:
             )
             + 'sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name="__main__")'
         )
-        if entry == "reference_episode.py":
+        guard_search = entry == "reference_episode.py" or passive
+        if guard_search:
             command = [
                 sys.executable,
                 "-I",
@@ -166,10 +180,14 @@ def main() -> None:
             + ": "
             + completed.stderr.decode("utf-8", "replace"),
         )
-        require(
-            completed.stdout.endswith(b"\n") and b"\r\n" not in completed.stdout,
-            name + ": incomplete/LF document",
-        )
+        if entry == "decide_episode.py" and status == 2:
+            require(completed.stdout == b"",
+                    name + ": refused controls emitted a report")
+        else:
+            require(
+                completed.stdout.endswith(b"\n") and b"\r\n" not in completed.stdout,
+                name + ": incomplete/LF document",
+            )
         require(bool(completed.stderr) == bool(status), name + ": diagnostic mismatch")
         write(name, completed.stdout)
         receipts.append(
@@ -179,8 +197,10 @@ def main() -> None:
                 "status": status,
                 "sha256": hashlib.sha256(completed.stdout).hexdigest(),
                 "bytes": len(completed.stdout),
-                "search_guarded": entry == "reference_episode.py",
-                "reference_guarded": passive,
+                "search_guarded": guard_search,
+                "simulator_guarded": guard_search,
+                "record_guarded": guard_search,
+                "reference_guarded": guard_search and passive,
             }
         )
         return completed.stdout
@@ -275,6 +295,209 @@ def main() -> None:
         )
         require(value["evaluation"]["total_leaves"] > 0, "empty full-action report")
     left, right = outputs / "reference-a.json", outputs / "reference-b.json"
+
+    # Reuse the genuinely recorded custom episode for the optional treatment.
+    # Saved HTML fragments are checked against input JSON, never renderer output.
+    record_bytes = record.read_bytes()
+    saved_record = json.loads(record_bytes)
+    allocation_arguments = [str(record), "--step", "0", "--horizon", "1",
+                            "--seed", "19"]
+    allocation_reports = {}
+    retained_allocation_inputs = {record: record_bytes}
+    for label, sims, mode in (("halving", 32, "halving"),
+                              ("tiny", 2, "uniform_fallback"),
+                              ("zero", 0, "uniform_fallback")):
+        path = outputs / ("root-allocation-" + label + ".json")
+        body = call(
+            "decide_episode.py",
+            [*allocation_arguments, "--sims", str(sims),
+             "--root-allocation", "sequential_halving"], path.name,
+            passive=sims == 0,
+        )
+        report = json.loads(body)
+        allocation = report["root_allocation"]
+        require(
+            report["schema_version"] == 3
+            and report["status"] == ("decision" if sims else "no_work")
+            and report["search_performed"] is bool(sims)
+            and encoded(report["selected_state"])
+            == encoded(saved_record["steps"][0]["state"])
+            and report["source_record"] == {
+                "bytes": len(record_bytes),
+                "sha256": hashlib.sha256(record_bytes).hexdigest()}
+            and report["configuration"]["root_allocation"] == "sequential_halving"
+            and report["configuration"]["sampling_policy"]
+            == "budget_aware_sequential_halving_v1"
+            and report["configuration"]["final_action_rule"] == "survivor_mean_visits"
+            and report["configuration"]["tie_break"] == "physical_canonical_order"
+            and report["configuration"]["max_sims"]
+            == report["configuration"]["max_transitions"] == sims
+            and report["configuration"]["time_budget_ms"] is None
+            and report["configuration"]["priors"] is None
+            and report["configuration"]["parallel"] is False
+            and allocation["mode"] == mode and allocation["complete"] is True
+            and allocation["usable_allowance"] == allocation["selections"]
+            == allocation["reward_updates"] == report["work"]["simulations"]
+            == report["work"]["transitions"] == sims
+            and report["work"]["unused_transitions"] == 0
+            and report["implementation"]["engine_import_kind"] == "site-packages"
+            and report["implementation"]["engine_files_sha256"] == installed_files,
+            "optional allocation lost its treatment, input, work or installed source",
+        )
+        if sims:
+            require(
+                report["recommendation"] is not None
+                and {key: report["recommendation"][key]
+                     for key in ("card_idx", "target_idx")}
+                == allocation["winner"]
+                and sum(row["visits"] for row in report["legal_actions"]) == sims,
+                "optional allocation lost the actual sampled recommendation or visits",
+            )
+            require(report["work"]["stop_reasons"]
+                    == ["transition_allowance", "simulation_cap"],
+                    "optional allocation changed its completed-work stopping reasons")
+        else:
+            require(
+                report["ranking"] == [] and report["recommendation"] is None
+                and allocation["winner"] is None and allocation["phases"] == []
+                and report["work"]["stop_reasons"] == ["zero_requested_simulations"]
+                and all(row["status"] == "unvisited" and row["visits"] == 0
+                        and row["mean_shaped_reward"] is None
+                        for row in report["legal_actions"]),
+                "guarded zero work invented a sampled value or winner",
+            )
+        if mode == "uniform_fallback":
+            require(allocation["phases"] == []
+                    and allocation["elimination_rounds"] == 0
+                    and allocation["elimination_key_evaluations"] == 0,
+                    "tiny or zero allowance invented an elimination phase")
+        if label == "tiny":
+            require(sum(row["visits"] > 0 for row in report["legal_actions"]) == 2
+                    and any(row["mean_shaped_reward"] is None
+                            for row in report["legal_actions"]),
+                    "tiny allowance fabricated values for unvisited physical actions")
+        html = call(
+            "inspect_episode.py", [str(path), "--decision-report"],
+            "root-allocation-" + label + ".html", passive=True,
+        )
+        fragments = saved_fragments(html)
+        for branch in ("selected_state", "legal_actions", "ranking", "recommendation",
+                       "configuration", "work", "root_allocation", "implementation",
+                       "stored_provenance", "identity_comparisons"):
+            require(encoded(fragments["/" + branch]) == encoded(report[branch]),
+                    "passive allocation HTML changed saved branch: " + branch)
+        for index, phase in enumerate(allocation["phases"]):
+            require(encoded(fragments[f"/root_allocation/phases/{index}"])
+                    == encoded(phase),
+                    "passive allocation HTML changed a saved phase")
+        allocation_reports[label] = report
+        retained_allocation_inputs[path] = body
+
+    peers = {}
+    for label, options, version in (("default", [], 1),
+                                     ("v2", ["--final-action-rule", "mean_visits"], 2)):
+        path = outputs / ("root-allocation-peer-" + label + ".json")
+        body = call("decide_episode.py",
+                    [*allocation_arguments, "--sims", "32", *options], path.name)
+        peers[label] = json.loads(body)
+        require(
+            peers[label]["schema_version"] == version
+            and peers[label]["implementation"]["engine_files_sha256"]
+            == installed_files,
+            "ordinary report version or installed source changed")
+        comparison = call(
+            "inspect_episode.py",
+            [str(outputs / "root-allocation-halving.json"), "--decision-report",
+             "--compare-report", str(path)],
+            "root-allocation-" + label + "-comparison.html", passive=True,
+        )
+        fragments = saved_fragments(comparison)
+        for side, value in (("left", allocation_reports["halving"]),
+                            ("right", peers[label])):
+            for branch in ("selected_state", "configuration", "work", "legal_actions",
+                           "ranking", "recommendation", "implementation"):
+                require(encoded(fragments[f"/{side}/{branch}"])
+                        == encoded(value[branch]),
+                        "passive mixed-version comparison changed saved JSON")
+        require(encoded(fragments["/left/root_allocation"])
+                == encoded(allocation_reports["halving"]["root_allocation"]),
+                "mixed-version comparison lost the allocation treatment")
+        retained_allocation_inputs[path] = body
+    require(
+        all(encoded(peers["default"][branch]) == encoded(peers["v2"][branch])
+            for branch in
+            ("selected_state", "legal_actions", "ranking", "recommendation", "work")),
+        "default and explicit mean/visits changed the same-seed UCT decision")
+
+    allocation_reference_path = outputs / "root-allocation-reference.json"
+    allocation_reference_bytes = call(
+        "reference_episode.py", [str(outputs / "root-allocation-halving.json")],
+        allocation_reference_path.name,
+    )
+    allocation_reference = json.loads(allocation_reference_bytes)
+    values = {
+        (row["action"]["card_idx"], row["action"]["target_idx"]):
+        Fraction(int(row["expected_value"]["numerator"]),
+                 int(row["expected_value"]["denominator"]))
+        for row in allocation_reference["evaluation"]["actions"]
+    }
+    recommendation = allocation_reference["diagnostics"]["recommendation"]
+    choice = allocation_reports["halving"]["recommendation"]
+    key = choice["card_idx"], choice["target_idx"]
+    loss = max(values.values()) - values[key]
+    reference_consumer = allocation_reference["implementation"]["decision_consumer"]
+    require(
+        allocation_reference["status"] == "complete"
+        and allocation_reference["new_search_performed"] is False
+        and encoded(allocation_reference["decision_report"])
+        == encoded(allocation_reports["halving"])
+        and allocation_reference["reference_engine_files_sha256"] == installed_files
+        and reference_consumer["engine_import_kind"] == "site-packages"
+        and reference_consumer["engine_files_sha256"] == installed_files
+        and allocation_reference["diagnostics"]["same_statistics"] is None
+        and recommendation["action"] == {"card_idx": key[0], "target_idx": key[1]}
+        and recommendation["value_loss"] == {
+            "numerator": str(loss.numerator), "denominator": str(loss.denominator)},
+        "installed reference lost the actual schema-3 recommendation or exact loss",
+    )
+    reference_html = call(
+        "reference_episode.py", [str(allocation_reference_path), "--inspect"],
+        "root-allocation-reference.html", passive=True,
+    )
+    fragments = saved_fragments(reference_html)
+    for branch in ("evaluation", "diagnostics", "decision_report"):
+        require(encoded(fragments["/" + branch])
+                == encoded(allocation_reference[branch]),
+                "passive reference reader changed the saved allocation loss or origin")
+    retained_allocation_inputs[allocation_reference_path] = allocation_reference_bytes
+    for label, horizon, options in (
+            ("horizon", 2, []),
+            ("final-rule", 1, ["--final-action-rule", "mean_visits"]),
+            ("stability", 1, ["--stability", "--seeds", "19", "23"])):
+        arguments = [str(record), "--step", "0", "--seed", "19",
+                     "--horizon", str(horizon), "--sims", "32",
+                     "--root-allocation", "sequential_halving", *options]
+        refusal_bytes = call(
+            "decide_episode.py", arguments,
+            "root-allocation-" + label + "-refused.json", 2, passive=True)
+        require(refusal_bytes == b"",
+                "unsupported allocation controls emitted an apparently complete report")
+    allocation_acceptance = {
+        "input_kind": "genuinely recorded bounded custom episode",
+        "schema_version": 3, "default_schema_version": 1,
+        "explicit_rule_schema_version": 2,
+        "policy": "budget_aware_sequential_halving_v1",
+        "installed_engine_map": installed_files,
+        "halving_report": str(outputs / "root-allocation-halving.json"),
+        "tiny_fallback_report": str(outputs / "root-allocation-tiny.json"),
+        "guarded_zero_report": str(outputs / "root-allocation-zero.json"),
+        "reference_report": str(allocation_reference_path),
+        "passive_decision_and_reference_guards": True,
+        "saved_json_fragments_checked": True,
+        "unsupported_controls_refused_before_search": True,
+        "installed_reference_recommendation_loss": recommendation["value_loss"],
+        "independent_policy_quality_claim": False,
+    }
     call(
         "decide_episode.py",
         [
@@ -1204,6 +1427,10 @@ def main() -> None:
             "actual_prior_report_inspected": True,
         }
     require(cards.read_bytes() == original, "accepted card input changed")
+    require(
+        all(path.read_bytes() == body
+            for path, body in retained_allocation_inputs.items()),
+        "optional installed journey changed captured episode/report inputs")
     summary = {
         "installed_engine": str(origin),
         "companion_source": prior["companion_source"],
@@ -1216,6 +1443,7 @@ def main() -> None:
         "historical_report": historical,
         "aggregation_acceptance": sum_acceptance,
         "adaptive_acceptance": adaptive_acceptance,
+        "root_allocation_acceptance": allocation_acceptance,
         "accepted_prior_journey_preserved": True,
     }
     write("acceptance.json", encoded(summary))

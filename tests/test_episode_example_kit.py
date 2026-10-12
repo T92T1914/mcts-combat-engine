@@ -24,7 +24,7 @@ from tools.build_episode_companion import OUTPUT_NAMES as COMPANION_OUTPUT_NAMES
 GAME_FILES = (
     "__init__.py", "baselines.py", "content.py", "decision_report.py",
     "episode_decision.py", "episode_inspection.py", "episode_record.py",
-    "loader.py", "runner.py", "stats.py",
+    "loader.py", "root_allocation_report.py", "runner.py", "stats.py",
 )
 
 
@@ -103,7 +103,7 @@ class ExampleKitTests(unittest.TestCase):
         self.assertEqual(sidecar, (hashlib.sha256(archive).hexdigest() +
                                   "  episode-examples.zip\n").encode("ascii"))
         expected = kit.FIXED_PAYLOAD | {"game/" + name for name in GAME_FILES}
-        self.assertEqual(len(expected), 16)
+        self.assertEqual(len(expected), 17)
         self.assertEqual(set(manifest["payload_files"]), expected)
         self.assertEqual(set(manifest["reference_engine"]["files"]), kit.ENGINE_NAMES)
         self.assertNotIn("manifest.json", manifest["payload_files"])

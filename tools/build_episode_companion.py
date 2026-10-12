@@ -33,6 +33,9 @@ FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     "docs/episode-search-allowance.md",
     "docs/request-edge-reuse.md", "docs/request-edge-reuse/protocol.json",
     "docs/request-edge-reuse/results.json",
+    "docs/root-allocation.md", "docs/root-allocation/results.json",
+    "docs/root-allocation/inputs.json", "docs/root-allocation/protocol.json",
+    "docs/root-allocation/candidate-contract.json",
     *{"docs/search-allowance/" + name for name in (
         "cards.json", "scenarios.json", "protocol.json", "results.json",
         *(f"{case}.{kind}.json"
