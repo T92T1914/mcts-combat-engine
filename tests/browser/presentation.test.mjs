@@ -567,7 +567,16 @@ for (const mode of ['clair','obscur']) test(`${mode} accepted evidence routes pr
   const page = await fixture(t,{viewport:{width:390,height:844},colorScheme:'dark'});
   await ready(page);
   await page.locator('#appearance').selectOption(mode);
-  await page.getByRole('link',{name:'Inspect the accepted evidence',exact:true}).click();
+  // Exercise keyboard navigation so :focus-visible tests keyboard modality.
+  // A mouse click followed by focus() does not request a keyboard focus ring.
+  await page.locator('#appearance').focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.getByRole('link',{name:'Run the Python project',exact:true})
+    .evaluate(e=>document.activeElement===e),true);
+  await page.keyboard.press('Tab');
+  const entry = page.getByRole('link',{name:'Inspect the accepted evidence',exact:true});
+  assert.equal(await entry.evaluate(e=>document.activeElement===e),true);
+  await page.keyboard.press('Enter');
   assert.equal(new URL(page.url()).hash,'#accepted-evidence');
   const routes = page.locator('#accepted-evidence');
   const links = {
@@ -581,7 +590,8 @@ for (const mode of ['clair','obscur']) test(`${mode} accepted evidence routes pr
   for (const [label,name] of Object.entries(links)) {
     const link = routes.getByRole('link',{name:label,exact:true});
     assert.equal(await link.getAttribute('href'),name);
-    await link.focus();
+    await page.keyboard.press('Tab');
+    assert.equal(await link.evaluate(e=>document.activeElement===e),true);
     assert.equal(await link.evaluate(e=>getComputedStyle(e).outlineStyle),'solid');
     const response = await page.request.get(base+'/'+name);
     assert.equal(response.status(),200,name);
