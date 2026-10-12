@@ -160,10 +160,10 @@ class AggregationConsumerTests(unittest.TestCase):
         self.assertIn(b"right_search_objective_or_engine_differs", legacy_comparison)
         self.assertNotIn(b"equal exact one-round value loss", legacy_comparison)
 
-        # This invented same-producer case uses the new qualified source map.
+        # This invented same-producer case uses the current qualified source map.
         # It is not a rewritten historical search or evidence of an actual search.
         self.decision["implementation"]["engine_files_sha256"] = copy.deepcopy(
-            report.QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256
+            report.QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256
         )
         self.save_decision(width=3)
         aggregate = self.calculate()
