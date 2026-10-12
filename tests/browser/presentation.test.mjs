@@ -693,6 +693,11 @@ for (const mode of ['clair','obscur']) test(`${mode} accepted evidence routes pr
   await page.setViewportSize({width:320,height:844});
   await page.addStyleTag({content:'html{font-size:200% !important}'});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  const headingLines = await table.locator('th').evaluateAll(nodes=>nodes.map(node=>{
+    const range=document.createRange();range.selectNodeContents(node);
+    return range.getClientRects().length;
+  }));
+  assert.ok(headingLines.every(lines=>lines===1),'Timing labels stay on one readable line inside local scrolling');
   await table.focus();
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction(()=>document.querySelector('[aria-label="Same-work relative search timing"]').scrollLeft>0);
