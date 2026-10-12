@@ -162,14 +162,33 @@ class AggregationConsumerTests(unittest.TestCase):
 
         # This invented same-producer case uses the current qualified source map.
         # It is not a rewritten historical search or evidence of an actual search.
+        current_engine = legacy_physical["implementation"]["decision_consumer"][
+            "engine_files_sha256"
+        ]
+        self.assertTrue(report.qualified_engine_files(current_engine))
+        self.assertEqual(
+            current_engine,
+            legacy_aggregate["implementation"]["decision_consumer"][
+                "engine_files_sha256"
+            ],
+        )
+        self.assertNotEqual(
+            self.decision["implementation"]["engine_files_sha256"], current_engine
+        )
         self.decision["implementation"]["engine_files_sha256"] = copy.deepcopy(
-            report.QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256
+            current_engine
         )
         self.save_decision(width=3)
         aggregate = self.calculate()
         physical = consumer.reference_decision(
             self.decision_path, model=report.THREE_ENEMY_MODEL
         )
+        for value in (physical, aggregate):
+            self.assertTrue(value["identity_comparisons"]["search_engine_files_equal"])
+            self.assertEqual(
+                value["diagnostics"]["comparison_eligibility"],
+                {"eligible": True, "reasons": []},
+            )
         aggregate_path = self.root / "sum.json"
         physical_path = self.root / "physical.json"
         aggregate_path.write_bytes(output_bytes(aggregate))
