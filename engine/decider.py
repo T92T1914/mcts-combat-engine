@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
+from copy import deepcopy
 from dataclasses import asdict
 from types import TracebackType
 
@@ -35,7 +36,13 @@ class MCTSDecider:
                  on_search: Callable[[int], None] | None = None,
                  max_transitions: int | None = None,
                  on_work: Callable[[dict], None] | None = None,
-                 mode: str = "time") -> None:
+                 mode: str = "time", root_allocation: str = "uct") -> None:
+        if root_allocation not in ("uct", "sequential_halving"):
+            raise ValueError("root_allocation must be uct or sequential_halving")
+        if root_allocation != "uct" and (
+                parallel or horizon != 1 or budget_ms is not None):
+            raise ValueError("sequential_halving requires serial horizon-one "
+                             "search and budget_ms=None")
         if mode not in ("time", "fixed"):
             raise ValueError("mode must be 'time' or 'fixed'")
         if mode == "fixed":
@@ -57,7 +64,8 @@ class MCTSDecider:
         engine: MCTS | ParallelMCTS = (
             ParallelMCTS(horizon_rounds=horizon, workers=workers)
             if parallel else MCTS(horizon_rounds=horizon,
-                                  max_transitions=max_transitions))
+                                  max_transitions=max_transitions,
+                                  root_allocation=root_allocation))
         if (mode == "time" and max_transitions is not None
                 and max_transitions < horizon):
             raise ValueError("transition allowance must fund at least "
@@ -102,6 +110,17 @@ class MCTSDecider:
         Timed and serial policies have no fixed-work report.
         """
         return self._last_report
+
+    @property
+    def last_root_allocation(self) -> dict | None:
+        """Detached serial allocation diagnostics, retained after close.
+
+        Parallel policies have no single root allocation and return None.
+        Reading this property performs no search or random draw.
+        """
+        if isinstance(self._engine, MCTS):
+            return deepcopy(self._engine.last_root_allocation) or None
+        return None
 
     def _report_fixed_work(self) -> None:
         if self._on_work is not None and self._last_report is not None:
@@ -204,7 +223,7 @@ def mcts_decider(budget_ms: int | None = 300, horizon: int = 5,
                  on_search: Callable[[int], None] | None = None,
                  max_transitions: int | None = None,
                  on_work: Callable[[dict], None] | None = None,
-                 mode: str = "time") -> MCTSDecider:
+                 mode: str = "time", root_allocation: str = "uct") -> MCTSDecider:
     """Build a managed MCTS policy. Serial search is the default.
 
     For deterministic serial work, pass both ``seed`` and ``max_sims`` with
@@ -225,8 +244,10 @@ def mcts_decider(budget_ms: int | None = 300, horizon: int = 5,
     The returned policy remains callable until successful retirement, then
     rejects further decisions. Failed cleanup remains visible and retryable.
     The installed factory imports no worked-example content.
+    Explicit ``root_allocation="sequential_halving"`` forwards the existing
+    horizon-one treatment and requires serial search with no clock budget.
     """
     return MCTSDecider(
         budget_ms, horizon, parallel, workers, seed, max_sims,
         on_search=on_search, max_transitions=max_transitions, on_work=on_work,
-        mode=mode)
+        mode=mode, root_allocation=root_allocation)

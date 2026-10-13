@@ -41,6 +41,8 @@ def main(argv: list[str] | None = None) -> int:
     record.add_argument("--rounds", type=_bounded(1, MAX_ROUNDS), default=30)
     record.add_argument("--sims", type=_bounded(1, MAX_SIMS), default=16)
     record.add_argument("--horizon", type=_bounded(1, MAX_HORIZON), default=4)
+    record.add_argument("--root-allocation", choices=("uct", "sequential_halving"),
+                        help="explicit horizon-one policy and work, emits schema 2")
     replay = operations.add_parser("replay",
                                    help="apply recorded actions without search")
     replay.add_argument("record", type=Path)
@@ -50,12 +52,17 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if (args.cards is None) != (args.scenarios is None):
         parser.error("--cards and --scenarios must be supplied together")
+    if (args.operation == "record" and args.root_allocation is not None
+            and args.horizon != 1):
+        parser.error("--root-allocation requires --horizon 1")
     try:
         if args.operation == "record":
+            options = ({"root_allocation": args.root_allocation}
+                       if args.root_allocation is not None else {})
             value = record_episode(
                 args.scenario, cards_path=args.cards, scenarios_path=args.scenarios,
                 environment_seed=args.environment_seed, search_seed=args.search_seed,
-                rounds=args.rounds, sims=args.sims, horizon=args.horizon)
+                rounds=args.rounds, sims=args.sims, horizon=args.horizon, **options)
             status = 0
         else:
             value, status = replay_episode(args.record, cards_path=args.cards,

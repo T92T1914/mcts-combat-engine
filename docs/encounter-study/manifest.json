@@ -1,0 +1,36 @@
+{
+  "format": "mcts-encounter-study-public-evidence",
+  "scope": "projection of accepted complete local modeled encounters, not a new execution",
+  "source_base": "3119c8fe58d7e9fd8cae730e12ae16ac4ad59752",
+  "reviewed_candidate_fingerprint": "3ab96bcc7811a2cf107ae6ab938bec46593eb7fb6953acfa6989ce9705421f1e",
+  "capture_results_sha256": "b3ad9cb38396b8fe2c1b9a59ef8c4abaf5bc3d65d1cec2674e8fe72f151c5596",
+  "independent_verifier_sha256": "0104be76fd4a53c0c441df959290e07f907c41bec068c2cc3eb4934f66f5d911",
+  "files": {
+    "analysis.json": {
+      "bytes": 57255,
+      "sha256": "14c260196400e7b1bf510299d45a5c84d3aa080bda8350cce49a73ed7f4b9c31"
+    },
+    "method-contract.md": {
+      "bytes": 7748,
+      "sha256": "a8d289f084b0dc1fa6859b5ba96ad532329a987c3afb3eee0b6a8f19de459d59"
+    },
+    "paired-outcomes.csv": {
+      "bytes": 10647,
+      "sha256": "bf3e3601c79c728c1d0b5cd5e9408196cd773aa4a09fd92cfd9fca291cef04c6"
+    },
+    "protocol.json": {
+      "bytes": 56801,
+      "sha256": "d762be989fe8c00402afabf10672d54183957560d93aefba0d804b2f54b90db8"
+    }
+  },
+  "raw_traces": "All 2244 episodes, receipts and diagnostic artifacts are retained in the private acceptance packet. This public projection is not the raw corpus.",
+  "compatibility": "Source mode records preserve their full original implementation identity. Installed mode replay must refuse that different identity. Passive inspection and explicitly fresh saved state decisions remain distinct from replay.",
+  "derived_documents": {
+    "method-contract.md": {
+      "source_bytes": 7748,
+      "source_sha256": "a8d289f084b0dc1fa6859b5ba96ad532329a987c3afb3eee0b6a8f19de459d59",
+      "operation": "LF normalization applied; frozen original already LF, bytes unchanged",
+      "changed": false
+    }
+  }
+}

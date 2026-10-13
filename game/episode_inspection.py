@@ -272,6 +272,13 @@ def _render(record: dict[str, Any], captured: bytes, appearance: str) -> bytes:
                      "retained without deriving Pass or another action "
                      "description.</p>")
         _fragment(document, step, f"/steps/{index}", "Complete step, state and action")
+        if "work" in step:
+            _facts(document, [("Stored completed simulations",
+                               step["work"]["simulations"]),
+                              ("Stored simulated transitions",
+                               step["work"]["transitions"]),
+                              ("Stored unused transitions",
+                               step["work"]["unused_transitions"])])
         document.add("</article>")
     final = record["final"]
     document.add('</section><section id="final"><h2>Stored final completion</h2>'
@@ -402,22 +409,11 @@ def _stored_provenance(value: Any) -> dict:
     for index, card in enumerate(records._array(
             scenario["deck"], f"{location}/scenario/deck", 1, 128)):
         records._card(card, f"{location}/scenario/deck/{index}")
-    config = records._object(obj["configuration"], f"{location}/configuration", {
-        "method", "mode", "search_seed", "search_rng_mode", "max_rounds",
-        "max_sims_per_decision", "horizon_rounds", "max_transitions_per_decision",
-        "exploration", "time_budget_ms", "parallel", "workers", "priors",
-        "policy_rng",
-    })
     try:
-        expected = records._configuration(
-            config["max_rounds"], config["max_sims_per_decision"],
-            config["horizon_rounds"], config["search_seed"])
+        records.recording_configuration(obj["configuration"])
     except records.EpisodeInputError as exc:
         raise records.EpisodeInputError(
             f"{location}/configuration: {exc}") from exc
-    if not records._equal(config, expected):
-        records._error(f"{location}/configuration",
-                       "unsupported recording policy/configuration")
     rng = records._object(obj["environment_rng"], f"{location}/environment_rng", {
         "checkpoint_scheme", "state_version", "after_scenario_sha256", "final_sha256",
     })

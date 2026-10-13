@@ -6,7 +6,9 @@ tiny modeled state. Neither fixture claims execution by a historical engine.
 
 from __future__ import annotations
 
+import ast
 import copy
+import hashlib
 import tempfile
 import unittest
 from itertools import permutations
@@ -27,7 +29,12 @@ QUALIFIED_MAPS = (
     report.REFERENCE_ENGINE_FILES_SHA256,
     report.QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256,
     report.QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
+    report.QUALIFIED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+    report.QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+    report.QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+    report.QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
 )
+MANAGED_MAPS = QUALIFIED_MAPS[-2:]
 PHYSICAL_LIMITS = {"max_paths": 100, "max_total_paths": 1000, "max_seconds": 1}
 ADAPTIVE_LIMITS = {
     "max_transitions": 100,
@@ -39,7 +46,7 @@ ADAPTIVE_LIMITS = {
 
 def unqualified_maps():
     for admitted in QUALIFIED_MAPS:
-        for name in ("mcts.py", "simulator.py"):
+        for name in ("decider.py", "mcts.py", "simulator.py"):
             changed = copy.deepcopy(admitted)
             changed[name] = "a" * 64
             yield name, changed
@@ -87,8 +94,8 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
         self.decision_path.write_bytes(records.output_bytes(literal_decision()))
         self.state_path.write_bytes(records.output_bytes(adaptation_state()))
 
-    def test_only_the_three_complete_literal_maps_are_qualified(self):
-        old, documented, reused = QUALIFIED_MAPS
+    def test_historical_complete_literal_maps_remain_qualified(self):
+        old, documented, reused = QUALIFIED_MAPS[:3]
         self.assertEqual(len(old), 9)
         for later in (documented, reused):
             self.assertEqual(set(old), set(later))
@@ -117,6 +124,66 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                 self.assertFalse(report.qualified_engine_files(unknown))
         for other in (None, [], True):
             self.assertFalse(report.qualified_engine_files(other))
+
+    def test_managed_map_retains_all_eight_qualified_canonical_dependencies(self):
+        prior = report.QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256
+        current = report.QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256
+        self.assertEqual(set(current), set(prior))
+        self.assertEqual(len(current), 9)
+        self.assertEqual([name for name in prior if prior[name] != current[name]],
+                         ["decider.py"])
+        self.assertEqual(current["decider.py"],
+                         "a9a98022b1bad9db04bcb649aeb110c609f81347155820a566deb3abf3582ac5")
+        self.assertEqual(report.MODEL, "independent_one_round_binary53_shaped_v1")
+        self.assertEqual(report.THREE_ENEMY_MODEL,
+                         "independent_one_round_three_enemy_binary53_shaped_v1")
+
+    def test_frozen_windows_map_has_one_exact_declared_source_conversion(self):
+        directory = Path(__file__).resolve().parents[1] / "engine"
+        canonical_map = MANAGED_MAPS[0]
+        frozen_map = MANAGED_MAPS[1]
+        canonical_bodies = {
+            name: (directory / name).read_bytes().replace(b"\r\n", b"\n")
+            for name in canonical_map
+        }
+        self.assertEqual({name: hashlib.sha256(body).hexdigest()
+                          for name, body in canonical_bodies.items()}, canonical_map)
+        # Only this explicitly pinned CRLF projection is qualified. The live
+        # admission predicate still compares complete literal maps unchanged.
+        frozen_bodies = {name: body.replace(b"\n", b"\r\n")
+                         for name, body in canonical_bodies.items()}
+        self.assertEqual({name: hashlib.sha256(body).hexdigest()
+                          for name, body in frozen_bodies.items()}, frozen_map)
+        for name, frozen in frozen_bodies.items():
+            with self.subTest(member=name):
+                canonical = canonical_bodies[name]
+                self.assertEqual(frozen.replace(b"\r\n", b"\n"), canonical)
+                if name.endswith(".py"):
+                    frozen_ast = ast.dump(ast.parse(frozen.decode("utf-8")),
+                                          include_attributes=False)
+                    canonical_ast = ast.dump(ast.parse(canonical.decode("utf-8")),
+                                             include_attributes=False)
+                    self.assertEqual(frozen_ast, canonical_ast)
+
+    def test_managed_maps_refuse_any_changed_missing_extra_or_mixed_member(self):
+        for admitted in MANAGED_MAPS:
+            for name in admitted:
+                changed = copy.deepcopy(admitted)
+                changed[name] = "a" * 64
+                with self.subTest(map=admitted["decider.py"], member=name):
+                    self.assertFalse(report.qualified_engine_files(changed))
+            for name in admitted:
+                missing = copy.deepcopy(admitted)
+                del missing[name]
+                self.assertFalse(report.qualified_engine_files(missing))
+            extra = {**admitted, "unqualified.py": "b" * 64}
+            self.assertFalse(report.qualified_engine_files(extra))
+        for admitted, other in permutations(MANAGED_MAPS, 2):
+            for name in admitted:
+                if admitted[name] == other[name]:
+                    continue
+                mixed = {**admitted, name: other[name]}
+                self.assertFalse(report.qualified_engine_files(mixed))
 
     def test_producers_bind_each_qualified_observed_map_without_aliasing(self):
         for admitted in QUALIFIED_MAPS:
