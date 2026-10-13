@@ -41,11 +41,50 @@ class HostileCleanup(OSError):
 
 
 class ManagedPolicyTests(unittest.TestCase):
+    def test_explicit_halving_forwards_existing_search_and_detaches_diagnostics(self):
+        root = state()
+        counts, work = [], []
+        choose = mcts_decider(budget_ms=None, horizon=1, seed=17, max_sims=32,
+                              max_transitions=32, root_allocation="sequential_halving",
+                              on_search=counts.append, on_work=work.append)
+        self.assertIsNone(choose.last_root_allocation)
+        direct = MCTS(horizon_rounds=1, rng=random.Random(17), max_sims=32,
+                      max_transitions=32, root_allocation="sequential_halving")
+        expected = direct.search(root, time_budget_ms=None)
+        with choose:
+            self.assertEqual(choose(root, random.Random(99)), expected[0].action)
+        self.assertEqual(choose.last_root_allocation, direct.last_root_allocation)
+        detached = choose.last_root_allocation
+        self.assertTrue(detached["phases"])
+        detached["phases"][0]["statistics"][0]["value_sum"] = -1
+        detached["phases"].clear()
+        detached["complete"] = False
+        self.assertEqual(choose.last_root_allocation, direct.last_root_allocation)
+        self.assertEqual(counts, [32])
+        self.assertEqual(set(work[0]), {"max_transitions", "transitions",
+                                       "unused_transitions", "simulations",
+                                       "stop_reasons"})
+        with self.assertRaisesRegex(RuntimeError, "closed"):
+            choose(root, random.Random(99))
+
+    def test_explicit_halving_controls_refuse_before_engine_construction(self):
+        for controls in ({}, {"horizon": 2, "budget_ms": None},
+                         {"parallel": True, "horizon": 1, "budget_ms": None},
+                         {"root_allocation": "unknown", "budget_ms": None}):
+            kwargs = {"root_allocation": "sequential_halving", **controls}
+            with (self.subTest(controls=controls),
+                  patch("engine.decider.MCTS") as serial,
+                  patch("engine.decider.ParallelMCTS") as parallel,
+                  self.assertRaises(ValueError)):
+                mcts_decider(**kwargs)
+            serial.assert_not_called()
+            parallel.assert_not_called()
+
     def test_public_factory_and_game_import_are_the_same(self):
         self.assertIs(game_mcts_decider, mcts_decider)
         self.assertEqual(list(inspect.signature(mcts_decider).parameters), [
             "budget_ms", "horizon", "parallel", "workers", "seed", "max_sims",
-            "on_search", "max_transitions", "on_work", "mode"])
+            "on_search", "max_transitions", "on_work", "mode", "root_allocation"])
         choose = game_mcts_decider(60_000, 2, False, None, 7, 3)
         self.assertIsInstance(choose, MCTSDecider)
         self.assertIsInstance(choose._engine, MCTS)

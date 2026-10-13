@@ -17,6 +17,13 @@ SIDECAR_NAME = ZIP_NAME + ".sha256"
 OUTPUT_NAMES = {ZIP_NAME, SIDECAR_NAME}
 GUIDE = "docs/episode-companion.md"
 FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
+    "benchmark.py", "tools/encounter_policy_evaluation.py",
+    "docs/encounter-policy-evaluation.md",
+    "docs/encounter-outcomes.md",
+    *{"docs/encounter-study/" + name for name in (
+        "protocol.json", "analysis.json", "method-contract.md",
+        "paired-outcomes.csv", "manifest.json",
+    )},
     "episode.py", "demo.py", "data/cards.json", "data/scenarios.json",
     "docs/episode-record-replay.md", GUIDE, "docs/episode-stability.md",
     "reference_episode.py", "docs/episode-reference.md",

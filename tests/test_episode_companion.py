@@ -33,7 +33,7 @@ class CompanionTests(unittest.TestCase):
                                   companion.ZIP_NAME + "\n").encode("ascii"))
         expected = companion.FIXED_PAYLOAD | {
             "game/" + name for name in reader_tests.GAME_FILES}
-        self.assertEqual(len(expected), 94)
+        self.assertEqual(len(expected), 103)
         self.assertEqual(manifest["format"], "mcts-recording-companion")
         self.assertEqual(set(manifest["payload_files"]), expected)
         self.assertEqual(set(manifest["reference_engine"]["files"]), kit.ENGINE_NAMES)

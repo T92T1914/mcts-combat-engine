@@ -319,12 +319,13 @@ def rng_digest(rng: random.Random) -> str:
     return hashlib.sha256(canonical(normalized(rng.getstate()))).hexdigest()
 
 
-def _configuration(rounds: Any, sims: Any, horizon: Any, search_seed: Any) -> dict:
+def _configuration(rounds: Any, sims: Any, horizon: Any, search_seed: Any,
+                   root_allocation: str | None = None) -> dict:
     rounds = integer(rounds, "rounds", 1, MAX_ROUNDS)
     sims = integer(sims, "sims", 1, MAX_SIMS)
     horizon = integer(horizon, "horizon", 1, MAX_HORIZON)
     search_seed = integer(search_seed, "search seed", SEED_MIN, SEED_MAX)
-    return {
+    config = {
         "method": "mcts", "mode": "serial_clockless", "search_seed": search_seed,
         "search_rng_mode": "seed_once_continue", "max_rounds": rounds,
         "max_sims_per_decision": sims, "horizon_rounds": horizon,
@@ -333,16 +334,91 @@ def _configuration(rounds: Any, sims: Any, horizon: Any, search_seed: Any) -> di
         "priors": None,
         "policy_rng": {"scheme": "policy-v1", "seed": 0, "used_by_policy": False},
     }
+    if root_allocation is not None:
+        _choice(root_allocation, "root allocation", {"uct", "sequential_halving"})
+        if horizon != 1:
+            _error("root allocation", "explicit encounter policies require horizon 1")
+        config.update({
+            "root_allocation": root_allocation,
+            "sampling_policy": ("uct" if root_allocation == "uct" else
+                                "budget_aware_sequential_halving_v1"),
+            "final_action_rule": ("mean_visits" if root_allocation == "uct" else
+                                  "survivor_mean_visits"),
+            "tie_break": ("root_encounter_order" if root_allocation == "uct" else
+                          "physical_canonical_order"),
+        })
+    return config
 
 
-def _record_owner(config: dict):
+def recording_configuration(value: Any, *, version: int | None = None) -> dict:
+    """Admit an exact legacy or explicit horizon-one recording configuration."""
+    if not isinstance(value, dict):
+        _error("configuration", "must be an object")
+    allocation = value.get("root_allocation")
+    if version == 1 and "root_allocation" in value:
+        _error("configuration", "schema 1 does not declare a root treatment")
+    if version == 2 and allocation is None:
+        _error("configuration",
+               "unsupported schema 2 without an explicit root treatment")
+    expected = _configuration(
+        value.get("max_rounds"), value.get("max_sims_per_decision"),
+        value.get("horizon_rounds"), value.get("search_seed"), allocation)
+    if not _equal(value, expected):
+        _error("configuration", "unsupported recording policy/configuration")
+    return value
+
+
+def _decision_work(value: Any, config: dict, location: str) -> dict:
+    work = _object(value, location, {
+        "max_transitions", "transitions", "unused_transitions", "simulations",
+        "stop_reasons",
+    })
+    allowance = config["max_transitions_per_decision"]
+    for name, expected in (("max_transitions", allowance),
+                           ("transitions", allowance), ("unused_transitions", 0),
+                           ("simulations", config["max_sims_per_decision"])):
+        integer(work[name], f"{location}/{name}", expected, expected)
+    if not _equal(work["stop_reasons"], ["transition_allowance", "simulation_cap"]):
+        _error(location, "explicit clockless decision must complete its allowance")
+    return work
+
+
+def _search_diagnostics(value: Any, config: dict, location: str,
+                        state: dict | None = None) -> dict:
+    diagnostic = _object(value, location, {
+        "legal_action_count", "allocation_mode", "allocation_complete",
+    })
+    integer(diagnostic["legal_action_count"], location + "/legal_action_count", 1, 57)
+    modes = ({"uct"} if config["root_allocation"] == "uct" else
+             {"halving", "uniform_fallback"})
+    _choice(diagnostic["allocation_mode"], location + "/allocation_mode", modes)
+    if diagnostic["allocation_complete"] is not True:
+        _error(location, "complete episodes require complete allocation diagnostics")
+    if state is not None:
+        from .root_allocation_report import _minimum, saved_coordinates
+        count = len(saved_coordinates(state))
+        if diagnostic["legal_action_count"] != count:
+            _error(location, "legal action count disagrees with stored boundary")
+        if config["root_allocation"] == "sequential_halving":
+            expected_mode = ("uniform_fallback"
+                             if config["max_sims_per_decision"] < _minimum(count)
+                             else "halving")
+            if diagnostic["allocation_mode"] != expected_mode:
+                _error(location, "allocation mode disagrees with declared allowance")
+    return diagnostic
+
+
+def _record_owner(config: dict, *, on_work=None):
     # Only recording reaches this import/factory. Replay has no policy factory.
     from engine import mcts_decider
+    options = ({"root_allocation": config["root_allocation"], "on_work": on_work}
+               if "root_allocation" in config else {})
     return mcts_decider(parallel=False, budget_ms=None,
                         seed=config["search_seed"],
                         max_sims=config["max_sims_per_decision"],
                         horizon=config["horizon_rounds"],
-                        max_transitions=config["max_transitions_per_decision"])
+                        max_transitions=config["max_transitions_per_decision"],
+                        **options)
 
 
 def _equal(left: Any, right: Any) -> bool:
@@ -391,8 +467,9 @@ def _final(state: GameState, score: float, rounds: int) -> dict:
 def record_episode(scenario: str = "boss", *, cards_path: Path | None = None,
                    scenarios_path: Path | None = None, environment_seed: int = 7,
                    search_seed: int = 7, rounds: int = 30, sims: int = 16,
-                   horizon: int = 4) -> dict:
-    config = _configuration(rounds, sims, horizon, search_seed)
+                   horizon: int = 4,
+                   root_allocation: str | None = None) -> dict:
+    config = _configuration(rounds, sims, horizon, search_seed, root_allocation)
     integer(environment_seed, "environment seed", SEED_MIN, SEED_MAX)
     _string(scenario, "scenario name")
     scenarios, content = load_content(cards_path, scenarios_path)
@@ -406,7 +483,11 @@ def record_episode(scenario: str = "boss", *, cards_path: Path | None = None,
     initial = normalized(state)
     after_scenario = rng_digest(rng)
     steps: list[dict[str, Any]] = []
-    with _record_owner(config) as choose:
+    work: list[dict] = []
+    owner = (_record_owner(config, on_work=lambda value: work.append(
+        json.loads(canonical(value)))) if root_allocation is not None else
+             _record_owner(config))
+    with owner as choose:
         def recorder(current: GameState, policy_rng: random.Random) -> Action:
             snapshot = normalized(current)
             action = choose(current, policy_rng)
@@ -416,17 +497,45 @@ def record_episode(scenario: str = "boss", *, cards_path: Path | None = None,
             if (not isinstance(action, Action) or not is_legal_action(current, action)
                     or action not in legal_actions(current)):
                 raise EpisodeRuntimeError("recording policy returned an illegal action")
-            steps.append({"index": len(steps), "round_num": current.round_num,
-                          "state": snapshot,
-                          "action": {"card_idx": action.card_idx,
-                                     "target_idx": action.target_idx,
-                                     "label": action.describe(current)}})
+            step: dict[str, Any] = {
+                "index": len(steps), "round_num": current.round_num,
+                "state": snapshot,
+                "action": {"card_idx": action.card_idx,
+                           "target_idx": action.target_idx,
+                           "label": action.describe(current)}}
+            if root_allocation is not None:
+                if len(work) != len(steps) + 1:
+                    raise EpisodeRuntimeError(
+                        "recording policy omitted or repeated work")
+                try:
+                    step["work"] = _decision_work(work[-1], config, "decision work")
+                except EpisodeInputError as exc:
+                    raise EpisodeRuntimeError(
+                        f"incomplete decision work: {exc}") from exc
+                allocation = choose.last_root_allocation
+                if (not isinstance(allocation, dict)
+                        or allocation.get("complete") is not True):
+                    raise EpisodeRuntimeError(
+                        "recording root allocation is incomplete")
+                step["search_diagnostics"] = {
+                    "legal_action_count": len(legal_actions(current)),
+                    "allocation_mode": allocation.get("mode"),
+                    "allocation_complete": allocation["complete"],
+                }
+                try:
+                    _search_diagnostics(step["search_diagnostics"], config,
+                                        "decision diagnostics", snapshot)
+                except EpisodeInputError as exc:
+                    raise EpisodeRuntimeError(
+                        f"invalid decision diagnostics: {exc}") from exc
+            steps.append(step)
             return action
 
         score = play_game(state, deck, recorder, rng, max_rounds=rounds,
                           policy_rng=random.Random("policy-v1:0"))
     record = {
-        "format": "mcts-episode-record", "schema_version": 1, "content": content,
+        "format": "mcts-episode-record",
+        "schema_version": 1 if root_allocation is None else 2, "content": content,
         "scenario": {"name": scenario, "environment_seed": environment_seed,
                      "deck": normalized(deck)},
         "initial_state": initial, "implementation": implementation,
@@ -581,7 +690,7 @@ def validate_record(value: Any) -> dict:
         "implementation", "configuration", "environment_rng", "steps", "final",
     })
     _choice(obj["format"], "record format", {"mcts-episode-record"})
-    integer(obj["schema_version"], "schema version", 1, 1)
+    version = integer(obj["schema_version"], "schema version", 1, 2)
     _content_identity(obj["content"])
     _implementation(obj["implementation"])
     scenario = _object(obj["scenario"], "scenario",
@@ -593,14 +702,7 @@ def validate_record(value: Any) -> dict:
     _state(obj["initial_state"], "initial_state")
     if obj["initial_state"]["round_num"] != 1:
         _error("initial_state", "must start at round one")
-    config = obj["configuration"]
-    if not isinstance(config, dict):
-        _error("configuration", "must be an object")
-    required = _configuration(
-        config.get("max_rounds"), config.get("max_sims_per_decision"),
-        config.get("horizon_rounds"), config.get("search_seed"))
-    if not _equal(config, required):
-        _error("configuration", "unsupported recording policy/configuration")
+    config = recording_configuration(obj["configuration"], version=version)
     rng = _object(obj["environment_rng"], "environment_rng", {
         "checkpoint_scheme", "state_version", "after_scenario_sha256", "final_sha256",
     })
@@ -611,7 +713,8 @@ def validate_record(value: Any) -> dict:
     steps = _array(obj["steps"], "steps", 0, config["max_rounds"])
     for index, step in enumerate(steps):
         step = _object(step, f"steps/{index}",
-                       {"index", "round_num", "state", "action"})
+                       {"index", "round_num", "state", "action"} |
+                       ({"work", "search_diagnostics"} if version == 2 else set()))
         integer(step["index"], "step index", index, index)
         integer(step["round_num"], "step round", index + 1, index + 1)
         _state(step["state"], f"steps/{index}/state")
@@ -622,6 +725,10 @@ def validate_record(value: Any) -> dict:
             if action[name] is not None:
                 integer(action[name], name, 0, high)
         _string(action["label"], "action label", high=260)
+        if version == 2:
+            _decision_work(step["work"], config, f"steps/{index}/work")
+            _search_diagnostics(step["search_diagnostics"], config,
+                                f"steps/{index}/search_diagnostics", step["state"])
     final = _object(obj["final"], "final", {
         "state", "score", "terminal_result", "rounds", "termination",
     })

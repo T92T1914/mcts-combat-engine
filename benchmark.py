@@ -23,6 +23,7 @@ import datetime as dt
 import json
 import os
 import platform
+import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -268,7 +269,7 @@ def render_json(results: Results, games: int, budget_ms: int,
     return json.dumps(report, indent=2, allow_nan=False) + "\n"
 
 
-def main() -> None:
+def main() -> int | None:
     ap = argparse.ArgumentParser(
         description="Search vs baselines on every scenario, seeds paired.")
     ap.add_argument("games", nargs="?", type=int, default=60,
@@ -294,7 +295,39 @@ def main() -> None:
     ap.add_argument("--machine", default="",
                     help='free-text machine description for the markdown, '
                          'e.g. "Ryzen 7 7800X3D"')
+    ap.add_argument("--encounter-protocol", type=Path,
+                    help="separate paired horizon-one policy capture protocol")
+    ap.add_argument("--encounter-output", type=Path,
+                    help="new directory for complete encounters and failure receipts")
+    ap.add_argument("--process-tree-bound",
+                    help="caller-supplied external ownership receipt for capture")
     args = ap.parse_args()
+    if args.encounter_protocol is not None or args.encounter_output is not None:
+        if (args.encounter_protocol is None or args.encounter_output is None
+                or args.process_tree_bound is None):
+            ap.error("encounter capture requires protocol, output "
+                     "and process-tree bound")
+        if (args.games != 60 or args.budget_ms != 120 or args.sims is not None
+                or args.transitions is not None or args.one_round_samples is not None
+                or args.json is not None or args.markdown is not None
+                or args.seed != 42 or args.game_seed != 0 or args.policy_seed != 0
+                or args.machine):
+            ap.error("encounter capture uses only its protocol and output controls")
+        from game.episode_record import EpisodeInputError
+        from tools.encounter_policy_evaluation import run_evaluation
+        try:
+            report = run_evaluation(args.encounter_protocol, args.encounter_output,
+                                    process_tree_bound=args.process_tree_bound)
+        except EpisodeInputError as error:
+            ap.error(str(error))
+        except (RuntimeError, OSError, ValueError) as error:
+            print(f"Encounter capture failed: {error}", file=sys.stderr)
+            return 1
+        print(f"Encounter capture {report['status']}: "
+              f"{len(report['trials'])} intended trials")
+        return 0 if report["status"] == "complete" else 1
+    if args.process_tree_bound is not None:
+        ap.error("process-tree-bound requires encounter capture")
     if args.transitions is not None:
         if args.transitions < 5:
             ap.error("transitions must fund the complete five-round search horizon")
@@ -406,7 +439,8 @@ def main() -> None:
             one_round_samples=args.one_round_samples,
             max_transitions=args.transitions), encoding="utf-8")
         print(f"JSON results written to {args.json}")
+    return None
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

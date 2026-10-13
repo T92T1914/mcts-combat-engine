@@ -27,6 +27,89 @@ def forbidden(*args, **kwargs):
 
 
 class EpisodeTests(unittest.TestCase):
+    def test_explicit_uct_preserves_plain_trajectory_and_adds_exact_work(self):
+        old = self.make_record(rounds=2, sims=8)
+        new = self.make_record(rounds=2, sims=8, root_allocation="uct")
+        self.assertEqual(old["schema_version"], 1)
+        self.assertNotIn("root_allocation", old["configuration"])
+        self.assertEqual(new["schema_version"], 2)
+        for name in ("initial_state", "environment_rng", "final", "implementation"):
+            self.assertEqual(new[name], old[name])
+        for prior, current in zip(old["steps"], new["steps"], strict=True):
+            self.assertEqual({key: current[key] for key in prior}, prior)
+            self.assertNotIn("work", prior)
+            self.assertEqual(current["work"], {
+                "max_transitions": 8, "transitions": 8, "unused_transitions": 0,
+                "simulations": 8,
+                "stop_reasons": ["transition_allowance", "simulation_cap"],
+            })
+            self.assertEqual(current["search_diagnostics"]["allocation_mode"], "uct")
+        self.assertEqual(self.replay(new)[1], 0)
+
+    def test_explicit_halving_replays_and_supports_passive_and_fresh_consumers(self):
+        from game.episode_decision import episode_decision
+        from game.episode_inspection import inspection_html, validate_decision_report
+        captured = self.make_record(rounds=2, sims=8,
+                                    root_allocation="sequential_halving")
+        self.assertEqual(captured["configuration"]["final_action_rule"],
+                         "survivor_mean_visits")
+        self.save(captured)
+        with patch.object(records, "_record_owner", forbidden):
+            rendered = inspection_html(self.saved)
+            self.assertIn(b"Stored completed simulations", rendered)
+            replayed, status = records.replay_episode(
+                self.saved, cards_path=self.cards, scenarios_path=self.scenarios)
+            self.assertEqual(status, 0)
+            self.assertFalse(replayed["search_recomputed"])
+        report = episode_decision(self.saved, step=0, sims=8, horizon=1)
+        validate_decision_report(report)
+        self.assertEqual(report["stored_provenance"]["configuration"],
+                         captured["configuration"])
+
+    def test_explicit_policy_rejects_missing_duplicate_and_short_work(self):
+        original_factory = records._record_owner
+        for mode in ("missing", "duplicate", "short"):
+            def faulty(config, *, on_work=None, witness_mode=mode):
+                def report(value):
+                    if witness_mode == "missing":
+                        return
+                    if witness_mode == "short":
+                        value = {**value, "simulations": value["simulations"] - 1}
+                    on_work(value)
+                    if witness_mode == "duplicate":
+                        on_work(value)
+                return original_factory(config, on_work=report)
+            with (self.subTest(mode=mode),
+                  patch.object(records, "_record_owner", faulty)):
+                status, out, err = self.cli("record", "trial", *self.pair(),
+                                            "--rounds", "1", "--sims", "8",
+                                            "--horizon", "1",
+                                            "--root-allocation", "uct")
+            self.assertEqual((status, out), (1, ""))
+            self.assertIn("episode runtime", err)
+
+    def test_explicit_schema_rejects_cross_version_work_and_invalid_diagnostics(self):
+        good = self.make_record(rounds=1, sims=8, root_allocation="uct")
+        mutations = [
+            lambda value: value.update(schema_version=1),
+            lambda value: value["steps"][0].pop("work"),
+            lambda value: value["steps"][0]["work"].update(simulations=7),
+            lambda value: value["steps"][0]["search_diagnostics"].update(
+                legal_action_count=1),
+            lambda value: value["steps"][0]["search_diagnostics"].update(
+                allocation_complete=False),
+            lambda value: value["configuration"].update(horizon_rounds=2),
+        ]
+        for mutate in mutations:
+            changed = copy.deepcopy(good)
+            mutate(changed)
+            with (self.subTest(mutation=mutate),
+                  self.assertRaises(records.EpisodeInputError)):
+                records.validate_record(changed)
+        with patch.object(records, "load_content", forbidden):
+            status, out, _ = self.cli("record", "--root-allocation", "uct")
+        self.assertEqual((status, out), (2, ""))
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix="mcts-episode-test-")
         self.addCleanup(temporary.cleanup)
