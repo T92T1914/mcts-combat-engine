@@ -9,7 +9,7 @@ I built this to explore how a search chooses an action when the outcome can chan
 
 **Recorded fixed budget benchmark (September 6, 2026):** search wins 30/30 duels, 30/30 gauntlets and 15/30 boss encounters at 3,000 simulations per decision. Random wins 27, 17 and 8; greedy wins 11, 11 and 0. These are small samples from one search seed, not a general playing strength guarantee.
 
-[Run it](#run-it) · [Results](#results) · [How it works](#how-it-works) · [Design decisions](docs/design-decisions.md)
+[Run it](#run-it) · [Optional root allocation](#optional-root-allocation) · [Results](#results) · [How it works](#how-it-works) · [Design decisions](docs/design-decisions.md)
 
 [Explore the browser demo](https://t92t1914.github.io/mcts-combat-engine/) · [Open in Codespaces](https://codespaces.new/T92T1914/mcts-combat-engine)
 
@@ -56,6 +56,31 @@ partial rankings. The probability law, model identity and cooperative work limit
 are explicit. These values describe the declared one-round objective,
 not full-encounter optimality or calibrated win probability. Engine packaging,
 search defaults and the separate saved episode reader kit remain preserved.
+
+### Optional root allocation
+
+The existing [episode companion](docs/episode-companion.md) can make a fresh
+decision from a saved state with `--root-allocation sequential_halving`.
+Use a matching installed engine and run from the extracted companion with an
+existing `episode.json`:
+
+```powershell
+python decide_episode.py episode.json --step 0 --seed 19 --sims 32 --horizon 1 --root-allocation sequential_halving > halving.json
+python inspect_episode.py halving.json --decision-report --appearance obscur > halving.html
+```
+
+Choose fresh output filenames and check each exit status before using the output.
+The [root allocation guide](docs/root-allocation.md) covers acquisition, recording
+a suitable episode, comparison and independent reference pricing. HTML inspection
+reads saved results without search or reference computation.
+
+The mode samples physical root actions in elimination stages and uses its
+declared survivor first final ranking. Decision schema 3 records those stages,
+raw action statistics and actual work. Tiny allowances sample in canonical round robin order,
+and zero work produces a report without search. The companion requires horizon
+one and coefficient 1.2. Core use also requires serial execution, no priors and
+no clock deadline. Unsupported combinations refuse. Ordinary UCT remains the
+default, and historical decision reports keep their original meaning.
 
 ### Save a comparison
 
@@ -151,6 +176,39 @@ Recommended: Spark -> Frost Tyrant
 The reward is a mean shaped value, **not a calibrated win probability**. The compatibility field `RankedAction.win_rate` retains its original name. The boss punishes traps, and the search ranks Weakness Mark below passing in this decision. Timing depends on the machine and its load; the seeded visit counts do not, provided the safety time cap is not reached.
 
 ## Results
+
+### First action quality at 32 simulations
+
+PR57 compared ordinary UCT with the optional root treatment on sixteen frozen
+modeled states. Each state received 4,096 independently initialized searches per
+policy, each completing 32 simulations and 32 transitions at horizon one.
+Reference loss is the difference between the best expected modeled score and
+the selected action's expected score, priced by the existing independent one
+round reference. Lower loss favors the selected action.
+
+| Treatment | Mean first action reference loss |
+| --- | ---: |
+| Default UCT | 0.010989648244 |
+| Optional sequential halving | 0.005141135643 |
+
+The observed reduction is 53.2184% on this fixed corpus. The treatment combines
+root allocation and its declared final selection behavior. It does not isolate
+allocation alone, match random trajectories or establish lower CPU time.
+
+Exact best action hits worsened in two cases: NEW-KT1 fell from 3,732 to 3,543
+out of 4,096, and NEW-KT4 from 4,033 to 3,935. Five individual state uncertainty
+intervals include zero. The pooled benefit interval is conditional on the
+declared independent Monte Carlo replication assumptions; it does not certify
+a reduction of at least 25%. These results do not establish universal
+superiority, full encounter improvement or calibrated win probability.
+
+Read the [method, uncertainty and adverse results](docs/root-allocation.md),
+[complete values and histograms](docs/root-allocation/results.json) and
+[frozen protocol](docs/root-allocation/protocol.json). The deciding experiment
+is retained evidence. Its subsequent installed consumer and delivery acceptance
+are separate checks, not another scientific experiment.
+
+### Historical encounter benchmark
 
 30 games per policy per scenario, game seeds paired across policies; 3000 simulations per decision, search seed 42, horizon 5, 60 second safety cap, single process.
 Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs; AMD Ryzen 7 7800X3D; Windows 11; 64 GB RAM.
@@ -289,9 +347,9 @@ retains the full profile and the limits of that no-change decision.
 
 1. Clone the current state and replay an action sequence under fresh randomness.
 2. Map tree edges to stable root hand slots. Removing a card cannot shift an edge onto another card; duplicate copies keep separate identities.
-3. Recompute legal moves in each realized state. Expand newly available choices and select only available edges by UCB1. An unavailable edge receives no backup as if it were a pass.
+3. Recompute legal moves in each realized state. In default UCT, expand newly available choices and select only available edges by UCB1. An unavailable edge receives no backup as if it were a pass. The separate root allocation mode uses the sampling stages described above.
 4. Roll out to the configured horizon, score the result and back up the shaped reward.
-5. Rank root actions by mean reward, with visit count as a tie break. Optional independent worker processes merge visit counts and value sums.
+5. By default, rank root actions by mean reward, with visit count as a tie break. Optional independent worker processes merge visit counts and value sums. The separate root allocation mode uses the final ranking described above.
 
 The simulator also validates externally supplied moves. Invalid targets, unaffordable cards and out of range indexes become a pass without consuming a card. Search correctness does not rely on that fallback: an instrumented regression checks that every search generated move is legal.
 
