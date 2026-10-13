@@ -77,6 +77,27 @@ QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256 = {
     **QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
     "mcts.py": "153e0c6b2f1b5ab1baeb92496ec19860b97b48008b177ce924c134d190cbf0f8",
 }
+# The reviewed managed wrapper forwards the existing root treatment and exposes
+# detached diagnostics. Its ordinary default, lifecycle, simulator and reward
+# remain unchanged. All eight other canonical members retain the prior map.
+QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256 = {
+    **QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+    "decider.py": "a9a98022b1bad9db04bcb649aeb110c609f81347155820a566deb3abf3582ac5",
+}
+# This complete Windows CRLF map is the exact frozen encounter-study identity.
+# Each body has the separately qualified CRLF-to-LF byte and AST equivalence to
+# the canonical managed map. Runtime admission never normalizes an unknown map.
+QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256 = {
+    "__init__.py": "800fcdd9109e848efdc004bcc48743826fccf202bae11188041a9be01e75737a",
+    "actions.py": "9d3af9c4ef9ca1a9cba3acde9291d56a18742b1fd9785db34954fcdc8d325e24",
+    "decider.py": "eebbcc25f5ad6add9769b436bd8569841305c0f3a42ec68e2c79003c2fca6d17",
+    "mcts.py": "9be3ddafc78bbb617b232f733bc5dc7932b02ebafdd5d205273f604269af2c12",
+    "parallel.py": "529741961928c8554dac3755cd191a8bd0275c15c250465f39ddad9b08185189",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rules.py": "fc18fb059461020922b54a59da1f5f3856280daf960735174e55289da3ded6d4",
+    "simulator.py": "6bb0fe967262e62816f35224448ae6a9397181cb59db3800c6f43e0257233c7d",
+    "state.py": "4e1345f0d4e5fede83eebf1d5a149360c8aced07dc82c1afe2a885facc23c762",
+}
 SEARCH_VALUE_SEMANTICS = (
     "MCTS terminal wins score 1 - 0.045 * min(6, depth); "
     "terminal losses score 0.15 * min(depth, h) / h, where "
@@ -248,6 +269,8 @@ def qualified_engine_files(value: Any) -> bool:
             QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
             QUALIFIED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
             QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+            QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+            QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
         )
     )
 
