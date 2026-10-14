@@ -1,0 +1,20 @@
+name: Linux enforcement preflight
+
+on:
+  push:
+    branches: [probe/linux-enforcement-20261014]
+    paths:
+      - tools/linux_enforcement_preflight.py
+      - .github/workflows/linux-enforcement-preflight.yml
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-existing-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - name: Read existing delegation and daemon capabilities
+        run: python3 tools/linux_enforcement_preflight.py
