@@ -31,6 +31,7 @@ def command(argv: list[str]) -> dict:
 
 def main() -> None:
     report = {"format": "mcts-linux-enforcement-preflight", "schema_version": 1,
+              "probe_scope": "existing_local_docker_cgroup_v2_candidate",
               "platform": sys.platform, "read_only": True,
               "workload_admitted": False, "ownership_established": False}
     if sys.platform != "linux":

@@ -1,6 +1,10 @@
 name: Linux enforcement preflight
 
 on:
+  pull_request:
+    paths:
+      - tools/linux_enforcement_preflight.py
+      - .github/workflows/linux-enforcement-preflight.yml
   push:
     branches: [probe/linux-enforcement-20261014]
     paths:
@@ -12,6 +16,10 @@ permissions:
 
 jobs:
   inspect-existing-controls:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event.pull_request.head.ref == 'probe/linux-enforcement-20261014' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
