@@ -45,6 +45,11 @@ old identity, while passive inspection and an explicitly current-model decision
 remain separate paths. See [model compatibility](model-compatibility.md) for the
 threshold, historical record treatment and unchanged finite reference domains.
 
+The [bounded assurance corpus](bounded-assurance.md) describes selected input,
+recovery, text and public model checks, their independent expectations and the
+distinction between consistency and authentication. Its executable tests remain
+in the source checkout.
+
 Keep `demo.py`, `episode.py`, the saved-record entries, `reference_episode.py`,
 and the full `game/`, `reference/` and `data/` together. `demo.py` participates in implementation identity even when
 you never run it. Move the whole directory when relocating the companion.
