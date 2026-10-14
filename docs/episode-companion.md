@@ -4,6 +4,11 @@ For a small capture with delivered Windows process ownership, use the
 [managed encounter guide](managed-encounters.md). It also explains how to inspect
 retained progress without executing or replacing trials.
 
+For one small installed journey on an already supported Linux Docker host, use
+the [Linux managed episode guide](linux-managed-episode.md). Its kernel ownership,
+controller-loss deadline and distinct passive recovery receipt are separate
+from the Windows capture contract.
+
 The separate `episode-companion.zip` contains the existing example commands,
 their complete `game/` helpers and default cards/scenarios. Extract the whole
 companion into a fresh directory, then install the engine with Python and pip.
