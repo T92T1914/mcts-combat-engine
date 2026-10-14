@@ -84,7 +84,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $consumerRoot = Join-Path $env:RUNNER_TEMP ('mcts-managed-' + [guid]::NewGuid())
           New-Item -ItemType Directory -Path $consumerRoot | Out-Null
-          git archive HEAD -o (Join-Path $consumerRoot 'source.zip')
+          # Keep literal blob bytes without changing the runner's Git settings.
+          git -c core.autocrlf=false -c core.eol=lf archive HEAD -o (Join-Path $consumerRoot 'source.zip')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Expand-Archive -LiteralPath (Join-Path $consumerRoot 'source.zip') -DestinationPath (Join-Path $consumerRoot 'source')
           python -m pip wheel --no-deps --wheel-dir (Join-Path $consumerRoot 'wheels') (Join-Path $consumerRoot 'source')
