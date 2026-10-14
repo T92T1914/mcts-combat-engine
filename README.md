@@ -57,6 +57,13 @@ are explicit. These values describe the declared one-round objective,
 not full-encounter optimality or calibrated win probability. Engine packaging,
 search defaults and the separate saved episode reader kit remain preserved.
 
+The [Linux managed episode](docs/linux-managed-episode.md) runs one small
+installed record-and-replay journey through an already available local Docker
+daemon. It checks literal cgroup limits and ownership before admission, retains
+bounded output and supplies distinct passive recovery. Its memory and process
+claims are limited to the owned container. The existing Windows managed
+encounter path keeps its own process and receipt contract.
+
 ### Optional root allocation
 
 The existing [episode companion](docs/episode-companion.md) can make a fresh

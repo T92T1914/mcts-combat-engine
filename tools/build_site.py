@@ -60,6 +60,7 @@ FILES = {
     "docs/managed-encounters.md": "managed-encounters.md",
     "docs/model-compatibility.md": "model-compatibility.md",
     "docs/bounded-assurance.md": "bounded-assurance.md",
+    "docs/linux-managed-episode.md": "linux-managed-episode.md",
     "docs/episode-record-replay.md": "episode-record-replay.md",
     "docs/episode-inspection.md": "episode-inspection.md",
     "docs/episode-decision.md": "episode-decision.md",

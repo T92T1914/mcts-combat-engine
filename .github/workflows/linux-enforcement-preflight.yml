@@ -1,33 +1,66 @@
-name: Linux enforcement qualification
+name: Linux managed consumer
 
 on:
   pull_request:
     paths:
       - tools/linux_enforcement_preflight.py
       - tools/linux_ownership_probe.py
+      - tools/linux_container.py
+      - tools/linux_episode_worker.py
+      - tools/linux_episode.py
+      - tools/linux_recovery.py
+      - tools/installed_linux_smoke.py
+      - tools/build_episode_companion.py
+      - tests/fixtures/linux_container_fixture.py
+      - linux_episode.py
+      - recover_linux.py
+      - engine/**
+      - game/**
+      - docs/linux-managed-episode.md
       - .github/workflows/linux-enforcement-preflight.yml
   push:
-    branches: [probe/linux-enforcement-20261014]
+    branches: [main, probe/linux-enforcement-20261014]
     paths:
       - tools/linux_enforcement_preflight.py
       - tools/linux_ownership_probe.py
+      - tools/linux_container.py
+      - tools/linux_episode_worker.py
+      - tools/linux_episode.py
+      - tools/linux_recovery.py
+      - tools/installed_linux_smoke.py
+      - tools/build_episode_companion.py
+      - tests/fixtures/linux_container_fixture.py
+      - linux_episode.py
+      - recover_linux.py
+      - engine/**
+      - game/**
+      - docs/linux-managed-episode.md
       - .github/workflows/linux-enforcement-preflight.yml
 
 permissions:
   contents: read
 
 jobs:
-  inspect-existing-controls:
+  linux-managed-consumer:
     if: >-
       github.event_name == 'push' ||
       (github.event.pull_request.head.ref == 'probe/linux-enforcement-20261014' &&
        github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
       - name: Read existing delegation and daemon capabilities
         run: python3 tools/linux_enforcement_preflight.py
       - name: Verify one owned empty container before workload admission
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: python3 tools/linux_ownership_probe.py
+      - name: Build public inputs and exercise the externally installed consumer
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          consumer_root=$(mktemp -d "$RUNNER_TEMP/mcts-linux-consumer.XXXXXX")
+          timeout --signal=TERM --kill-after=5s 90s python3 -m pip wheel --no-deps --wheel-dir "$consumer_root/wheels" .
+          python3 tools/build_episode_companion.py
+          python3 tools/installed_linux_smoke.py --wheel "$consumer_root"/wheels/*.whl --companion "$GITHUB_WORKSPACE/_site/episode-companion.zip" --output "$consumer_root/acceptance"
