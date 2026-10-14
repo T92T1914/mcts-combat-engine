@@ -33,7 +33,7 @@ class CompanionTests(unittest.TestCase):
                                   companion.ZIP_NAME + "\n").encode("ascii"))
         expected = companion.FIXED_PAYLOAD | {
             "game/" + name for name in reader_tests.GAME_FILES}
-        self.assertEqual(len(expected), 103)
+        self.assertEqual(len(expected), 109)
         self.assertEqual(manifest["format"], "mcts-recording-companion")
         self.assertEqual(set(manifest["payload_files"]), expected)
         self.assertEqual(set(manifest["reference_engine"]["files"]), kit.ENGINE_NAMES)
@@ -63,6 +63,26 @@ class CompanionTests(unittest.TestCase):
             self.assertEqual(len(modeled["enemies"]), 1)
             self.assertEqual(modeled["enemies"][0]["base_attack"]["damage_max"], 1)
             self.assertNotIn("engine/state.py", opened.namelist())
+
+    def test_managed_capture_and_recovery_ship_as_literal_separate_tools(self) -> None:
+        archive, _, manifest = companion.prepare(self.root)
+        names = {
+            "managed_encounters.py", "recover_encounters.py",
+            "tools/managed_encounter.py", "tools/encounter_process.py",
+            "tools/encounter_recovery.py", "docs/managed-encounters.md",
+        }
+        with zipfile.ZipFile(io.BytesIO(archive)) as opened:
+            for name in names:
+                self.assertEqual(opened.read(name), self.blob(name))
+                self.assertEqual(manifest["payload_files"][name],
+                                 kit.identity(self.blob(name)))
+            self.assertFalse(any(name.startswith("engine/")
+                                 for name in opened.namelist()))
+        reader_archive, _, reader_manifest = kit.prepare(self.root)
+        with zipfile.ZipFile(io.BytesIO(reader_archive)) as opened:
+            self.assertTrue(names.isdisjoint(opened.namelist()))
+            self.assertEqual(reader_manifest["format"],
+                             "mcts-saved-episode-example-kit")
 
     def test_reader_kit_preserves_its_existing_payload_and_derivation(self) -> None:
         archive, _, manifest = kit.prepare(self.root)

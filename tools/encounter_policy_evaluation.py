@@ -30,6 +30,16 @@ class _ReadSeekStream(Protocol):
     def read(self, size: int = -1, /) -> bytes: ...
 
 
+class CaptureControl(Protocol):
+    """The explicit managed entry supplies enforced execution and writes."""
+
+    def write_bytes(self, path: Path, data: bytes) -> None: ...
+
+    def before_trial(self, trial: dict, protocol: dict, directory: Path) -> None: ...
+
+    def child(self, command: list[str], timeout: float, directory: Path) -> dict: ...
+
+
 class EncounterRuntimeError(RuntimeError):
     """A declared evaluation cannot retain its complete capture accounting."""
 
@@ -245,7 +255,8 @@ def _admit_episode(data: bytes, trial: dict, protocol: dict,
 
 def _trial(trial: dict, protocol: dict, directory: Path,
            content: dict, implementation: dict, *,
-           timeout: float | None = None) -> dict:
+           timeout: float | None = None,
+           control: CaptureControl | None = None) -> dict:
     command = [sys.executable, str(ROOT / "episode.py"), "record", trial["scenario"],
                "--environment-seed", str(trial["environment_seed"]),
                "--search-seed", str(trial["search_seed"]),
@@ -264,8 +275,12 @@ def _trial(trial: dict, protocol: dict, directory: Path,
 
     def retain_transport(transport: dict) -> bytes:
         stdout, stderr = transport.pop("stdout"), transport.pop("stderr")
-        (directory / "stdout.raw").write_bytes(stdout)
-        (directory / "stderr.raw").write_bytes(stderr)
+        if control is None:
+            (directory / "stdout.raw").write_bytes(stdout)
+            (directory / "stderr.raw").write_bytes(stderr)
+        else:
+            control.write_bytes(directory / "stdout.raw", stdout)
+            control.write_bytes(directory / "stderr.raw", stderr)
         receipt["transport"] = {**transport,
                                 "stdout": {"path": "stdout.raw", **_identity(stdout)},
                                 "stderr": {"path": "stderr.raw", **_identity(stderr)}}
@@ -273,9 +288,22 @@ def _trial(trial: dict, protocol: dict, directory: Path,
         return stdout
 
     try:
-        transport = _child(command, protocol["trial_timeout_seconds"]
-                           if timeout is None else timeout)
+        allowed = protocol["trial_timeout_seconds"] if timeout is None else timeout
+        transport = (_child(command, allowed) if control is None else
+                     control.child(command, allowed, directory))
         stdout = retain_transport(transport)
+        if control is not None:
+            owner = transport.get("owner", {})
+            if not owner.get("cleanup", {}).get("retired", False):
+                receipt["status"] = "retirement_failure"
+                raise EncounterRuntimeError("managed recorder retirement unresolved")
+            failure = owner.get("failure_kind")
+            if failure is not None:
+                if failure == "cancelled":
+                    receipt["status"] = "cancelled"
+                elif failure == "timeout":
+                    receipt["status"] = "timeout"
+                raise EncounterRuntimeError("managed recorder: " + str(failure))
         if transport["timeout_diagnostics"] is not None:
             receipt["status"] = "timeout"
             raise EncounterRuntimeError("trial exceeded its external timeout")
@@ -288,7 +316,10 @@ def _trial(trial: dict, protocol: dict, directory: Path,
         record = _admit_episode(stdout, trial, protocol, content, implementation)
         episode_data = records.output_bytes(record)
         # Only fully admitted successful stdout becomes an episode artifact.
-        _write_bytes(directory / "episode.json", episode_data)
+        if control is None:
+            _write_bytes(directory / "episode.json", episode_data)
+        else:
+            control.write_bytes(directory / "episode.json", episode_data)
         final = record["final"]
         work = [step["work"] for step in record["steps"]]
         diagnostics = [step["search_diagnostics"] for step in record["steps"]]
@@ -320,7 +351,8 @@ def _trial(trial: dict, protocol: dict, directory: Path,
 
 
 def run_evaluation(protocol_path: Path, output_directory: Path, *,
-                   process_tree_bound: str) -> dict:
+                   process_tree_bound: str,
+                   control: CaptureControl | None = None) -> dict:
     """Retain intended slots and failures without supplying statistical analysis."""
     records._string(process_tree_bound, "process-tree bound", high=2048)
     if not process_tree_bound.strip():
@@ -329,6 +361,23 @@ def run_evaluation(protocol_path: Path, output_directory: Path, *,
     started = time.monotonic()
     captured = records._read(protocol_path, "protocol", PROTOCOL_BYTES)
     protocol = validate_protocol(records._parse(captured, "protocol", 100_000, 10**300))
+    if control is not None and len(protocol["seed_blocks"]) != 1:
+        records._error("protocol/seed_blocks", "managed capture admits one block")
+
+    def write_bytes(path: Path, body: bytes) -> None:
+        if control is None:
+            _write_bytes(path, body)
+        else:
+            control.write_bytes(path, body)
+
+    def write_json(path: Path, value: dict) -> None:
+        if control is None:
+            _write_json(path, value)
+        else:
+            body = records.canonical(value) + b"\n"
+            if len(body) > REPORT_BYTES:
+                raise EncounterRuntimeError("capture report exceeds its allowance")
+            control.write_bytes(path, body)
     _, content = records.load_content()
     implementation = _source_identity()
     freeze = protocol.get("metadata", {}).get("freeze")
@@ -339,7 +388,7 @@ def run_evaluation(protocol_path: Path, output_directory: Path, *,
             records._error("protocol/metadata/freeze",
                            "source or content freeze mismatch")
     trials = _inventory(protocol)
-    report = {
+    report: dict = {
         "format": "mcts-encounter-policy-evaluation", "schema_version": 1,
         "status": "incomplete",
         "protocol": {"path": "protocol.json", **_identity(captured)},
@@ -356,15 +405,19 @@ def run_evaluation(protocol_path: Path, output_directory: Path, *,
                            "per trial, "
                            "temporary transport files have no independent disk quota",
     }
+    if control is not None:
+        report["transport_scope"] = (
+            "managed pipe prefixes and every collector artifact write are bounded; "
+            "see the separate managed owner receipt; not an OS disk quota")
     # Check the complete inventory's report bound before starting any child.
     if len(records.canonical(report)) + 1 > REPORT_BYTES:
         records._error("protocol", "declared inventory exceeds report allowance")
     output_directory = output_directory.resolve()
     output_directory.mkdir(parents=True, exist_ok=False)
-    _write_bytes(output_directory / "protocol.json", captured)
+    write_bytes(output_directory / "protocol.json", captured)
     (output_directory / "trials").mkdir()
     report_path = output_directory / "results.json"
-    _write_json(report_path, report)
+    write_json(report_path, report)
     deadline = started + protocol["collection_timeout_seconds"]
     for trial in trials:
         remaining = deadline - time.monotonic()
@@ -375,18 +428,21 @@ def run_evaluation(protocol_path: Path, output_directory: Path, *,
             break
         directory = output_directory / "trials" / f"{trial['index']:05d}"
         directory.mkdir()
+        if control is not None:
+            control.before_trial(trial, report["protocol"], directory)
         receipt = _trial(trial, protocol, directory, content, implementation["episode"],
-                         timeout=min(protocol["trial_timeout_seconds"], remaining))
-        _write_json(directory / "timing.json", {
+                         timeout=min(protocol["trial_timeout_seconds"], remaining),
+                         control=control)
+        write_json(directory / "timing.json", {
             "elapsed_subprocess_seconds": receipt["elapsed_subprocess_seconds"],
             "transport": receipt["transport"],
         })
-        _write_json(directory / "work.json", {"work": receipt["work"]})
-        _write_json(directory / "error.json", {"error": receipt["error"]})
+        write_json(directory / "work.json", {"work": receipt["work"]})
+        write_json(directory / "error.json", {"error": receipt["error"]})
         receipt["artifacts"] = {
             "timing": "timing.json", "work": "work.json", "error": "error.json",
         }
-        _write_json(directory / "receipt.json", receipt)
+        write_json(directory / "receipt.json", receipt)
         trial["status"] = receipt["status"]
         trial["receipt_identity"] = _identity((directory / "receipt.json").read_bytes())
         trial["episode"] = receipt["episode"]
@@ -400,6 +456,11 @@ def run_evaluation(protocol_path: Path, output_directory: Path, *,
             report["failure"] = {"stage": "retirement", "trial_index": trial["index"],
                                  "message": receipt["error"]["message"]}
             break
+        if control is not None and receipt["status"] != "complete":
+            report["failure"] = {
+                "stage": "managed_trial_failure", "trial_index": trial["index"],
+                "message": "managed capture stops after an incomplete attempt"}
+            break
     if not records._equal(implementation, _source_identity()):
         report["failure"] = {"stage": "finalization",
                              "message": "source identity changed"}
@@ -408,5 +469,5 @@ def run_evaluation(protocol_path: Path, output_directory: Path, *,
         report["status"] = "complete"
     report["summary"] = _summary(trials)
     report["elapsed_capture_seconds"] = time.monotonic() - started
-    _write_json(report_path, report)
+    write_json(report_path, report)
     return report
