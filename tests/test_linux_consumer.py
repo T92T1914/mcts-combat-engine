@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import importlib.util
 import io
 import json
@@ -10,13 +12,160 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 from tools import installed_linux_smoke as acceptance_driver
 from tools import linux_episode_worker as worker
 
 
+def decode_wire(text: str) -> bytes:
+    chunks = []
+    totals = []
+    digests = []
+    for line in text.splitlines():
+        if line.startswith("G4_NATIVE_EVIDENCE_CHUNK "):
+            _, sequence, body = line.split(" ", 2)
+            index, count = map(int, sequence.split("/"))
+            if index != len(chunks):
+                raise ValueError("missing, duplicated or unordered chunk")
+            chunks.append(base64.b64decode(body, validate=True))
+            totals.append(count)
+        elif line.startswith("G4_NATIVE_EVIDENCE_DIGEST "):
+            digests.append(json.loads(line.split(" ", 1)[1]))
+    if len(digests) != 1 or not chunks or any(total != len(chunks) for total in totals):
+        raise ValueError("incomplete evidence framing")
+    result = b"".join(chunks)
+    digest = digests[0]
+    if (
+        digest["bytes"] != len(result)
+        or digest["chunks"] != len(chunks)
+        or digest["sha256"] != hashlib.sha256(result).hexdigest()
+    ):
+        raise ValueError("decoded evidence identity differs")
+    return result
+
+
 class LinuxConsumerInputTests(unittest.TestCase):
+    def test_transport_recovers_exact_bytes_with_interleaved_stderr_and_detects_loss(
+        self,
+    ):
+        original = json.dumps({"status": "incomplete", "retained": "x" * 4096}).encode()
+        wire = acceptance_driver.evidence_transport(original)
+        records = wire.splitlines()
+        records.insert(3, "Traceback (most recent call last):")
+        records.insert(
+            4,
+            "ValueError: orphan lacked actual host membership and pinned exit evidence",
+        )
+        self.assertEqual(decode_wire("\n".join(records)), original)
+        self.assertLessEqual(len(wire.encode()), acceptance_driver.EVIDENCE_BYTES)
+        for modification in (
+            records[:2] + records[3:],
+            records[:2] + [records[1]] + records[2:],
+        ):
+            with self.assertRaises(ValueError):
+                decode_wire("\n".join(modification))
+        damaged = wire.replace(
+            base64.b64encode(original[:1024]).decode(),
+            base64.b64encode(b"x" * 1024).decode(),
+            1,
+        )
+        with self.assertRaisesRegex(ValueError, "identity differs"):
+            decode_wire(damaged)
+
+    def probe_members(self, orphan_uid=1001):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            stamp = directory.stat()
+            witness = acceptance_driver.MemberWitness.__new__(
+                acceptance_driver.MemberWitness
+            )
+            witness.native = {
+                "host_pid": 1,
+                "cgroup": "/docker/known",
+                "stamp": [stamp.st_dev, stamp.st_ino],
+                "namespaces": {"pid": 91},
+            }
+            witness.members, witness.errors = {}, []
+            witness.deferred, witness.rejected, witness.deferred_discarded = [], [], 0
+            witness.stop = MagicMock()
+            witness.stop.is_set.side_effect = [False, True]
+            original_stat = Path.stat
+
+            def read_text(path, *args, **kwargs):
+                name = path.as_posix()
+                pid = int(name.split("/")[2])
+                if name.endswith("/status"):
+                    uid = 1001 if pid == 4358 else orphan_uid
+                    state = "Z (zombie)" if pid == 4358 else "S (sleeping)"
+                    return (
+                        f"Uid:\t{uid}\t{uid}\t{uid}\t{uid}\n"
+                        f"State:\t{state}\nNSpid:\t{pid}\t26\n"
+                    )
+                return "0::/docker/known\n"
+
+            def selected_stat(path, *args, **kwargs):
+                if path.as_posix() == "/proc/4358/ns/pid":
+                    raise PermissionError(13, "Permission denied", path.as_posix())
+                if path.as_posix() == "/proc/4365/ns/pid":
+                    return SimpleNamespace(st_ino=91)
+                return original_stat(path, *args, **kwargs)
+
+            with (
+                patch.object(
+                    acceptance_driver.owner.native, "mount_root", return_value=directory
+                ),
+                patch.object(
+                    acceptance_driver.owner.native,
+                    "cgroup_path",
+                    return_value=directory,
+                ),
+                patch.object(
+                    acceptance_driver.owner,
+                    "sample",
+                    return_value={"members": [1, 4358, 4365]},
+                ),
+                patch.object(
+                    acceptance_driver.owner.native,
+                    "starttime",
+                    side_effect=lambda pid: pid * 10,
+                ),
+                patch.object(
+                    acceptance_driver.owner.native, "exited", return_value=False
+                ),
+                patch.object(Path, "read_text", read_text),
+                patch.object(Path, "stat", selected_stat),
+                patch.object(
+                    acceptance_driver.os, "pidfd_open", return_value=72, create=True
+                ),
+                patch.object(acceptance_driver.os, "close"),
+            ):
+                witness.observe()
+            return witness
+
+    def test_denied_candidate_keeps_probe_evidence_and_does_not_hide_qualified_orphan(
+        self,
+    ):
+        witness = self.probe_members()
+        self.assertEqual(witness.errors, [])
+        self.assertEqual(set(witness.members), {4365})
+        self.assertEqual(witness.members[4365][0]["uid"], [1001] * 4)
+        denied = witness.deferred[0]
+        self.assertEqual(denied["host_pid"], 4358)
+        self.assertEqual(denied["uid"], [1001] * 4)
+        self.assertEqual(denied["state"], "Z (zombie)")
+        self.assertEqual(denied["starttime"], 43580)
+        self.assertEqual(denied["cgroup"], "0::/docker/known\n")
+        self.assertIsNone(denied["pid_namespace"])
+        self.assertEqual(denied["disposition"], "deferred_permission_denied")
+
+    def test_readable_orphan_with_wrong_uid_still_refuses_identity(self):
+        witness = self.probe_members(orphan_uid=0)
+        self.assertFalse(witness.members)
+        self.assertTrue(witness.errors)
+        self.assertEqual(witness.rejected[0]["uid"], [0] * 4)
+
     def test_partial_evidence_keeps_actual_receipts_and_omits_raw_overflow(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -42,11 +191,7 @@ class LinuxConsumerInputTests(unittest.TestCase):
             with patch("sys.stdout", new_callable=io.StringIO) as captured:
                 acceptance_driver.emit_retained_evidence(root, acceptance)
             text = captured.getvalue()
-            envelope = json.loads(
-                text.split("G4_NATIVE_EVIDENCE_BEGIN\n", 1)[1].split(
-                    "G4_NATIVE_EVIDENCE_END", 1
-                )[0]
-            )
+            envelope = json.loads(decode_wire(text))
             self.assertEqual(envelope["retention_status"], "complete")
             self.assertEqual(
                 envelope["json_files"]["control/ownership.json"]["value"], owner
@@ -86,11 +231,7 @@ class LinuxConsumerInputTests(unittest.TestCase):
                 ):
                     acceptance_driver.emit_retained_evidence(root, acceptance)
             text = captured.getvalue()
-            envelope = json.loads(
-                text.split("G4_NATIVE_EVIDENCE_BEGIN\n", 1)[1].split(
-                    "G4_NATIVE_EVIDENCE_END", 1
-                )[0]
-            )
+            envelope = json.loads(decode_wire(text))
             self.assertEqual(envelope["retention_status"], "failed")
             self.assertEqual(envelope["acceptance"]["status"], "retention_failed")
             self.assertFalse(envelope["full_evidence_retained"])

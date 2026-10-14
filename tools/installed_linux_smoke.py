@@ -8,6 +8,7 @@ observations supply the pressure evidence; command exit codes do not.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -31,6 +32,7 @@ MIB = 1_048_576
 EVIDENCE_BYTES = 524_288
 EVIDENCE_FILE_BYTES = 131_072
 EVIDENCE_FILES = 64
+EVIDENCE_CHUNK = 1024
 EXPECTED = {
     "complete": "complete",
     "memory": "memory_pressure",
@@ -84,6 +86,38 @@ def retain(path: Path, value: dict) -> None:
     pending = path.with_suffix(".pending")
     write(pending, encoded(value))
     os.replace(pending, path)
+
+
+def evidence_transport(body: bytes) -> str:
+    """Keep complete independent lines recoverable through merged job streams."""
+    chunks = [
+        body[offset : offset + EVIDENCE_CHUNK]
+        for offset in range(0, len(body), EVIDENCE_CHUNK)
+    ]
+    records = ["G4_NATIVE_EVIDENCE_BEGIN"]
+    records.extend(
+        "G4_NATIVE_EVIDENCE_CHUNK "
+        + str(index)
+        + "/"
+        + str(len(chunks))
+        + " "
+        + base64.b64encode(chunk).decode("ascii")
+        for index, chunk in enumerate(chunks)
+    )
+    records.append(
+        "G4_NATIVE_EVIDENCE_DIGEST "
+        + json.dumps(
+            {**worker.identity(body), "chunks": len(chunks), "encoding": "base64"},
+            sort_keys=True,
+        )
+    )
+    records.append("G4_NATIVE_EVIDENCE_END")
+    text = "\n".join(records) + "\n"
+    require(
+        len(text.encode("ascii")) <= EVIDENCE_BYTES,
+        "chunked evidence transport exceeds allowance",
+    )
+    return text
 
 
 def emit_retained_evidence(root: Path, acceptance: dict) -> None:
@@ -214,10 +248,7 @@ def emit_retained_evidence(root: Path, acceptance: dict) -> None:
                 envelope["raw_streams"][relative] = observed
         envelope.update(observed_files=count, read_bytes=read_bytes)
         emitted = encoded(envelope)
-        require(
-            len(emitted) + 48 <= EVIDENCE_BYTES,
-            "encoded evidence envelope exceeds allowance",
-        )
+        transport = evidence_transport(emitted)
     except Exception as error:
         failure = {"type": type(error).__name__, "message": str(error)[:2048]}
         acceptance["status"] = "retention_failed"
@@ -236,7 +267,9 @@ def emit_retained_evidence(root: Path, acceptance: dict) -> None:
             "full_evidence_retained": False,
         }
         emitted = encoded(envelope)
-        if len(emitted) + 48 > EVIDENCE_BYTES:
+        try:
+            transport = evidence_transport(emitted)
+        except ValueError:
             emitted = encoded(
                 {
                     "format": "mcts-linux-native-evidence",
@@ -246,9 +279,11 @@ def emit_retained_evidence(root: Path, acceptance: dict) -> None:
                     "full_evidence_retained": False,
                 }
             )
-    print("G4_NATIVE_EVIDENCE_BEGIN", flush=True)
-    print(emitted.decode("utf-8"), end="", flush=True)
-    print("G4_NATIVE_EVIDENCE_END", flush=True)
+            transport = evidence_transport(emitted)
+    # Each chunk line is shorter than PIPE_BUF. Traceback lines on stderr can
+    # be separated without editing or guessing the original JSON bytes.
+    for line in transport.splitlines():
+        print(line, flush=True)
     if failure is not None:
         raise ValueError("native evidence retention failed: " + failure["message"])
 
@@ -297,6 +332,9 @@ class MemberWitness:
         self.stop = threading.Event()
         self.members: dict[int, tuple[dict, int]] = {}
         self.errors: list[str] = []
+        self.deferred: list[dict] = []
+        self.rejected: list[dict] = []
+        self.deferred_discarded = 0
         self.thread = threading.Thread(target=self.observe, daemon=True)
         self.thread.start()
 
@@ -315,6 +353,18 @@ class MemberWitness:
                 for pid in owner.sample(directory)["members"]:
                     if pid == self.native["host_pid"] or pid in self.members:
                         continue
+                    probe = {
+                        "host_pid": pid,
+                        "uid": None,
+                        "state": None,
+                        "cgroup": None,
+                        "starttime": None,
+                        "namespace_pids": None,
+                        "pid_namespace": None,
+                        "stage": "status",
+                        "observed_monotonic": time.monotonic(),
+                    }
+                    descriptor = None
                     try:
                         status = dict(
                             line.split(":", 1)
@@ -322,17 +372,37 @@ class MemberWitness:
                             .read_text()
                             .splitlines()
                         )
+                        probe["uid"] = [int(value) for value in status["Uid"].split()]
+                        probe["state"] = status["State"].strip()
+                        probe["namespace_pids"] = [
+                            int(value) for value in status["NSpid"].split()
+                        ]
+                        probe["stage"] = "cgroup"
                         relative = Path(f"/proc/{pid}/cgroup").read_text()
-                        namespace = Path(f"/proc/{pid}/ns/pid").stat().st_ino
+                        probe["cgroup"] = relative
+                        probe["stage"] = "starttime"
                         starttime = owner.native.starttime(pid)
+                        probe["starttime"] = starttime
+                        probe["stage"] = "pid_namespace"
+                        namespace = Path(f"/proc/{pid}/ns/pid").stat().st_ino
+                        probe["pid_namespace"] = namespace
+                        probe["stage"] = "pidfd"
                         descriptor = os.pidfd_open(pid)
-                    except (FileNotFoundError, ProcessLookupError):
-                        continue
-                    try:
+                        probe["stage"] = "reconcile"
+                        after = dict(
+                            line.split(":", 1)
+                            for line in Path(f"/proc/{pid}/status")
+                            .read_text()
+                            .splitlines()
+                        )
                         require(
                             relative == "0::" + self.native["cgroup"] + "\n"
                             and namespace == self.native["namespaces"]["pid"]
-                            and owner.native.starttime(pid) == starttime,
+                            and probe["uid"] == [1001] * 4
+                            and [int(value) for value in after["Uid"].split()]
+                            == probe["uid"]
+                            and owner.native.starttime(pid) == starttime
+                            and not owner.native.exited(descriptor),
                             "observed member identity changed",
                         )
                         row = {
@@ -341,11 +411,34 @@ class MemberWitness:
                             "starttime": starttime,
                             "cgroup": self.native["cgroup"],
                             "pid_namespace": namespace,
+                            "uid": probe["uid"],
+                            "state": probe["state"],
                         }
                         self.members[pid] = (row, descriptor)
+                        descriptor = None
+                    except (
+                        PermissionError,
+                        FileNotFoundError,
+                        ProcessLookupError,
+                    ) as error:
+                        probe.update(
+                            disposition="deferred_permission_denied"
+                            if isinstance(error, PermissionError)
+                            else "member_disappeared_before_pin",
+                            error=type(error).__name__,
+                            error_path=str(getattr(error, "filename", "")),
+                        )
+                        if len(self.deferred) < 64:
+                            self.deferred.append(probe)
+                        else:
+                            self.deferred_discarded += 1
                     except Exception:
-                        os.close(descriptor)
+                        probe["disposition"] = "identity_rejected"
+                        self.rejected.append(probe)
                         raise
+                    finally:
+                        if descriptor is not None:
+                            os.close(descriptor)
                 self.stop.wait(0.02)
         except FileNotFoundError:
             # Normal owner retirement can remove the already pinned cgroup
@@ -361,6 +454,9 @@ class MemberWitness:
             "errors": self.errors,
             "reader_retired": not self.thread.is_alive(),
             "members": [],
+            "deferred_candidates": self.deferred,
+            "deferred_candidates_discarded": self.deferred_discarded,
+            "rejected_candidates": self.rejected,
         }
         for row, descriptor in self.members.values():
             poll = select.poll()
@@ -634,6 +730,7 @@ def fixture_case(name: str, payload: Path, root: Path, image_id: str) -> dict:
             and not members["errors"]
             and any(
                 row["namespace_pid"] == orphan["orphan_pid"]
+                and row["uid"] == [1001] * 4
                 and row["cgroup"] == receipt["ownership"]["native"]["cgroup"]
                 and row["pidfd_signalled"] is True
                 for row in members["members"]
