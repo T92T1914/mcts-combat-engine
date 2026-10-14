@@ -1,5 +1,9 @@
 # Record, replay and inspect with the episode companion
 
+For a small capture with delivered Windows process ownership, use the
+[managed encounter guide](managed-encounters.md). It also explains how to inspect
+retained progress without executing or replacing trials.
+
 The separate `episode-companion.zip` contains the existing example commands,
 their complete `game/` helpers and default cards/scenarios. Extract the whole
 companion into a fresh directory, then install the engine with Python and pip.

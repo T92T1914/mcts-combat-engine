@@ -18,6 +18,9 @@ OUTPUT_NAMES = {ZIP_NAME, SIDECAR_NAME}
 GUIDE = "docs/episode-companion.md"
 FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     "benchmark.py", "tools/encounter_policy_evaluation.py",
+    "managed_encounters.py", "recover_encounters.py",
+    "tools/managed_encounter.py", "tools/encounter_process.py",
+    "tools/encounter_recovery.py", "docs/managed-encounters.md",
     "docs/encounter-policy-evaluation.md",
     "docs/encounter-outcomes.md",
     *{"docs/encounter-study/" + name for name in (

@@ -62,3 +62,53 @@ jobs:
           timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_policy_smoke.py"
           timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_companion_smoke.py" "$GITHUB_WORKSPACE/_site/episode-companion.zip" "$consumer_root/journey"
           timeout --signal=TERM --kill-after=5s 90s "$consumer_root/venv/bin/python" -I "$GITHUB_WORKSPACE/tools/installed_reference_smoke.py" "$consumer_root/journey"
+
+  windows-lifecycle:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+      - name: Verify the scoped Windows process owner and recovery contracts
+        shell: pwsh
+        run: |
+          python -m unittest discover -s tests -p test_encounter_process.py -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests -p test_encounter_recovery.py -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Exercise the installed engine and relocated managed companion
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $consumerRoot = Join-Path $env:RUNNER_TEMP ('mcts-managed-' + [guid]::NewGuid())
+          New-Item -ItemType Directory -Path $consumerRoot | Out-Null
+          git archive HEAD -o (Join-Path $consumerRoot 'source.zip')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Expand-Archive -LiteralPath (Join-Path $consumerRoot 'source.zip') -DestinationPath (Join-Path $consumerRoot 'source')
+          python -m pip wheel --no-deps --wheel-dir (Join-Path $consumerRoot 'wheels') (Join-Path $consumerRoot 'source')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m venv (Join-Path $consumerRoot 'venv')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $managedPython = Join-Path $consumerRoot 'venv/Scripts/python.exe'
+          $wheel = Get-ChildItem -LiteralPath (Join-Path $consumerRoot 'wheels') -Filter '*.whl'
+          if ($wheel.Count -ne 1) { throw 'Expected one engine wheel' }
+          & $managedPython -m pip install --no-index --no-deps $wheel.FullName
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/build_episode_companion.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $run = Join-Path $consumerRoot 'run'
+          $journey = Join-Path $consumerRoot 'journey'
+          New-Item -ItemType Directory -Path $run | Out-Null
+          Push-Location $run
+          try {
+            & $managedPython -I (Join-Path $env:GITHUB_WORKSPACE 'tools/installed_companion_smoke.py') (Join-Path $env:GITHUB_WORKSPACE '_site/episode-companion.zip') $journey
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            & $managedPython -I (Join-Path $env:GITHUB_WORKSPACE 'tools/installed_managed_smoke.py') $journey
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            & $managedPython -I (Join-Path $env:GITHUB_WORKSPACE 'tools/installed_managed_fault_smoke.py') $journey
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } finally {
+            Pop-Location
+          }
