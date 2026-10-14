@@ -1,14 +1,16 @@
-name: Linux enforcement preflight
+name: Linux enforcement qualification
 
 on:
   pull_request:
     paths:
       - tools/linux_enforcement_preflight.py
+      - tools/linux_ownership_probe.py
       - .github/workflows/linux-enforcement-preflight.yml
   push:
     branches: [probe/linux-enforcement-20261014]
     paths:
       - tools/linux_enforcement_preflight.py
+      - tools/linux_ownership_probe.py
       - .github/workflows/linux-enforcement-preflight.yml
 
 permissions:
@@ -21,8 +23,11 @@ jobs:
       (github.event.pull_request.head.ref == 'probe/linux-enforcement-20261014' &&
        github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
       - name: Read existing delegation and daemon capabilities
         run: python3 tools/linux_enforcement_preflight.py
+      - name: Verify one owned empty container before workload admission
+        if: github.event_name == 'pull_request'
+        run: python3 tools/linux_ownership_probe.py
