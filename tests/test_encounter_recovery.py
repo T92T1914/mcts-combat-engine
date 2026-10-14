@@ -148,7 +148,8 @@ class EncounterRecoveryTests(unittest.TestCase):
               patch("game.episode_record._record_owner",
                     side_effect=AssertionError("no search")),
               patch("game.episode_record.replay_episode",
-                    side_effect=AssertionError("no replay"))):
+                    side_effect=AssertionError("no replay")),
+              patch.object(capture, "_trial", side_effect=AssertionError("no retry"))):
             return recovery.recover_capture(self.capture, self.output)
 
     def assert_classification(self, index: int, classification: str):
@@ -207,6 +208,121 @@ class EncounterRecoveryTests(unittest.TestCase):
             self.assertIsNone(row["work"])
         self.assertEqual(report["summary"]["policies"]["uct"]
                          ["unknown_or_unadmitted_outcomes"], 3)
+
+    def test_final_incomplete_aggregate_nonnull_claims_are_contradictory(self):
+        statuses = ("timeout", "error", "retirement_failure", "cancelled")
+        for index, status in enumerate(statuses):
+            self.incomplete(index, status)
+        self.finish_aggregate()
+        baseline = copy.deepcopy(self.aggregate)
+        # Each nonnull value asserts evidence the final receipt withholds.
+        # Zero and empty values are claims too, regardless of their truth value.
+        claims = {
+            "terminal_result": (1.0, 0, ""),
+            "termination": ("terminal", 0, ""),
+            "score": (0.75, 0, ""),
+            "rounds": (2, 0, ""),
+            "work": ({"simulations": 1, "transitions": 1,
+                      "unused_transitions": 0, "uniform_fallback_decisions": 0},
+                     0, {}),
+        }
+        serial = 0
+        for index, status in enumerate(statuses):
+            for field, values in claims.items():
+                for value in values:
+                    with self.subTest(status=status, field=field, claim=value):
+                        self.aggregate = copy.deepcopy(baseline)
+                        self.aggregate["trials"][index][field] = value
+                        self.save_aggregate()
+                        before = {path.relative_to(self.capture).as_posix():
+                                  (path.read_bytes(), path.stat().st_mtime_ns)
+                                  for path in self.capture.rglob("*") if path.is_file()}
+                        self.output = self.root / f"contradiction-{serial}.json"
+                        serial += 1
+                        report = self.inspect()
+                        row = report["trials"][index]
+                        self.assertEqual(row["recorded_status"], status)
+                        self.assertEqual(row["classification"],
+                                         "corrupt_or_contradictory")
+                        self.assertTrue(any(field in issue for issue in row["issues"]))
+                        self.assertFalse(report["inventory_evidence_consistent"])
+                        for trial in report["trials"]:
+                            self.assertIsNone(trial["outcome"])
+                            self.assertIsNone(trial["work"])
+                        for policy in report["summary"]["policies"].values():
+                            self.assertEqual(policy["known_simulations"], 0)
+                            self.assertEqual(policy["known_transitions"], 0)
+                        for boundary in ("search_performed", "replay_performed",
+                                         "retry_performed",
+                                         "original_evidence_modified"):
+                            self.assertFalse(report["boundaries"][boundary])
+                        after = {path.relative_to(self.capture).as_posix():
+                                 (path.read_bytes(), path.stat().st_mtime_ns)
+                                 for path in self.capture.rglob("*") if path.is_file()}
+                        self.assertEqual(before, after)
+
+    def test_final_incomplete_aggregate_missing_and_null_claims_remain_unknown(self):
+        statuses = ("timeout", "error", "retirement_failure", "cancelled")
+        for index, status in enumerate(statuses):
+            self.incomplete(index, status)
+        self.finish_aggregate()
+        baseline = copy.deepcopy(self.aggregate)
+        fields = ("terminal_result", "termination", "score", "rounds", "work")
+        for serial, omitted in enumerate(((), *((field,) for field in fields), fields)):
+            with self.subTest(omitted=omitted):
+                self.aggregate = copy.deepcopy(baseline)
+                for trial in self.aggregate["trials"][:len(statuses)]:
+                    for field in omitted:
+                        del trial[field]
+                self.save_aggregate()
+                self.output = self.root / f"unknown-{serial}.json"
+                report = self.inspect()
+                self.assertTrue(report["inventory_evidence_consistent"])
+                self.assertEqual(report["summary"]["classifications"]
+                                 ["incomplete_attempt"], len(statuses))
+                for index, status in enumerate(statuses):
+                    row = report["trials"][index]
+                    self.assertEqual(row["recorded_status"], status)
+                    self.assertEqual(row["classification"], "incomplete_attempt")
+                    self.assertIsNone(row["outcome"])
+                    self.assertIsNone(row["work"])
+                for policy in report["summary"]["policies"].values():
+                    self.assertEqual(policy["known_simulations"], 0)
+                    self.assertEqual(policy["known_transitions"], 0)
+
+    def test_stale_initial_aggregate_accepts_each_incomplete_receipt_status(self):
+        for index, status in enumerate(("timeout", "error", "retirement_failure",
+                                        "cancelled")):
+            self.incomplete(index, status)
+        report = self.inspect()
+        self.assertTrue(report["inventory_evidence_consistent"])
+        self.assertEqual(report["summary"]["classifications"]["incomplete_attempt"], 4)
+        self.assertEqual(report["summary"]["classifications"]
+                         ["corrupt_or_contradictory"], 0)
+        for row in report["trials"]:
+            self.assertIsNone(row["outcome"])
+            self.assertIsNone(row["work"])
+
+    def test_cli_delivers_contradiction_report_without_claiming_consistency(self):
+        self.incomplete(0, "timeout")
+        self.finish_aggregate()
+        self.aggregate["trials"][0]["terminal_result"] = 0
+        self.save_aggregate()
+        with (contextlib.redirect_stdout(io.StringIO()) as text,
+              patch("subprocess.Popen", side_effect=AssertionError("no subprocess")),
+              patch("game.episode_record._record_owner",
+                    side_effect=AssertionError("no search")),
+              patch("game.episode_record.replay_episode",
+                    side_effect=AssertionError("no replay")),
+              patch.object(capture, "_trial", side_effect=AssertionError("no retry"))):
+            code = recover_encounters.main(
+                [str(self.capture), "--output", str(self.output)])
+        self.assertEqual(code, 0)
+        self.assertIn("1 corrupt or contradictory", text.getvalue())
+        report = json.loads(self.output.read_bytes())
+        self.assertFalse(report["inventory_evidence_consistent"])
+        self.assertIsNone(report["trials"][0]["outcome"])
+        self.assertIsNone(report["trials"][0]["work"])
 
     def test_orphan_intent_preserves_unknown_execution_and_outcome(self):
         directory = self.directory(0)

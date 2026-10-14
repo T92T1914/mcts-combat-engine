@@ -416,6 +416,11 @@ def _aggregate_claim(retained: dict, expected: dict, receipt: dict,
         for key, value in outcome.items():
             _same(retained.get(key), value, "aggregate outcome differs: " + key)
         _same(retained.get("work"), work, "aggregate work differs")
+    else:
+        for key in ("terminal_result", "termination", "score", "rounds"):
+            _same(retained.get(key), None,
+                  "incomplete aggregate claims outcome: " + key)
+        _same(retained.get("work"), None, "incomplete aggregate claims work")
 
 
 def _slot(trial: dict, protocol: dict, protocol_identity: dict, aggregate: dict | None,
