@@ -70,5 +70,5 @@ class EnrageBelowHalf(BossRule):
         if event.kind != "round_end":
             return
         for enemy in state.enemies:
-            if enemy.is_boss and enemy.alive and enemy.hp < enemy.max_hp // 2:
+            if enemy.is_boss and enemy.alive and 2 * enemy.hp < enemy.max_hp:
                 enemy.blades.append(Charm(self.blade, Element.NEUTRAL))

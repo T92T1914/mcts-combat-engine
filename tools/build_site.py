@@ -58,6 +58,7 @@ FILES = {
     "site/same-forest-repeatability.html": "same-forest-repeatability.html",
     "docs/episode-companion.md": "episode-companion.md",
     "docs/managed-encounters.md": "managed-encounters.md",
+    "docs/model-compatibility.md": "model-compatibility.md",
     "docs/episode-record-replay.md": "episode-record-replay.md",
     "docs/episode-inspection.md": "episode-inspection.md",
     "docs/episode-decision.md": "episode-decision.md",

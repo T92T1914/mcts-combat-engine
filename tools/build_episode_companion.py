@@ -29,6 +29,7 @@ FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     )},
     "episode.py", "demo.py", "data/cards.json", "data/scenarios.json",
     "docs/episode-record-replay.md", GUIDE, "docs/episode-stability.md",
+    "docs/model-compatibility.md",
     "reference_episode.py", "docs/episode-reference.md",
     "docs/episode-adaptive-reference.md", "examples/adaptive-state.json",
     "reference/__init__.py", "reference/consumer.py", "reference/one_round.py",

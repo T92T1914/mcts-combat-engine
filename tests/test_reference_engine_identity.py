@@ -7,8 +7,10 @@ tiny modeled state. Neither fixture claims execution by a historical engine.
 from __future__ import annotations
 
 import ast
+import base64
 import copy
 import hashlib
+import json
 import tempfile
 import unittest
 from itertools import permutations
@@ -22,10 +24,19 @@ from test_reference_report import (
     literal_implementation,
 )
 
+from engine.rules import EnrageBelowHalf
 from game import episode_record as records
-from reference import adaptive, adaptive_report, consumer, one_round, report
+from reference import (
+    adaptive,
+    adaptive_report,
+    aggregation,
+    aggregation_domain,
+    consumer,
+    one_round,
+    report,
+)
 
-QUALIFIED_MAPS = (
+HISTORICAL_MAPS = (
     report.REFERENCE_ENGINE_FILES_SHA256,
     report.QUALIFIED_DOCUMENTATION_ENGINE_FILES_SHA256,
     report.QUALIFIED_EDGE_REUSE_ENGINE_FILES_SHA256,
@@ -34,7 +45,12 @@ QUALIFIED_MAPS = (
     report.QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
     report.QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
 )
-MANAGED_MAPS = QUALIFIED_MAPS[-2:]
+MANAGED_MAPS = HISTORICAL_MAPS[-2:]
+EXACT_HALF_MAPS = (
+    report.QUALIFIED_CANONICAL_EXACT_HALF_ENGINE_FILES_SHA256,
+    report.QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256,
+)
+QUALIFIED_MAPS = HISTORICAL_MAPS + EXACT_HALF_MAPS
 PHYSICAL_LIMITS = {"max_paths": 100, "max_total_paths": 1000, "max_seconds": 1}
 ADAPTIVE_LIMITS = {
     "max_transitions": 100,
@@ -46,7 +62,7 @@ ADAPTIVE_LIMITS = {
 
 def unqualified_maps():
     for admitted in QUALIFIED_MAPS:
-        for name in ("decider.py", "mcts.py", "simulator.py"):
+        for name in ("decider.py", "mcts.py", "rules.py", "simulator.py"):
             changed = copy.deepcopy(admitted)
             changed[name] = "a" * 64
             yield name, changed
@@ -56,6 +72,10 @@ def unqualified_maps():
         extra = copy.deepcopy(admitted)
         extra["extra.py"] = "b" * 64
         yield "extra", extra
+    for admitted, other in permutations(EXACT_HALF_MAPS, 2):
+        for name in admitted:
+            if admitted[name] != other[name]:
+                yield "mixed " + name, {**admitted, name: other[name]}
 
 
 def physical_base(engine_files):
@@ -138,14 +158,36 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
         self.assertEqual(report.THREE_ENEMY_MODEL,
                          "independent_one_round_three_enemy_binary53_shaped_v1")
 
-    def test_frozen_windows_map_has_one_exact_declared_source_conversion(self):
+    def canonical_bodies(self):
         directory = Path(__file__).resolve().parents[1] / "engine"
-        canonical_map = MANAGED_MAPS[0]
-        frozen_map = MANAGED_MAPS[1]
-        canonical_bodies = {
+        return {
             name: (directory / name).read_bytes().replace(b"\r\n", b"\n")
-            for name in canonical_map
+            for name in EXACT_HALF_MAPS[0]
         }
+
+    def historical_rules(self):
+        fixture = Path(__file__).with_name("fixtures") / "pre-exact-half-rules.json"
+        saved = json.loads(fixture.read_bytes())
+        self.assertEqual({key: value for key, value in saved.items()
+                          if key != "source_base64"}, {
+            "format": "mcts-literal-historical-source", "schema_version": 1,
+            "source_commit": "6f1a870307f62cd73634fcbf5603781734151136",
+            "source_path": "engine/rules.py",
+            "git_blob": "6bdace99b22228524bf0b0a69f2d6dfd0721ba23",
+            "bytes": 2590,
+            "sha256": (
+                "ce82da2e1815dcdb7f4814012fae0c064152e3ad43c7da43743b2d50b5db588b"),
+        })
+        body = base64.b64decode(saved["source_base64"], validate=True)
+        self.assertEqual(len(body), saved["bytes"])
+        self.assertEqual(hashlib.sha256(body).hexdigest(), saved["sha256"])
+        self.assertEqual(hashlib.sha1(
+            b"blob " + str(len(body)).encode("ascii") + b"\0" + body
+        ).hexdigest(), saved["git_blob"])
+        self.assertNotIn(b"\r", body)
+        return body
+
+    def assert_source_projection(self, canonical_bodies, canonical_map, frozen_map):
         self.assertEqual({name: hashlib.sha256(body).hexdigest()
                           for name, body in canonical_bodies.items()}, canonical_map)
         # Only this explicitly pinned CRLF projection is qualified. The live
@@ -165,8 +207,32 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                                              include_attributes=False)
                     self.assertEqual(frozen_ast, canonical_ast)
 
+    def test_frozen_windows_map_has_one_exact_declared_source_conversion(self):
+        historical = self.canonical_bodies()
+        historical["rules.py"] = self.historical_rules()
+        self.assert_source_projection(historical, *MANAGED_MAPS)
+
+    def test_exact_half_maps_bind_current_source_and_one_predicate_change(self):
+        canonical = self.canonical_bodies()
+        self.assert_source_projection(canonical, *EXACT_HALF_MAPS)
+        old = self.historical_rules()
+        old_predicate = b"enemy.hp < enemy.max_hp // 2"
+        new_predicate = b"2 * enemy.hp < enemy.max_hp"
+        self.assertEqual(old.count(old_predicate), 1)
+        self.assertEqual(canonical["rules.py"], old.replace(
+            old_predicate, new_predicate))
+        for prior, current in zip(MANAGED_MAPS, EXACT_HALF_MAPS, strict=True):
+            self.assertEqual(set(prior), set(current))
+            self.assertEqual(len(current), 9)
+            self.assertEqual([name for name in prior if prior[name] != current[name]],
+                             ["rules.py"])
+        observed = consumer.reference_identity()["decision_consumer"][
+            "engine_files_sha256"]
+        self.assertIn(observed, EXACT_HALF_MAPS)
+        self.assertTrue(report.qualified_engine_files(observed))
+
     def test_managed_maps_refuse_any_changed_missing_extra_or_mixed_member(self):
-        for admitted in MANAGED_MAPS:
+        for admitted in MANAGED_MAPS + EXACT_HALF_MAPS:
             for name in admitted:
                 changed = copy.deepcopy(admitted)
                 changed[name] = "a" * 64
@@ -178,12 +244,16 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                 self.assertFalse(report.qualified_engine_files(missing))
             extra = {**admitted, "unqualified.py": "b" * 64}
             self.assertFalse(report.qualified_engine_files(extra))
-        for admitted, other in permutations(MANAGED_MAPS, 2):
+        for admitted, other in permutations(MANAGED_MAPS + EXACT_HALF_MAPS, 2):
             for name in admitted:
                 if admitted[name] == other[name]:
                     continue
                 mixed = {**admitted, name: other[name]}
-                self.assertFalse(report.qualified_engine_files(mixed))
+                # Replacing the sole changed rules member can recreate a whole
+                # separately qualified historical map. Only unknown mixtures
+                # are refused; a recognized complete map remains admissible.
+                self.assertEqual(report.qualified_engine_files(mixed),
+                                 mixed in QUALIFIED_MAPS)
 
     def test_producers_bind_each_qualified_observed_map_without_aliasing(self):
         for admitted in QUALIFIED_MAPS:
@@ -268,7 +338,7 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
         with self.assertRaises(records.EpisodeInputError):
             adaptive_report.validate_reference_report(inconsistent)
 
-    def test_unknown_maps_are_refused_before_either_evaluator(self):
+    def test_unknown_maps_are_refused_before_any_evaluator(self):
         before = (self.decision_path.read_bytes(), self.state_path.read_bytes())
         for name, unknown in unqualified_maps():
             observed = consumer.reference_identity()
@@ -278,6 +348,8 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                 patch.object(consumer, "reference_identity", return_value=observed),
                 patch.object(one_round, "evaluate", side_effect=AssertionError) as one,
                 patch.object(adaptive, "evaluate", side_effect=AssertionError) as two,
+                patch.object(aggregation, "evaluate",
+                             side_effect=AssertionError) as three,
             ):
                 results = (
                     consumer.reference_decision(self.decision_path),
@@ -287,6 +359,8 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                         method=adaptive_report.METHOD,
                         state_input=True,
                     ),
+                    consumer.reference_decision(
+                        self.decision_path, method=aggregation_domain.METHOD),
                 )
                 for result in results:
                     self.assertEqual(result["status"], "refused")
@@ -296,6 +370,7 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                     self.assertFalse(result["new_search_performed"])
                 one.assert_not_called()
                 two.assert_not_called()
+                three.assert_not_called()
         self.assertEqual(
             (self.decision_path.read_bytes(), self.state_path.read_bytes()), before
         )
@@ -321,6 +396,40 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                 for result in (physical, adaptive_value):
                     self.assertEqual(result["status"], "complete")
                     self.assertEqual(result["reference_engine_files_sha256"], admitted)
+
+    def test_exact_half_maps_do_not_admit_boss_rules_to_any_reference(self):
+        rule = {"type": "enrage_below_half", "parameters": {"blade": 0.25},
+                "description": EnrageBelowHalf().description}
+        decision = literal_decision()
+        decision["selected_state"]["boss_rules"] = [copy.deepcopy(rule)]
+        state = adaptation_state()
+        state["boss_rules"] = [copy.deepcopy(rule)]
+        self.decision_path.write_bytes(records.output_bytes(decision))
+        self.state_path.write_bytes(records.output_bytes(state))
+        before = (self.decision_path.read_bytes(), self.state_path.read_bytes())
+        for admitted in EXACT_HALF_MAPS:
+            observed = consumer.reference_identity()
+            observed["decision_consumer"]["engine_files_sha256"] = copy.deepcopy(
+                admitted)
+            with patch.object(consumer, "reference_identity", return_value=observed):
+                results = (
+                    consumer.reference_decision(self.decision_path),
+                    consumer.reference_decision(
+                        self.decision_path, method=aggregation_domain.METHOD),
+                    consumer.reference_decision(
+                        self.state_path, model=adaptive_report.MODEL,
+                        method=adaptive_report.METHOD, state_input=True,
+                        **ADAPTIVE_LIMITS),
+                )
+            for result in results:
+                self.assertEqual(result["status"], "refused")
+                self.assertEqual(result["failure"]["kind"], "unsupported_state")
+                self.assertIn("boss_rules", result["failure"]["message"])
+                self.assertIsNone(result["evaluation"])
+                self.assertIsNone(result["diagnostics"])
+                self.assertFalse(result["new_search_performed"])
+        self.assertEqual(
+            (self.decision_path.read_bytes(), self.state_path.read_bytes()), before)
 
 
 if __name__ == "__main__":
