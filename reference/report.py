@@ -98,6 +98,20 @@ QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256 = {
     "simulator.py": "6bb0fe967262e62816f35224448ae6a9397181cb59db3800c6f43e0257233c7d",
     "state.py": "4e1345f0d4e5fede83eebf1d5a149360c8aced07dc82c1afe2a885facc23c762",
 }
+# Exact below-half health changes only the boss-rule threshold. The existing
+# physical and adaptive reference domains exclude all boss rules. Their finite
+# calculations are qualified against this complete new source map without
+# rewriting any historical declaration or extending the supported states.
+QUALIFIED_CANONICAL_EXACT_HALF_ENGINE_FILES_SHA256 = {
+    **QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+    "rules.py": "61c52b9ad9f54a5f37b4e1a063dd285a3f0a07a8263a038241161439005ce211",
+}
+# This separately checked all-CRLF projection is an exact complete map. Runtime
+# admission still compares literal hashes and never normalizes unknown source.
+QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256 = {
+    **QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+    "rules.py": "0a098f932f51c8f529cdb37c2b296464fe43b41d1b341acbcf5da9425fe83d1c",
+}
 SEARCH_VALUE_SEMANTICS = (
     "MCTS terminal wins score 1 - 0.045 * min(6, depth); "
     "terminal losses score 0.15 * min(depth, h) / h, where "
@@ -271,6 +285,8 @@ def qualified_engine_files(value: Any) -> bool:
             QUALIFIED_CANONICAL_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
             QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
             QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
+            QUALIFIED_CANONICAL_EXACT_HALF_ENGINE_FILES_SHA256,
+            QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256,
         )
     )
 

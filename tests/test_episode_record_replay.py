@@ -348,6 +348,52 @@ class EpisodeTests(unittest.TestCase):
             result, status = records.replay_episode(self.saved)
         self.assertEqual((status, result["reason"]), (3, "implementation"))
 
+    def test_historical_rule_identity_refuses_before_environment_generation(self):
+        from reference import report
+
+        recorded = self.make_record(rounds=1, sims=2)
+        original_inputs = {path: (path.read_bytes(), path.stat().st_mtime_ns)
+                           for path in (self.cards, self.scenarios)}
+        historical_rules = (
+            report.QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256[
+                "rules.py"],
+            report.QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256[
+                "rules.py"],
+        )
+        current = recorded["implementation"]["engine_files_sha256"]["rules.py"]
+        self.assertNotIn(current, historical_rules)
+
+        class RefuseEnvironmentRNG:
+            VERSION = random.Random.VERSION
+
+            def __new__(cls, *args, **kwargs):
+                return forbidden()
+
+        # This is a synthetic identity envelope, not a claim that this fixture
+        # was executed by historical source. Actual old-engine records stay
+        # separate from this narrow admission regression.
+        for old_hash in historical_rules:
+            with self.subTest(old_rules=old_hash):
+                changed = copy.deepcopy(recorded)
+                changed["implementation"]["engine_files_sha256"]["rules.py"] = old_hash
+                self.save(changed)
+                retained_record = self.saved.read_bytes()
+                with (patch.object(records, "load_content", return_value=(
+                        {"trial": forbidden}, recorded["content"])),
+                      patch.object(records.random, "Random", RefuseEnvironmentRNG),
+                      patch.object(records, "play_game", forbidden),
+                      patch.object(records, "_record_owner", forbidden)):
+                    result, status = records.replay_episode(self.saved)
+                self.assertEqual((status, result["status"], result["reason"]),
+                                 (3, "incompatible", "implementation"))
+                self.assertEqual(result["location"],
+                                 "/implementation/engine_files_sha256/rules.py")
+                self.assertFalse(result["search_recomputed"])
+                self.assertEqual(self.saved.read_bytes(), retained_record)
+        self.assertEqual(original_inputs, {
+            path: (path.read_bytes(), path.stat().st_mtime_ns)
+            for path in original_inputs})
+
     def test_malformed_record_never_loads_content_or_starts_work(self):
         recorded = self.make_record()
         variants = []

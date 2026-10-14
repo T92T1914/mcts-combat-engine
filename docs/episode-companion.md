@@ -39,6 +39,12 @@ string alone does not establish matching code.
 `manifest.json` records source, payload and separate reference engine identities.
 Every payload file, including this guide, is literal committed source.
 
+The exact half-health repair changes odd-maximum boss behavior. Historical
+records retain their original source identities. New-source replay refuses an
+old identity, while passive inspection and an explicitly current-model decision
+remain separate paths. See [model compatibility](model-compatibility.md) for the
+threshold, historical record treatment and unchanged finite reference domains.
+
 Keep `demo.py`, `episode.py`, the saved-record entries, `reference_episode.py`,
 and the full `game/`, `reference/` and `data/` together. `demo.py` participates in implementation identity even when
 you never run it. Move the whole directory when relocating the companion.
