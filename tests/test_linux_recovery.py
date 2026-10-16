@@ -50,6 +50,115 @@ def receipt(*, phase="final", status="complete", admitted=True, retired=True):
 
 
 class LinuxRecovery(unittest.TestCase):
+    def test_known_lifecycle_states_preserve_distinct_start_claims(self):
+        cases = [
+            ("complete short command", {}, True, False),
+            ("complete observed command", {}, True, True),
+            ("initial", {"phase": "before_create", "status": "pending",
+                         "admitted": False, "retired": False}, False, False),
+            ("refused", {"status": "refused", "admitted": False,
+                         "retired": False}, False, False),
+            ("pre-callback error", {"status": "error", "retired": False},
+             False, False),
+            ("incomplete before callback", {"status": "incomplete",
+                                            "retired": False}, False, False),
+            ("incomplete after callback", {"status": "incomplete",
+                                           "retired": False}, True, False),
+            ("cancelled", {"status": "cancelled"}, True, False),
+            ("controller loss", {"phase": "admitted", "status": "pending",
+                                 "retired": False}, True, True),
+        ]
+        for name, options, started, observed in cases:
+            value = receipt(**options)
+            value.update(work_started=started, work_member_observed=observed)
+            before = copy.deepcopy(value)
+            with self.subTest(state=name):
+                self.assertTrue(recovery.inspect_receipt(value)["consistent"])
+                self.assertEqual(value, before)
+        before_admission = receipt(phase="before_admission", status="pending",
+                                   retired=False)
+        before_admission.update(work_admitted=False, work_started=False,
+                                work_member_observed=False)
+        self.assertTrue(recovery.inspect_receipt(before_admission)["consistent"])
+        failed_client = receipt(status="error", retired=False)
+        failed_client.update(work_started=False, work_member_observed=False)
+        failed_client["outcome"]["returncode"] = 7
+        self.assertTrue(recovery.inspect_receipt(failed_client)["consistent"])
+
+    def test_optional_markers_preserve_missing_and_null_unknowns(self):
+        markers = [{}, {"work_started": None}, {"work_member_observed": None},
+                   {"work_started": None, "work_member_observed": None},
+                   {"work_started": True},
+                   {"work_started": True, "work_member_observed": None},
+                   {"work_member_observed": True},
+                   {"work_started": None, "work_member_observed": True}]
+        for claims in markers:
+            value = receipt()
+            value.update(claims)
+            before = copy.deepcopy(value)
+            with self.subTest(claims=claims):
+                self.assertTrue(recovery.inspect_receipt(value)["consistent"])
+                self.assertEqual(value, before)
+        pending = receipt(phase="admitted", status="pending", retired=False)
+        pending.update(work_started=None, work_member_observed=None)
+        self.assertTrue(recovery.inspect_receipt(pending)["consistent"])
+
+    def test_explicit_lifecycle_contradictions_are_isolated(self):
+        complete = receipt()
+        complete.update(work_started=False, work_member_observed=False)
+        pending = receipt(phase="admitted", status="pending", retired=False)
+        pending.update(work_started=False, work_member_observed=False)
+        unadmitted_start = receipt(status="refused", admitted=False, retired=False)
+        unadmitted_start.update(work_started=True, work_member_observed=False)
+        observed_before_start = receipt(status="error", retired=False)
+        observed_before_start.update(work_started=False, work_member_observed=True)
+        unadmitted_member = receipt(status="refused", admitted=False, retired=False)
+        unadmitted_member.update(work_started=None, work_member_observed=True)
+        cases = [
+            (complete, "complete outcome contradicts explicit work_started=false"),
+            (pending, "admitted phase contradicts explicit work_started=false"),
+            (unadmitted_start, "work_started contradicts workload admission"),
+            (observed_before_start,
+             "work_member_observed contradicts explicit work_started=false"),
+            (unadmitted_member, "work_member_observed contradicts workload admission"),
+        ]
+        for value, expected in cases:
+            before = copy.deepcopy(value)
+            with self.subTest(expected=expected):
+                report = recovery.inspect_receipt(value)
+                self.assertFalse(report["consistent"])
+                self.assertEqual(report["contradictions"], [expected])
+                self.assertEqual(value, before)
+
+    def test_optional_lifecycle_markers_require_exact_booleans(self):
+        for field in ("work_started", "work_member_observed"):
+            for malformed in (0, 1, 0.0, 1.0, "", "false", [], {}):
+                value = receipt()
+                value.update(work_started=True, work_member_observed=False)
+                value[field] = malformed
+                before = copy.deepcopy(value)
+                with self.subTest(field=field, malformed=malformed):
+                    report = recovery.inspect_receipt(value)
+                    self.assertFalse(report["consistent"])
+                    self.assertEqual(report["contradictions"], [
+                        field + " must be boolean or null when present"])
+                    self.assertEqual(value, before)
+
+    def test_lifecycle_markers_do_not_mask_existing_contradictions(self):
+        output = receipt()
+        output.update(work_started=True, work_member_observed=False)
+        output["output"]["combined_observed_bytes"] = 1
+        cleanup = receipt()
+        cleanup.update(work_started=True, work_member_observed=False)
+        cleanup["cleanup"]["pidfd_signalled"] = False
+        for value, expected in (
+                (output, "aggregate output contradicts its streams"),
+                (cleanup, "cleanup completion lacks its required observations")):
+            with self.subTest(expected=expected):
+                report = recovery.inspect_receipt(value)
+                self.assertFalse(report["consistent"])
+                self.assertEqual(report["contradictions"], [expected])
+
     def test_complete_initial_and_interrupted_dispositions(self):
         cases = [receipt(), receipt(phase="before_create", status="pending",
                                     admitted=False, retired=False),

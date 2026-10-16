@@ -68,6 +68,22 @@ def inspect_receipt(value: object) -> dict:
                        "timeout", "cancelled", "output_limit", "memory_pressure",
                        "process_pressure", "retirement_failure"),
             "unsupported explicit outcome status")
+    started = value.get("work_started")
+    observed = value.get("work_member_observed")
+    for name, marker in (("work_started", started), ("work_member_observed", observed)):
+        problem(marker is None or type(marker) is bool,
+                name + " must be boolean or null when present")
+    if started is True:
+        problem(admitted is True, "work_started contradicts workload admission")
+    if observed is True:
+        problem(admitted is True, "work_member_observed contradicts workload admission")
+        problem(started is not False,
+                "work_member_observed contradicts explicit work_started=false")
+    if started is False:
+        problem(phase != "admitted",
+                "admitted phase contradicts explicit work_started=false")
+        problem(status != "complete",
+                "complete outcome contradicts explicit work_started=false")
     code = outcome.get("returncode")
     problem(code is None or type(code) is int, "returncode must be integer or null")
     cleanup = object_at(value, "cleanup")

@@ -107,6 +107,25 @@ consistent without claiming completion. Explicit empty or zero values remain
 known values. A complete outcome requires successful admitted work and the
 required observed cleanup.
 
+The optional `work_started` marker records the workload-client start callback
+after client creation and stream setup. It does not authenticate model execution.
+A false marker does not prove that no client existed or no instruction ran.
+Admission precedes that callback. A final phase or a client return code alone
+does not establish that the callback occurred.
+
+Missing or null `work_started` and `work_member_observed` markers remain unknown
+for schema 1 compatibility. Present non-null markers must be booleans. An explicit
+false start marker contradicts a complete outcome or admitted phase. A true start
+or observed-member marker requires admitted work, and an observed member cannot
+agree with an explicit false start marker. A short completed command can have
+`work_member_observed:false` because sampling can miss it.
+
+Passive exit status zero means the receipt's supported relationships are
+consistent, including valid incomplete receipts. The reader does not open and
+rehash nonempty artifact files or validate their model outcome. Its
+`cleanup_performed:false` describes the reader's own inaction, separate from
+historical cleanup claims in the selected receipt.
+
 To request retirement of only the recorded owned container, add
 `--cleanup-owned-container`. The owner rechecks its exact full container ID,
 nonce, name, fixed configuration and current process/cgroup relationship.
