@@ -61,8 +61,8 @@ The [Linux managed episode](docs/linux-managed-episode.md) runs one small
 installed record-and-replay journey through an already available local Docker
 daemon. It checks literal cgroup limits and ownership before admission, retains
 bounded output and supplies distinct passive recovery. Its memory and process
-claims are limited to the owned container. The existing Windows managed
-encounter path keeps its own process and receipt contract.
+claims are limited to the owned container. The existing [Windows managed
+encounter path](docs/managed-encounters.md) keeps its own process and receipt contract.
 
 ### Optional root allocation
 
@@ -214,6 +214,14 @@ Read the [method, uncertainty and adverse results](docs/root-allocation.md),
 [frozen protocol](docs/root-allocation/protocol.json). The deciding experiment
 is retained evidence. Its subsequent installed consumer and delivery acceptance
 are separate checks, not another scientific experiment.
+
+### Complete encounter outcome
+
+The later [complete encounter study](docs/encounter-outcomes.md) was inconclusive
+about which policy wins more often. Its prespecified interval includes zero, and
+ordinary UCT stays the default. This outcome is separate from the first action
+reference result above. Equal allowances per decision produced different total
+encounter work.
 
 ### Historical encounter benchmark
 
