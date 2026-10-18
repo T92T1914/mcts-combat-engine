@@ -52,6 +52,10 @@ FIXED_PAYLOAD = kit.FIXED_PAYLOAD | {
     "docs/root-allocation.md", "docs/root-allocation/results.json",
     "docs/root-allocation/inputs.json", "docs/root-allocation/protocol.json",
     "docs/root-allocation/candidate-contract.json",
+    "tools/two_round_horizon_study.py", "docs/two-round-horizon.md",
+    *{"docs/two-round-horizon/" + name + ".json" for name in (
+        "protocol", "inputs", "seeds", "exploratory", "deciding",
+    )},
     *{"docs/search-allowance/" + name for name in (
         "cards.json", "scenarios.json", "protocol.json", "results.json",
         *(f"{case}.{kind}.json"
