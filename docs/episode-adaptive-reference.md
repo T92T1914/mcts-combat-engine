@@ -1,5 +1,10 @@
 # Inspect an exact two-round adaptive reference
 
+For a fixed-work comparison using this target to price both horizon-one and
+horizon-two first choices, see the [two-round horizon study](two-round-horizon.md).
+Its declared result is inconclusive and the existing saved-decision admission
+below is unchanged.
+
 The complete [episode companion](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-companion.md) can price a small
 normalized state over exactly two rounds. After each complete first-round
 observation, the calculation chooses the legal second action with the highest

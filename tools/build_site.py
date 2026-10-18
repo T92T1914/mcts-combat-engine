@@ -67,6 +67,10 @@ FILES = {
     "docs/episode-stability.md": "episode-stability.md",
     "docs/episode-reference.md": "episode-reference.md",
     "docs/episode-adaptive-reference.md": "episode-adaptive-reference.md",
+    "docs/two-round-horizon.md": "two-round-horizon.md",
+    **{"docs/two-round-horizon/" + name + ".json":
+       "two-round-horizon/" + name + ".json"
+       for name in ("protocol", "inputs", "seeds", "exploratory", "deciding")},
     "examples/adaptive-state.json": "adaptive-state.json",
     "docs/episode-search-allowance.md": "episode-search-allowance.md",
     "docs/request-edge-reuse.md": "request-edge-reuse.md",

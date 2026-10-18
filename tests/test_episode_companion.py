@@ -33,7 +33,7 @@ class CompanionTests(unittest.TestCase):
                                   companion.ZIP_NAME + "\n").encode("ascii"))
         expected = companion.FIXED_PAYLOAD | {
             "game/" + name for name in reader_tests.GAME_FILES}
-        self.assertEqual(len(expected), 120)
+        self.assertEqual(len(expected), 127)
         self.assertIn("docs/model-compatibility.md", expected)
         self.assertIn("docs/bounded-assurance.md", expected)
         self.assertIn("docs/linux-managed-episode.md", expected)

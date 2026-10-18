@@ -1,0 +1,84 @@
+{
+  "admission": "Complete reference support under every root action must have no terminal first observation; sampled absence is insufficient. Refusal aborts the phase without replacement or imputed loss.",
+  "aggregation": "Exact equal-state mean D for each independent seed block, then exact mean over blocks. Cases and weights are fixed; no outcome-based replacement.",
+  "baseline_commit": "3797838079eab49b1f627293239acc322079023a",
+  "caller": "Public engine.MCTS API on explicitly modeled normalized roots, not fabricated saved episodes",
+  "configurations": [
+    {
+      "horizon": 1,
+      "simulations": 64
+    },
+    {
+      "horizon": 2,
+      "simulations": 32
+    }
+  ],
+  "contrast": "D=L_h1-L_h2, positive favors horizon two",
+  "date": "2026-10-18",
+  "endpoint": "L_h=max_a Q2(a)-Q2(selected physical root action); Q2 assumes optimal observation-conditioned second choice, not actual MCTS continuation.",
+  "exploration": 1.2,
+  "format": "mcts-two-round-horizon-study",
+  "interpretation": "If interval lower>0, lower mean reference loss for H2 on this fixed corpus under declared replication assumptions; if upper<0 favors H1; otherwise inconclusive. No default change, universal optimality, calibrated win probability, CPU-time equality or encounter claim.",
+  "phases": {
+    "deciding": {
+      "blocks": 256,
+      "cases": [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+        "D6"
+      ]
+    },
+    "exploratory": {
+      "blocks": 8,
+      "cases": [
+        "E1",
+        "E2"
+      ]
+    }
+  },
+  "preservation": "Original studies/records/identities unchanged. Existing adaptive H1 saved-report refusal and source admission unchanged. External action join is study-owned.",
+  "question": "At 64 completed transitions, compare horizon-one/64 simulations with horizon-two/32 simulations by common exact adaptive two-round first-action loss.",
+  "reference": {
+    "max_per_action": 2500,
+    "max_seconds": 10,
+    "max_transitions": 10000,
+    "max_work_units": 25000,
+    "model": "independent_two_round_adaptive_binary53_shaped_v1",
+    "probability_model": "iid_binary53_inclusive_integer_v1"
+  },
+  "resources": {
+    "deciding_search_transitions": 196608,
+    "exploratory_search_transitions": 2048,
+    "memory": "No hard memory cap claimed; small admitted roots and bounded reference work",
+    "outer_phase_timeout_seconds": 120,
+    "output": "Fresh owned directory; phase failure retained; no retry or seed substitution",
+    "processes": "one serial Python process, no workers or local native/Docker/GPU work",
+    "reference_requests": 8
+  },
+  "root_allocation": "uct",
+  "schema_version": 1,
+  "secondary": [
+    "per-state exact losses and adverse cases",
+    "optimal-tie membership",
+    "block lower/equal/higher loss counts",
+    "actual simulations/transitions and independent call counts"
+  ],
+  "seed_design": "Independent OS-drawn 64-bit labels with replacement for every phase/block/case/arm, frozen as data. No shared RNG, trajectory matching or stream-independence guarantee is asserted.",
+  "selector": "existing mean then visits, retained encounter order for complete ties",
+  "status": "frozen-before-search-outcomes",
+  "transitions": 64,
+  "uncertainty": {
+    "alpha": "1/20",
+    "assumption": "Independently initialized seed-label experiments; no claim of iid simulator tapes or population-general scenarios",
+    "method": "two-sided empirical Bernstein from Maurer/Pontil Theorem 4",
+    "numerics": "Conservative rational upper bounds for log and square root, independently checked",
+    "radius": "sqrt(2*sample_variance*ln(80)/n)+14*ln(80)/(3*(n-1))",
+    "range": [
+      -1,
+      1
+    ]
+  }
+}
