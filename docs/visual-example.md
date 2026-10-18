@@ -65,8 +65,9 @@ explanations and JSON available here. No font files are distributed or downloade
 Both editions keep the same zero based reward scale and action identities.
 Spark stays amber, Pass blue and Weakness Mark neutral. Visits remain separate
 counts, not uncertainty estimates. The site follows its effective Auto, Clair or
-Obscur choice. GitHub uses light/dark picture sources and a Clair fallback.
-Print uses Clair. The compact layout keeps the figure readable in a narrow README.
+Obscur choice. The README uses Obscur. These notes use light/dark picture sources
+with a Clair fallback. Print uses Clair. The compact layout keeps the figure
+readable in a narrow README.
 Site builds verify the committed outputs without fonts or a silent rebuild.
 
 Source `a82e1a6` belongs to this old decision, not the later
