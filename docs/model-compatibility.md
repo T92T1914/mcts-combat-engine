@@ -1,4 +1,6 @@
-# Model compatibility after the exact health threshold repair
+# Model and source compatibility
+
+## Exact health threshold repair
 
 `EnrageBelowHalf` applies at round end to a living boss whose current HP is
 strictly below 50 percent of its maximum. The integer comparison is
@@ -52,10 +54,10 @@ unchanged. The repair adds two separately checked declarations:
 | Exact-half canonical LF | `61c52b9ad9f54a5f37b4e1a063dd285a3f0a07a8263a038241161439005ce211` |
 | Exact-half Windows CRLF | `0a098f932f51c8f529cdb37c2b296464fe43b41d1b341acbcf5da9425fe83d1c` |
 
-Each new declaration retains the other eight members of its corresponding
-historical managed map. The source check binds the actual current files, proves
-the LF and CRLF projections agree, and checks that the sole historical source
-change is the stated threshold predicate. Runtime admission never normalizes an
+Each exact-half declaration retains the other eight members of its corresponding
+historical managed map. The source check uses retained historical source, proves
+the LF and CRLF projections agree, and checks that the sole change between those
+historical declarations is the stated threshold predicate. Runtime admission never normalizes an
 unknown map or accepts a file only because its syntax tree appears equivalent.
 Unknown changed, missing, extra or mixed members cause `engine_mismatch` before
 reference arithmetic. A map that exactly recreates a separately qualified
@@ -77,6 +79,47 @@ It uses those retained bytes for the
 historical line-ending check, rather than equating the changed current rule with
 an old hash. The fixture is source evidence and is never imported as executable
 code.
+
+## Reward explanation and raw source identity
+
+The terminal reward explanation now states what the existing formulas establish.
+At nonnegative rollout depth, a win scores `1 - 0.045 * min(6, depth)`, from
+`1.0` down to `0.73`. A loss scores `0.15 * min(depth, h) / h`, where
+`h = max(1, horizon_rounds)`. At depth one, the loss score is `0.15 / h`,
+not necessarily zero. The implementation preserves its original operation order.
+
+These bounds order individual terminal win and loss samples. Ongoing horizon
+states use a separate HP/setup heuristic in `[0, 1]`; they can score below a
+terminal loss or above a terminal win. Search means average sampled shaped
+rewards. They are not calibrated win probabilities, and the ordering does not
+guarantee action rankings, a win, healing behavior or avoidance of stalling.
+No reward formula, RNG use, rollout, action order, policy or numerical reference
+model changes with this explanation.
+
+Even a prose-only edit changes raw source identity. The nine earlier complete
+reference declarations remain unchanged. Two additional complete declarations
+differ from the exact-half maps only in `mcts.py`:
+
+| Source declaration | `mcts.py` SHA-256 |
+| --- | --- |
+| Reward-contract canonical LF | `4a07211b35234adce201ae492eba58f9229f0f2a2559c75855574854a385e4de` |
+| Reward-contract Windows CRLF | `6ada54a56acade263726662e4bfa7f985a1f9880c5ec6b7a203d5efc53bae1a7` |
+
+The identity tests retain the exact pre-explanation `engine/mcts.py` body from
+[commit d075b7e](https://github.com/T92T1914/mcts-combat-engine/blob/d075b7ea94d32de178d8e6e766ab7c66bf8b101e/engine/mcts.py)
+in `tests/fixtures/pre-reward-contract-mcts.json`. They check its literal byte
+length, SHA-256 and Git blob ID without importing it. Historical projections use
+that body and, where applicable, the retained pre-threshold rules body. The new
+projections use actual current source. Removing only the changed terminal-reward
+docstring leaves identical syntax trees. This is a check of this specified edit,
+not a runtime rule for admitting unknown source.
+
+An old episode remains passively readable, but replay against these new bytes
+returns `incompatible` before environment construction. Use its matching old
+source and runtime for historical replay. Fresh decisions retain the old
+provenance and report the implementation difference. New matching episodes and
+companions use the new identity. Existing reference models and admitted states
+remain unchanged; exact source admission still precedes numerical work.
 
 ## Delivery and evidence limits
 

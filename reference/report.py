@@ -112,6 +112,16 @@ QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256 = {
     **QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
     "rules.py": "0a098f932f51c8f529cdb37c2b296464fe43b41d1b341acbcf5da9425fe83d1c",
 }
+# The reward-contract correction changes only mcts.py prose. Keep every earlier
+# declaration intact and admit these separately checked complete source maps.
+QUALIFIED_CANONICAL_REWARD_CONTRACT_ENGINE_FILES_SHA256 = {
+    **QUALIFIED_CANONICAL_EXACT_HALF_ENGINE_FILES_SHA256,
+    "mcts.py": "4a07211b35234adce201ae492eba58f9229f0f2a2559c75855574854a385e4de",
+}
+QUALIFIED_WINDOWS_REWARD_CONTRACT_ENGINE_FILES_SHA256 = {
+    **QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256,
+    "mcts.py": "6ada54a56acade263726662e4bfa7f985a1f9880c5ec6b7a203d5efc53bae1a7",
+}
 SEARCH_VALUE_SEMANTICS = (
     "MCTS terminal wins score 1 - 0.045 * min(6, depth); "
     "terminal losses score 0.15 * min(depth, h) / h, where "
@@ -287,6 +297,8 @@ def qualified_engine_files(value: Any) -> bool:
             QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256,
             QUALIFIED_CANONICAL_EXACT_HALF_ENGINE_FILES_SHA256,
             QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256,
+            QUALIFIED_CANONICAL_REWARD_CONTRACT_ENGINE_FILES_SHA256,
+            QUALIFIED_WINDOWS_REWARD_CONTRACT_ENGINE_FILES_SHA256,
         )
     )
 

@@ -605,27 +605,22 @@ class MCTS:
         return state.heuristic_value()
 
     def _terminal_reward(self, result: float, depth: int) -> float:
-        """Reward at a terminal (someone died) rollout state.
+        """Shaped terminal score at a nonnegative rollout depth.
 
-        WIN — time preference: a win now beats the same win several rounds
-        later (mate-in-2 over mate-in-9). At a small per-round discount the
-        gap between "bank pips, kill on round 3" and "chip away until round 6"
-        falls under the noise floor of a live search and the engine looks
-        indifferent to finishing fights. 4.5%/round (capped at 27%) makes the
-        fast kill decisively better, while a win at max depth still dwarfs the
-        best loss, so healing toward a win keeps full priority.
+        A win subtracts 0.045 per depth step, capped after six steps, so
+        terminal win scores range from 0.73 to 1.0. A loss rises from zero
+        at depth zero to 0.15 at the horizon, with deeper losses capped
+        there. At depth one its score is 0.15 / max(1, horizon_rounds).
 
-        LOSS — survival matters. A flat 0.0 for every loss makes the engine
-        blind to staying alive: "heal and survive three more rounds" would
-        score identically to "cast a useless card and die now". So a later
-        loss is worth slightly more, which makes the engine heal/shield to
-        stay alive when the win probability is ~0 — the human play. Capped at
-        0.15, far below any real winning or surviving line, so it never stalls
-        a fight it can win.
+        These bounds order terminal win and loss samples. Ongoing horizon
+        states use the separate HP/setup heuristic in [0, 1], which can
+        fall below a loss score or above a win score. Search means average
+        sampled shaped scores, not calibrated win probabilities. The
+        ordering does not guarantee that an action wins or avoids stalling.
         """
         if result >= 1.0:
             return 1.0 - 0.045 * min(6, depth)
-        # loss: 0 (died round 1) .. 0.15 (survived the full horizon then died).
+        # Scale nonnegative depth up to the horizon, capped at 0.15.
         # Clamp defensively so a caller-provided deep loss cannot outscore a
         # clean win. Selection and rollout both obey the configured horizon.
         h = max(1, self.horizon_rounds)
