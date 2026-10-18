@@ -348,20 +348,27 @@ class EpisodeTests(unittest.TestCase):
             result, status = records.replay_episode(self.saved)
         self.assertEqual((status, result["reason"]), (3, "implementation"))
 
-    def test_historical_rule_identity_refuses_before_environment_generation(self):
+    def test_historical_engine_identity_refuses_before_environment_generation(self):
         from reference import report
 
         recorded = self.make_record(rounds=1, sims=2)
         original_inputs = {path: (path.read_bytes(), path.stat().st_mtime_ns)
                            for path in (self.cards, self.scenarios)}
-        historical_rules = (
-            report.QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256[
-                "rules.py"],
-            report.QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256[
-                "rules.py"],
+        historical_members = (
+            ("rules.py", (
+                report.QUALIFIED_CANONICAL_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256[
+                    "rules.py"],
+                report.QUALIFIED_WINDOWS_MANAGED_ROOT_ALLOCATION_ENGINE_FILES_SHA256[
+                    "rules.py"],
+            )),
+            ("mcts.py", (
+                report.QUALIFIED_CANONICAL_EXACT_HALF_ENGINE_FILES_SHA256["mcts.py"],
+                report.QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256["mcts.py"],
+            )),
         )
-        current = recorded["implementation"]["engine_files_sha256"]["rules.py"]
-        self.assertNotIn(current, historical_rules)
+        for member, historical_hashes in historical_members:
+            current = recorded["implementation"]["engine_files_sha256"][member]
+            self.assertNotIn(current, historical_hashes)
 
         class RefuseEnvironmentRNG:
             VERSION = random.Random.VERSION
@@ -372,10 +379,12 @@ class EpisodeTests(unittest.TestCase):
         # This is a synthetic identity envelope, not a claim that this fixture
         # was executed by historical source. Actual old-engine records stay
         # separate from this narrow admission regression.
-        for old_hash in historical_rules:
-            with self.subTest(old_rules=old_hash):
+        for member, old_hash in (
+                (member, old_hash) for member, hashes in historical_members
+                for old_hash in hashes):
+            with self.subTest(member=member, historical_hash=old_hash):
                 changed = copy.deepcopy(recorded)
-                changed["implementation"]["engine_files_sha256"]["rules.py"] = old_hash
+                changed["implementation"]["engine_files_sha256"][member] = old_hash
                 self.save(changed)
                 retained_record = self.saved.read_bytes()
                 with (patch.object(records, "load_content", return_value=(
@@ -387,7 +396,7 @@ class EpisodeTests(unittest.TestCase):
                 self.assertEqual((status, result["status"], result["reason"]),
                                  (3, "incompatible", "implementation"))
                 self.assertEqual(result["location"],
-                                 "/implementation/engine_files_sha256/rules.py")
+                                 "/implementation/engine_files_sha256/" + member)
                 self.assertFalse(result["search_recomputed"])
                 self.assertEqual(self.saved.read_bytes(), retained_record)
         self.assertEqual(original_inputs, {
