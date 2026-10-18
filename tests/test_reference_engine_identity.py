@@ -50,7 +50,11 @@ EXACT_HALF_MAPS = (
     report.QUALIFIED_CANONICAL_EXACT_HALF_ENGINE_FILES_SHA256,
     report.QUALIFIED_WINDOWS_EXACT_HALF_ENGINE_FILES_SHA256,
 )
-QUALIFIED_MAPS = HISTORICAL_MAPS + EXACT_HALF_MAPS
+REWARD_CONTRACT_MAPS = (
+    report.QUALIFIED_CANONICAL_REWARD_CONTRACT_ENGINE_FILES_SHA256,
+    report.QUALIFIED_WINDOWS_REWARD_CONTRACT_ENGINE_FILES_SHA256,
+)
+QUALIFIED_MAPS = HISTORICAL_MAPS + EXACT_HALF_MAPS + REWARD_CONTRACT_MAPS
 PHYSICAL_LIMITS = {"max_paths": 100, "max_total_paths": 1000, "max_seconds": 1}
 ADAPTIVE_LIMITS = {
     "max_transitions": 100,
@@ -207,13 +211,37 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                                              include_attributes=False)
                     self.assertEqual(frozen_ast, canonical_ast)
 
+    def historical_mcts(self):
+        fixture = Path(__file__).with_name("fixtures") / "pre-reward-contract-mcts.json"
+        saved = json.loads(fixture.read_bytes())
+        self.assertEqual({key: value for key, value in saved.items()
+                          if key != "source_base64"}, {
+            "format": "mcts-literal-historical-source", "schema_version": 1,
+            "source_commit": "d075b7ea94d32de178d8e6e766ab7c66bf8b101e",
+            "source_path": "engine/mcts.py",
+            "git_blob": "f73f9b676e63c4e42e0b8db4c5980e52c19e2e5c",
+            "bytes": 28494,
+            "sha256": (
+                "153e0c6b2f1b5ab1baeb92496ec19860b97b48008b177ce924c134d190cbf0f8"),
+        })
+        body = base64.b64decode(saved["source_base64"], validate=True)
+        self.assertEqual(len(body), saved["bytes"])
+        self.assertEqual(hashlib.sha256(body).hexdigest(), saved["sha256"])
+        self.assertEqual(hashlib.sha1(
+            b"blob " + str(len(body)).encode("ascii") + b"\0" + body
+        ).hexdigest(), saved["git_blob"])
+        self.assertNotIn(b"\r", body)
+        return body
+
     def test_frozen_windows_map_has_one_exact_declared_source_conversion(self):
         historical = self.canonical_bodies()
+        historical["mcts.py"] = self.historical_mcts()
         historical["rules.py"] = self.historical_rules()
         self.assert_source_projection(historical, *MANAGED_MAPS)
 
-    def test_exact_half_maps_bind_current_source_and_one_predicate_change(self):
+    def test_exact_half_maps_bind_retained_source_and_one_predicate_change(self):
         canonical = self.canonical_bodies()
+        canonical["mcts.py"] = self.historical_mcts()
         self.assert_source_projection(canonical, *EXACT_HALF_MAPS)
         old = self.historical_rules()
         old_predicate = b"enemy.hp < enemy.max_hp // 2"
@@ -226,13 +254,39 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
             self.assertEqual(len(current), 9)
             self.assertEqual([name for name in prior if prior[name] != current[name]],
                              ["rules.py"])
+
+    def test_reward_contract_maps_bind_current_source_and_only_changed_docstring(self):
+        canonical = self.canonical_bodies()
+        self.assert_source_projection(canonical, *REWARD_CONTRACT_MAPS)
+        old = ast.parse(self.historical_mcts())
+        current = ast.parse(canonical["mcts.py"])
+
+        def terminal_docstring(tree):
+            cls = next(node for node in tree.body
+                       if isinstance(node, ast.ClassDef) and node.name == "MCTS")
+            method = next(node for node in cls.body
+                          if isinstance(node, ast.FunctionDef)
+                          and node.name == "_terminal_reward")
+            self.assertIsInstance(method.body[0], ast.Expr)
+            self.assertIsInstance(method.body[0].value, ast.Constant)
+            self.assertIsInstance(method.body[0].value.value, str)
+            return method.body.pop(0)
+
+        self.assertNotEqual(ast.dump(terminal_docstring(old)),
+                            ast.dump(terminal_docstring(current)))
+        self.assertEqual(ast.dump(old, include_attributes=False),
+                         ast.dump(current, include_attributes=False))
+        for prior, corrected in zip(EXACT_HALF_MAPS, REWARD_CONTRACT_MAPS, strict=True):
+            self.assertEqual(set(prior), set(corrected))
+            self.assertEqual([name for name in prior if prior[name] != corrected[name]],
+                             ["mcts.py"])
         observed = consumer.reference_identity()["decision_consumer"][
             "engine_files_sha256"]
-        self.assertIn(observed, EXACT_HALF_MAPS)
+        self.assertIn(observed, REWARD_CONTRACT_MAPS)
         self.assertTrue(report.qualified_engine_files(observed))
 
     def test_managed_maps_refuse_any_changed_missing_extra_or_mixed_member(self):
-        for admitted in MANAGED_MAPS + EXACT_HALF_MAPS:
+        for admitted in MANAGED_MAPS + EXACT_HALF_MAPS + REWARD_CONTRACT_MAPS:
             for name in admitted:
                 changed = copy.deepcopy(admitted)
                 changed[name] = "a" * 64
@@ -244,12 +298,13 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                 self.assertFalse(report.qualified_engine_files(missing))
             extra = {**admitted, "unqualified.py": "b" * 64}
             self.assertFalse(report.qualified_engine_files(extra))
-        for admitted, other in permutations(MANAGED_MAPS + EXACT_HALF_MAPS, 2):
+        for admitted, other in permutations(
+                MANAGED_MAPS + EXACT_HALF_MAPS + REWARD_CONTRACT_MAPS, 2):
             for name in admitted:
                 if admitted[name] == other[name]:
                     continue
                 mixed = {**admitted, name: other[name]}
-                # Replacing the sole changed rules member can recreate a whole
+                # Replacing one changed member can recreate a whole
                 # separately qualified historical map. Only unknown mixtures
                 # are refused; a recognized complete map remains admissible.
                 self.assertEqual(report.qualified_engine_files(mixed),
@@ -397,7 +452,7 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
                     self.assertEqual(result["status"], "complete")
                     self.assertEqual(result["reference_engine_files_sha256"], admitted)
 
-    def test_exact_half_maps_do_not_admit_boss_rules_to_any_reference(self):
+    def test_current_and_exact_half_maps_do_not_admit_boss_rules_to_any_reference(self):
         rule = {"type": "enrage_below_half", "parameters": {"blade": 0.25},
                 "description": EnrageBelowHalf().description}
         decision = literal_decision()
@@ -407,7 +462,7 @@ class ReferenceEngineIdentityTests(unittest.TestCase):
         self.decision_path.write_bytes(records.output_bytes(decision))
         self.state_path.write_bytes(records.output_bytes(state))
         before = (self.decision_path.read_bytes(), self.state_path.read_bytes())
-        for admitted in EXACT_HALF_MAPS:
+        for admitted in EXACT_HALF_MAPS + REWARD_CONTRACT_MAPS:
             observed = consumer.reference_identity()
             observed["decision_consumer"]["engine_files_sha256"] = copy.deepcopy(
                 admitted)
