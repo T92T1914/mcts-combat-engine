@@ -7,7 +7,16 @@
 
 I built this to explore how a search chooses an action when the outcome can change. It uses Monte Carlo Tree Search in a small combat simulator, with three encounters and random and greedy policies to compare against. The engine is pure Python and has no runtime dependencies.
 
-**Recorded fixed budget benchmark (September 6, 2026):** search wins 30/30 duels, 30/30 gauntlets and 15/30 boss encounters at 3,000 simulations per decision. Random wins 27, 17 and 8; greedy wins 11, 11 and 0. These are small samples from one search seed, not a general playing strength guarantee.
+The reusable engine runs the model and search. A separate companion handles
+recording, replay, saved-state decisions and inspection. Start with a task:
+
+- **Inspect a saved decision.** Open the [browser example](https://t92t1914.github.io/mcts-combat-engine/) to read retained actions, sampled scores and visits. It performs no new search.
+- **Make a small bounded decision.** Follow the [public Python API recipe](docs/episode-adaptive-reference.md#search-the-same-state-through-the-public-python-api) for a two-card state with explicit simulation and transition limits. Use the [complete companion](docs/episode-companion.md) for recording, saved-state decisions, replay and passive inspection with a separately installed engine.
+- **Run a supported managed consumer.** Follow the [Windows encounter guide](docs/managed-encounters.md) or [Linux episode guide](docs/linux-managed-episode.md). Each declares its supported host, process ownership, limits and recovery scope.
+
+Ordinary UCT remains the default. A better first action under a bounded
+reference does not establish a better complete encounter. The later
+[encounter comparison](docs/encounter-outcomes.md) remains inconclusive.
 
 [Run it](#run-it) · [Optional root allocation](#optional-root-allocation) · [Results](#results) · [How it works](#how-it-works) · [Design decisions](docs/design-decisions.md)
 
@@ -158,13 +167,13 @@ computational comparison and was committed before its outcomes were collected.
 
 <a href="docs/visual-example.md">
   <picture>
-    <source media="(min-width: 1024px) and (prefers-color-scheme: dark)" srcset="docs/mcts-decision-obscur-wide.png">
-    <source media="(min-width: 1024px) and (prefers-color-scheme: light)" srcset="docs/mcts-decision-clair-wide.png">
-    <source media="(prefers-color-scheme: dark)" srcset="docs/mcts-decision-obscur.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/mcts-decision-clair.png">
-    <img src="docs/mcts-decision-clair.png" alt="One recorded decision after 10,000 simulations. Spark has mean shaped reward 0.532, Pass 0.506 and Weakness Mark 0.495. Exact visits are 5,724, 2,445 and 1,831 respectively. Reward is not a win probability." width="900">
+    <source media="(min-width: 1024px)" srcset="docs/mcts-decision-obscur-wide.png">
+    <img src="docs/mcts-decision-obscur.png" alt="One recorded decision after 10,000 simulations. Spark has mean shaped reward 0.532, Pass 0.506 and Weakness Mark 0.495. Exact visits are 5,724, 2,445 and 1,831 respectively. Reward is not a win probability." width="900">
   </picture>
 </a>
+
+The README uses Obscur. A [Clair edition](docs/mcts-decision-clair.png) is also
+available, and the browser inspector keeps its Auto, Clair and Obscur choices.
 
 The search ranks three actions after 10,000 simulations. Its shaped reward describes this decision and is not a win probability. The example and its reproduction command are below.
 [Reproduce and inspect the values](docs/visual-example.md).
@@ -225,6 +234,8 @@ encounter work.
 
 ### Historical encounter benchmark
 
+**Recorded fixed budget benchmark (September 6, 2026):** search wins 30/30 duels, 30/30 gauntlets and 15/30 boss encounters at 3,000 simulations per decision. Random wins 27, 17 and 8; greedy wins 11, 11 and 0. These are small samples from one search seed, not a general playing strength guarantee.
+
 30 games per policy per scenario, game seeds paired across policies; 3000 simulations per decision, search seed 42, horizon 5, 60 second safety cap, single process.
 Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs; AMD Ryzen 7 7800X3D; Windows 11; 64 GB RAM.
 Run on 2026-09-06.
@@ -265,7 +276,7 @@ JSON exports include per-game seeds, scores, terminal results and round counts,
 alongside their aggregates. A successor transition and a MCTS simulation are
 different work units, so the recorded counts do not establish efficiency.
 
-Run one reference decision from the checkout:
+Run one sampled one-round comparator decision from the checkout:
 
 ```sh
 python demo.py gauntlet --one-round-samples 8 --seed 7
@@ -280,7 +291,7 @@ limit, and elapsed time is only an observation. Choose this mode separately from
 behavior. The values share the simulator and heuristic with the search. They
 are not calibrated win probabilities or MCTS visit counts.
 
-The same one-round reference values are available to a Python caller:
+The same sampled one-round comparator values are available to a Python caller:
 
 ```python
 import random
@@ -401,11 +412,12 @@ uses its own copy of the prior, just as it builds its own tree.
 * Parallel merging is tested, and a separate bounded study now measures process
   scaling on three initial states. It does not establish linear scaling, full
   game throughput or playing strength. Compilation speedups remain unmeasured.
-* The `mcts_decider` wrapper supports `seed`, `max_sims` and `max_transitions`
-  only in serial mode. With `parallel=True` it uses a time budget and rejects
-  these controls, including
-  with `workers=1`. Passing an unsupported control cannot silently become a
-  different experiment.
+* Default timed parallel `mcts_decider` calls reject `seed`, `max_sims` and
+  `max_transitions`, including with `workers=1`. Explicit
+  `parallel=True, mode="fixed", budget_ms=None` requires `seed` and `max_sims`
+  and supports an optional `max_transitions` allowance. The
+  [managed policy guide](docs/managed-decider.md#managed-fixed-work) explains its
+  receipts, incomplete work and cleanup. Unsupported controls are refused.
 * Mean reward ranking can favor a lightly visited lucky action. Visits are shown so the uncertainty is visible.
 
 ## License
@@ -423,6 +435,9 @@ I built this to understand how software compares uncertain outcomes under a limi
 - **Search algorithms.** Follow selection, expansion and rollout through one implementation. [Inspect the work](engine/mcts.py).
 - **Parallel work.** Read why work is divided between independent search roots and how results are combined. [Inspect the work](docs/design-decisions.md).
 - **Fair comparisons.** Compare recorded search results under stated seeds and budgets, including the weaker result. [Inspect the work](docs/benchmark-results.md).
+- **Python tooling.** Use an engine-only package with a separate recording and inspection companion. [Inspect the work](docs/episode-companion.md).
+- **Process ownership.** Follow explicit decision lifetime, fixed-work receipts and retryable cleanup. [Inspect the work](docs/managed-decider.md).
+- **Software assurance.** Inspect bounded input, recovery and model checks with retained negative controls. [Inspect the work](docs/bounded-assurance.md).
 
 This demonstrates algorithm and experiment design. Applying it to routing or scheduling would need a new domain model, constraints and validation; the current project does not claim that deployment.
 
