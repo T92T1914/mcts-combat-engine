@@ -577,6 +577,7 @@ for (const mode of ['clair','obscur']) test(`${mode} accepted evidence routes pr
   const entry = page.getByRole('link',{name:'Inspect the accepted evidence',exact:true});
   assert.equal(await entry.evaluate(e=>document.activeElement===e),true);
   await page.keyboard.press('Enter');
+  await page.waitForURL(url=>url.hash==='#accepted-evidence');
   assert.equal(new URL(page.url()).hash,'#accepted-evidence');
   const routes = page.locator('#accepted-evidence');
   const links = {

@@ -53,6 +53,26 @@ See [cards.json](../data/cards.json), [scenarios.json](../data/scenarios.json) a
 These files do not import arbitrary Python rules or describe saved mid-round
 states. Nonfinite JSON numbers and wrong container shapes are rejected.
 
+## Damage cards that also restore HP
+
+For a `"type": "damage"` card, `"heal": 0` leaves drain disabled. A positive
+`heal` value enables drain; its magnitude does not set the restored HP. For each
+target alive when damage resolution starts, the model resolves a separate hit after
+blades, traps, shields, resistance and boost. It converts that damage to a
+nonnegative integer `d`, removes up to the target's remaining HP, and restores
+`d // 2` HP to the caster, capped at the caster's maximum HP.
+
+Overkill is included in `d`. A resolved hit of 55 against a target with 10 HP
+therefore restores 27 HP when the caster has enough missing HP. With area
+damage, each target's contribution is rounded down separately: two resolved
+hits of 3 restore `1 + 1 = 2` HP before the maximum-HP cap.
+
+A fizzle or zero resolved damage supplies no drain restoration. Later
+damage-over-time ticks do not restore HP. A `"type": "heal"` card instead
+restores its `heal` amount directly, up to maximum HP. These are the existing
+simulator semantics, including overkill, rather than a new rule or a change to
+the reference models' admitted effects.
+
 ## Retain and read the report
 
 `--json` prints one object without the text table. Its format is
