@@ -60,6 +60,84 @@ absent because the input supplies no saved search recommendation. Two complete
 direct reports with matching state, model, law and objective can be compared.
 Different work controls remain visible without changing that objective.
 
+## Search the same state through the public Python API
+
+To sample a recommendation on that same two-card root, save the following as
+`adaptive_search.py` outside the companion and run `& $py C:\work\adaptive_search.py`.
+It needs only the installed engine and Python's standard library. It constructs
+the supplied model directly rather than editing an episode or refilling a hand.
+
+<!-- adaptive-api-recipe:start -->
+```python
+import copy
+import json
+import random
+
+from engine import Card, CardType, Combatant, Element, GameState, MCTS
+
+state = GameState(
+    player=Combatant(
+        "Modeled operator", Element.EMBER, hp=100, max_hp=100,
+        power_pip_chance=0,
+    ),
+    enemies=[Combatant(
+        "Modeled target", Element.EMBER, hp=3, max_hp=100,
+        power_pip_chance=0,
+        base_attack=Card(
+            "Plain response", Element.NEUTRAL, CardType.DAMAGE,
+            pip_cost=7, accuracy=1, damage_min=1, damage_max=1, modifier=0,
+        ),
+    )],
+    hand=[
+        Card("Variable hit", Element.EMBER, CardType.DAMAGE,
+             accuracy=1, damage_min=1, damage_max=2, modifier=0),
+        Card("Fixed hit", Element.EMBER, CardType.DAMAGE,
+             accuracy=1, damage_min=1, damage_max=1, modifier=0),
+    ],
+)
+before = copy.deepcopy(state)
+search = MCTS(
+    horizon_rounds=2, max_sims=16, max_transitions=32,
+    rng=random.Random(19),
+)
+ranked = search.search(state, time_budget_ms=None)
+if state != before:
+    raise RuntimeError("Search changed its input state")
+selected = ranked[0] if ranked else None
+print(json.dumps({
+    "selected_action": None if selected is None else {
+        "card_idx": selected.action.card_idx,
+        "target_idx": selected.action.target_idx,
+    },
+    "mean_shaped_reward": None if selected is None else selected.win_rate,
+    "visits": None if selected is None else selected.visits,
+    "simulations": search.last_sims,
+    "transitions": search.last_transitions,
+    "unused_transitions": search.last_unused_transitions,
+    "stop_reasons": search.last_stop_reasons,
+}, indent=2))
+```
+<!-- adaptive-api-recipe:end -->
+
+The search uses ordinary UCT, no priors and the existing mean-then-visits ranking.
+The seed fixes this example's random stream. The limits permit at most 16
+simulations and 32 simulated rounds, including traversal and rollout. A terminal
+branch can use fewer rounds. Disabling the clock makes work reproducible, but
+does not impose a hard time or memory limit. The output reports actual work.
+
+`card_idx` is the original zero-based hand position here and `target_idx` is
+the enemy position. A Pass has both coordinates null. The recommendation does
+not execute that action. With no simulations and no priors, the ranking is empty
+and this code emits null recommendation fields. `win_rate` is the API's historical
+field name for mean shaped reward, not a calibrated win probability.
+
+The exact table below prices the same root under its declared adaptive
+objective. A sampled recommendation need not select that optimum. The printed
+JSON is an informal example output, not a saved decision report accepted by
+`reference_episode.py`. Use the supported saved-decision route below when a
+joined decision/reference report is required. This recipe neither changes that
+admission contract nor adds evidence to the completed horizon study.
+
 ## What adapts in the example
 
 The variable hit deals one or two damage into enemy HP three. After that first
