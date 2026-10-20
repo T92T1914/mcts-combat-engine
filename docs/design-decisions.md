@@ -1,8 +1,8 @@
 # Design decisions
 
-Each entry records a choice the code makes, why, what lost, and where to
-read it. Everything here is backed by a comment, docstring, or test in the
-tree; nothing is aspirational.
+Each entry records a choice the code makes, its tradeoff and where to inspect
+the implementation. The linked studies keep measured results separate from
+the reasons for a design choice.
 
 ## 1. Open loop tree: nodes hold actions, not states
 
@@ -12,9 +12,10 @@ tree would need a chance node for every roll. Storing only the action
 sequence and replaying it from the root under fresh randomness makes a
 node's mean automatically an average over the outcome distribution, with shaped rewards rather than calibrated win probabilities.
 
-**What lost.** Closed loop MCTS with explicit chance nodes: exact, but the
-tree explodes and every random event needs bookkeeping. The open loop cost
-is re simulating from the root on every descent.
+**Tradeoff.** An explicit chance tree can represent distinct outcomes, but adds
+state and branch bookkeeping. That representation alone does not make a finite
+search exact. The open loop design instead simulates from the root on every
+descent.
 
 **Where.** `engine/mcts.py` module docstring and `Node`.
 
@@ -30,31 +31,33 @@ Legal moves are recomputed for each realized state. Newly available edges can ex
 
 ## 3. Reward shaping: wins discounted by depth, losses worth more when late
 
-**Why.** With a flat 1.0 for any win, "kill in 3 rounds" and "chip away for
-6" score within search noise of each other and the engine looks indifferent
-to finishing fights; 4.5% per round (capped at 27%) separates them. With a
-flat 0.0 for any loss, healing at 5% win probability scores the same as
-dying now; a late loss worth up to 0.15 makes the engine heal, shield and
-play for time when behind, and the cap keeps any win above any loss.
+**Why.** A terminal win loses 4.5% per simulated depth step, capped at 27%.
+A terminal loss receives a survival component that rises to 0.15 at the
+horizon. At depth one, its value is `0.15 / max(1, horizon_rounds)`, rather
+than necessarily zero. These bounds keep individual terminal wins above
+terminal losses. Ongoing horizon states use the separate HP/setup heuristic
+in `[0, 1]`, which can score above a win or below a loss.
 
-**What lost.** Pure win/loss reward, which is cleaner to explain and plays
-worse. Neither constant was swept; both came from watching bad play and
-fixing it, and the README says so.
+**Tradeoff.** Shaping supplies a signal before full encounters finish, but
+changes the objective from terminal wins alone. Neither constant received a
+parameter sweep. The formulas do not guarantee healing, stronger action
+rankings or avoidance of stalling, and no controlled comparison here establishes
+that this reward plays better than a pure win/loss reward.
 
-**Where.** `MCTS._terminal_reward` docstring; README "Why open loop MCTS"
-and "What these numbers do not prove".
+**Where.** `MCTS._terminal_reward` in `engine/mcts.py`, the
+[reward compatibility explanation](model-compatibility.md#reward-explanation-and-raw-source-identity)
+and the README's [evidence limits](../README.md#what-these-numbers-do-not-prove).
 
 ## 4. Horizon states are scored by an HP heuristic that credits setup
 
-**Why.** Rollouts stop after `horizon_rounds`. Scoring an unfinished fight
-by raw HP would call "trap now, one shot next round" zero progress and the
-search would never recommend it. The heuristic discounts an enemy's HP by
+**Why.** Rollouts stop after `horizon_rounds`. A score based only on current
+HP would omit setup that has not dealt damage yet. The heuristic discounts an enemy's HP by
 the traps on it and by the player's blades, and weights enemies by the
 damage they deal, so killing the hard hitter registers as relief.
 
-**What lost.** A pure win/loss signal from rollouts to terminal, which in
-a fight that can run 20+ rounds would make every rollout long and most of
-them noise.
+**Tradeoff.** Stopping at a horizon avoids requiring every rollout to reach
+a terminal state, but makes the chosen heuristic part of the search objective.
+It does not establish the best full encounter action.
 
 **Where.** `GameState.heuristic_value` docstring in `engine/state.py`.
 
@@ -71,32 +74,33 @@ is happening.
 
 ## 6. Root parallelism, not tree parallelism
 
-**Why.** The search is pure Python, so threads on one tree would serialize
-on the GIL, and sharing a tree across processes would mean locking or
-shipping it. N independent searches with different seeds need no
-synchronization; the parent sums per action visits and value sums (raw
-sufficient statistics, not rates, so the merge is exact) and re derives
-mean rewards. Independent trees also decorrelate exploration noise, so close
-decisions flip less between polls.
+**Why.** In the supported Python execution path, CPU threads contend on the
+GIL. Separate processes build independent trees without synchronizing tree
+updates. The parent sums per action visits and raw value sums, then derives
+the weighted means instead of averaging worker means equally. Changing worker
+count changes the forest and can change the selected action.
 
-**What lost.** Tree parallelism with virtual loss: more sample efficient,
-much more code, and pointless under the GIL. The cost of root parallelism
-is that workers repeat each other's early exploration.
+**Tradeoff.** Workers repeat early exploration. A shared tree would need
+coordination and a different implementation. The retained process studies
+measure this independent-root design, not the sample efficiency of an
+unimplemented shared tree or a guarantee of more stable choices.
 
 **Where.** `engine/parallel.py` module docstring, `merge_results`, and
 `tests/test_parallel.py`, which checks that the merge is a sum and not an
 average of rates.
 
-## 7. Clone by hand; share what never mutates
+## 7. Clone by hand, share what never mutates
 
 **Why.** The search clones the state thousands of times per decision.
-`copy.deepcopy` is far too slow and would copy things that are never
-written: cards, resist tables, enemy policies, and the boss rules are
-shared by reference; charm lists and DoTs are copied because the simulator
-mutates them.
+Copying only the changing state avoids a generic recursive copy. Cards,
+resist tables, enemy policies and boss rules are shared by reference under a
+read only definition convention. Charm lists and DoTs are copied because the
+simulator mutates them. The caller must keep those shared definitions stable,
+as explained in the [managed input contract](managed-decider.md#keep-caller-inputs-stable).
 
-**What lost.** `deepcopy` (slow), or immutable state with structural
-sharing (a rewrite of the simulator).
+**Tradeoff.** A generic `deepcopy` or immutable state with structural sharing
+would be a different implementation. No separate timing comparison between
+those alternatives is claimed here.
 
 **Where.** `engine/state.py` module docstring and the comments inside
 `Combatant.clone` and `GameState.clone`; `test_clone_is_deep_where_it_must_be`.
@@ -106,29 +110,30 @@ sharing (a rewrite of the simulator).
 **Why.** Special encounter mechanics stay out of the damage model. A rule
 is a function of (state, event); the simulator fires events at fixed points
 in a round and each rule mutates the state to model its effect. Rules hold
-no mutable data, so cloning a state shares them, and every simulated line
-still pays the price of a mechanic, the search will not walk into a
-punisher's counterattack because the counterattack happens inside the
-rollouts.
+no evolving encounter data, so cloning a state shares their configuration.
+Their effects occur inside each simulated line. The search can therefore
+sample a counterattack when evaluating an action. This does not guarantee
+that its selected action avoids the penalty.
 
 **Where.** `engine/rules.py`; the README's demo shows the consequence
 (a trap ranked below passing against a boss that punishes traps).
 
 ## 9. Annotations that a compiled build can use
 
-**Why.** The parent project compiled `engine/` with mypyc. That is why
+**Why.** The source retains annotations intended for an optional mypyc build.
 `Node` has every attribute annotated with no `__slots__` (native classes
 are implicitly slotted), nullable fields are typed `Optional`, containers
 carry concrete element types, and the frozen `Action` dataclass defines
 `__reduce__` so parallel workers can pickle it back. `mypy` is clean on
 `engine/` and CI keeps it that way.
 
-**What lost.** Untyped containers and plain `dict`/`list` annotations,
-which cost most of the compiled speedup.
+**Limit.** These source choices do not establish a delivered compiled package
+or a measured compilation speedup. The public performance studies identify
+their actual Python execution paths separately.
 
 **Where.** Comments in `engine/mcts.py` (`Node`), `engine/state.py`
-(`Combatant`), `engine/actions.py` (`__reduce__`); README "Performance
-notes".
+(`Combatant`), `engine/actions.py` (`__reduce__`) and the README's
+[evidence limits](../README.md#what-these-numbers-do-not-prove).
 
 ## 10. Content is JSON, validated loudly at load time
 
@@ -203,5 +208,8 @@ correction does not revise their retained study results.
   that diagnostic. No RAVE, progressive widening, or transposition table.
 * No second game to test the "game agnostic" claim beyond the one 9 card
   domain shipped here.
-* The benchmark runs the single process engine; the parallel engine is
-  covered by tests but its speedup is not measured in this repo.
+* The historical encounter benchmark uses the single process engine. Separate
+  [process scaling](parallel-scaling-results.md), [same forest](same-forest-results.md)
+  and [repeated execution](same-forest-repeatability-results.md) studies now
+  retain bounded timing comparisons. They do not establish full encounter
+  throughput, playing strength or general hardware scaling.

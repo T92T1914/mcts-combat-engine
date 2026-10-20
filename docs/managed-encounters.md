@@ -60,7 +60,7 @@ Cancellation or interruption returns 130 when the controller can finalize that
 outcome. An interrupted or killed controller might produce no final response.
 Inspect retained evidence before drawing any conclusion from missing output.
 
-Ordinary [PR59 capture](encounter-policy-evaluation.md) still accepts its existing
+Ordinary [PR59 capture](https://github.com/T92T1914/mcts-combat-engine/blob/3888e6fc0d17a990f03b0eb6e2c81d00a5cd59ca/docs/encounter-policy-evaluation.md) still accepts its existing
 caller supplied ownership declaration. That path remains distinct from this
 explicit managed mode and keeps its previous limits.
 
@@ -203,7 +203,7 @@ operation with its own immutable input and scientific implications.
 These controls admit the known unchanged local engine and companion workload.
 They do not provide a secure sandbox for malicious code, an OS filesystem quota,
 a general service manager or remote execution. They do not change the accepted
-[PR59 experiment or its inconclusive result](encounter-outcomes.md). Equal work
+[PR59 experiment or its inconclusive result](https://github.com/T92T1914/mcts-combat-engine/blob/3888e6fc0d17a990f03b0eb6e2c81d00a5cd59ca/docs/encounter-outcomes.md). Equal work
 allowances per decision still do not imply equal total encounter cost.
 
 The public implementation uses Windows Job Objects and suspended process launch.
