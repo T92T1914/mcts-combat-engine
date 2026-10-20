@@ -8,10 +8,10 @@
 I built this to explore how a search chooses an action when the outcome can change. It uses Monte Carlo Tree Search in a small combat simulator, with three encounters and random and greedy policies to compare against. The engine is pure Python and has no runtime dependencies.
 
 The reusable engine runs the model and search. A separate companion handles
-recording, replay, saved-state decisions and inspection. Start with a task:
+recording, replay, decisions from saved states and inspection. Start with a task:
 
 - **Inspect a saved decision.** Open the [browser example](https://t92t1914.github.io/mcts-combat-engine/) to read retained actions, sampled scores and visits. It performs no new search.
-- **Make a small bounded decision.** Follow the [public Python API recipe](docs/episode-adaptive-reference.md#search-the-same-state-through-the-public-python-api) for a two-card state with explicit simulation and transition limits. Use the [complete companion](docs/episode-companion.md) for recording, saved-state decisions, replay and passive inspection with a separately installed engine.
+- **Make a small bounded decision.** Follow the [public Python API recipe](docs/episode-adaptive-reference.md#search-the-same-state-through-the-public-python-api) for a state with two cards, using explicit simulation and transition limits. Use the [complete companion](docs/episode-companion.md) for recording, decisions from saved states, replay and passive inspection with a separately installed engine.
 - **Run a supported managed consumer.** Follow the [Windows encounter guide](docs/managed-encounters.md) or [Linux episode guide](docs/linux-managed-episode.md). Each declares its supported host, process ownership, limits and recovery scope.
 
 Ordinary UCT remains the default. A better first action under a bounded
@@ -29,7 +29,7 @@ selections. These links inspect saved evidence; they do not run a new calculatio
 The action inspector supports Auto, Clair and Obscur. Auto follows the system
 appearance, while a saved choice stays local to this project. Switching keeps the
 selected action, metrics and share link. The original recorded diagram and JSON
-stay unchanged. Inter is used when installed locally, with a system-font fallback
+stay unchanged. Inter is used when installed locally, with a system font fallback
 for other visitors and no remote font download. Code keeps its monospace font.
 The generated site's [presentation record](https://t92t1914.github.io/mcts-combat-engine/presentation.json)
 separates the page revision from the source revision of the saved decision.
@@ -53,21 +53,21 @@ described below.
 Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `mypy`. CI tests Python 3.11, 3.12 and 3.13. `pip install .` installs the reusable `engine` package; `game`, `data` and the demonstration scripts remain separate examples.
 
 The [complete companion](docs/episode-companion.md) supports custom recording,
-replay, saved-state decisions and inspection with an installed engine and no
-development checkout. Its [independent one-round reference](docs/episode-reference.md)
-prices every supported physical action from a saved horizon-one decision,
-reports exact expectations and selected-action score loss, and generates local
+replay, decisions from saved states and inspection with an installed engine and no
+development checkout. Its [independent reference for one round](docs/episode-reference.md)
+prices every supported physical action from a saved decision at horizon one,
+reports exact expectations and score loss for the selected action, and generates local
 inspection/comparison pages. The default supports one or two living enemies.
-Select `--model three-enemy` explicitly for the bounded three-enemy model,
+Select `--model three-enemy` explicitly for the bounded model with three enemies,
 including the bundled gauntlet's initial saved decision. Both models preserve
 physical card copies and targets, and refuse unfinished calculations without
 partial rankings. The probability law, model identity and cooperative work limits
-are explicit. These values describe the declared one-round objective,
-not full-encounter optimality or calibrated win probability. Engine packaging,
+are explicit. These values describe the declared objective for one round,
+not optimality for the full encounter or calibrated win probability. Engine packaging,
 search defaults and the separate saved episode reader kit remain preserved.
 
 The [Linux managed episode](docs/linux-managed-episode.md) runs one small
-installed record-and-replay journey through an already available local Docker
+installed recording and replay journey through an already available local Docker
 daemon. It checks literal cgroup limits and ownership before admission, retains
 bounded output and supplies distinct passive recovery. Its memory and process
 claims are limited to the owned container. The existing [Windows managed
@@ -112,7 +112,7 @@ the experiment. Output paths must be different and their parent folders must exi
 Policy choices use their own random stream. Extra random draws inside a policy
 cannot change the environment's next outcome when the chosen actions stay the
 same. Search starts fresh for each scenario, then continues across its games.
-Reordering the scenarios therefore leaves fixed-budget results unchanged when
+Reordering the scenarios therefore leaves results for a fixed budget unchanged when
 the safety cap is not reached. Different actions can still consume different
 environment draws, so paired starting seeds do not mean identical later luck.
 
@@ -126,20 +126,20 @@ counts. A safety timeout is recorded as a shortfall, not a completed fixed budge
 Timed search uses unseeded search randomness and records `search_seed` as `null`.
 With `--sims`, the recorded time limit is the 60 second safety cap, even if a
 different positional time budget was supplied. The JSON contains aggregate
-results, per-game outcome records and decision work counts. It does not contain
+results, outcome records for each game and decision work counts. It does not contain
 full state and action traces. Keep the source revision alongside an export when
 comparing changes to the engine.
 
-To give search and one-round enumeration the same allowance of simulated rounds:
+To give search and enumeration of one round the same allowance of simulated rounds:
 
 ```sh
 python benchmark.py 5 --transitions 300 --game-seed 200 --seed 7 --policy-seed 7 --json transitions.json --markdown transitions.md
 ```
 
-This serial mode adds the one-round comparator and counts every simulator call
+This serial mode adds the one round comparator and counts every simulator call
 used to evaluate actions. MCTS counts tree traversal, expansion and rollout.
 It starts a simulation only when the remaining allowance can fund its full
-five-round horizon. The comparator completes whole sweeps over every legal
+horizon of five rounds. The comparator completes whole sweeps over every legal
 action, using the same starting sample seed for each candidate in a sweep.
 Neither method truncates its final work unit just to spend the allowance.
 
@@ -152,7 +152,7 @@ greedy remain contextual controls that do no sampled forward search. This mode
 uses descriptive results without confidence intervals or z statistics.
 
 Choose `--transitions` separately from `--sims` and `--one-round-samples`.
-Existing timed and fixed-simulation commands keep their behavior.
+Existing timed commands and commands with fixed simulation counts keep their behavior.
 
 For reproducible parallel decisions, use
 [`ParallelMCTS` with `mode="fixed"`](docs/parallel-fixed-work.md). It divides a
@@ -192,6 +192,12 @@ Recommended: Spark -> Frost Tyrant
 The reward is a mean shaped value, **not a calibrated win probability**. The compatibility field `RankedAction.win_rate` retains its original name. The boss punishes traps, and the search ranks Weakness Mark below passing in this decision. Timing depends on the machine and its load; the seeded visit counts do not, provided the safety time cap is not reached.
 
 ## Results
+
+The studies ask different questions. The frozen first action comparison measures
+reference loss under a one round model. The later complete encounter comparison
+was inconclusive about which policy wins more often, and ordinary UCT remains the
+default. Separate process studies examine execution cost and owned worker behavior.
+Those operational results do not establish better play.
 
 ### First action quality at 32 simulations
 
@@ -240,8 +246,8 @@ encounter work.
 Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs; AMD Ryzen 7 7800X3D; Windows 11; 64 GB RAM.
 Run on 2026-09-06.
 
-These recorded results predate the separate policy stream and per-scenario
-search reset. They are retained as historical measurements. A new run uses the
+These recorded results predate the separate policy stream and the search reset
+for each scenario. They are retained as historical measurements. A new run uses the
 repaired experiment protocol and should be reported separately.
 
 | scenario | random | greedy | mcts (3000 sims) | search vs best baseline |
@@ -257,11 +263,11 @@ repaired experiment protocol and should be reported separately.
 
 The [historical wall clock results](docs/benchmark-results-historical.md) describe earlier code and are explicitly archived. For machine budget exploration, `python benchmark.py 60 120` still runs the timed benchmark. Wall clock runs can differ because their simulation counts differ.
 
-The [one-round comparator study](docs/comparison-results.md) uses the repaired
-random-stream protocol with three search and policy seed repeats over five
+The [study of the comparator for one round](docs/comparison-results.md) uses the repaired
+protocol for random streams with three search and policy seed repeats over five
 environment seeds per scenario. The comparator enumerates legal moves, including
-healing and defense, and samples eight one-round outcomes for each. It won a duel
-condition that MCTS did not finish within the 30-round limit. MCTS won more
+healing and defense, and samples eight outcomes for one round per action. It won a duel
+condition that MCTS did not finish within the limit of 30 rounds. MCTS won more
 gauntlet and boss games, while random beat
 the comparator in two conditions. All game outcomes and actual work counts are
 retained. The policies use unequal compute budgets, and the repeats do not become
@@ -272,17 +278,17 @@ python benchmark.py 5 --sims 300 --seed 7 --policy-seed 7 --one-round-samples 8 
 ```
 
 `--one-round-samples` adds the comparator without changing the default policy set.
-JSON exports include per-game seeds, scores, terminal results and round counts,
+JSON exports include seeds for each game, scores, terminal results and round counts,
 alongside their aggregates. A successor transition and a MCTS simulation are
 different work units, so the recorded counts do not establish efficiency.
 
-Run one sampled one-round comparator decision from the checkout:
+Run one decision with the sampled comparator for one round from the checkout:
 
 ```sh
 python demo.py gauntlet --one-round-samples 8 --seed 7
 ```
 
-This prints every sampled legal action, its zero-based hand and target indexes,
+This prints every sampled legal action, its hand and target indexes starting at zero,
 mean value and completed sample count. The fixed scenario seed is 7, while
 `--seed` controls the sampling stream. The selected action follows the existing
 policy's tie order. The command completes the requested samples without a clock
@@ -291,7 +297,7 @@ limit, and elapsed time is only an observation. Choose this mode separately from
 behavior. The values share the simulator and heuristic with the search. They
 are not calibrated win probabilities or MCTS visit counts.
 
-The same sampled one-round comparator values are available to a Python caller:
+The same sampled values from the comparator for one round are available to a Python caller:
 
 ```python
 import random
@@ -367,7 +373,7 @@ instrumented searches completed the same work and matched their root statistics,
 rankings and random generator states. Cost was spread across legal actions,
 hashing, tree traversal and simulator operations. The bounded result did not
 justify a native port, so the Python reference remains unchanged. The report
-retains the full profile and the limits of that no-change decision.
+retains the full profile and the limits of that decision to leave the implementation unchanged.
 
 ## How it works
 
@@ -407,7 +413,7 @@ uses its own copy of the prior, just as it builds its own tree.
 ## What these numbers do not prove
 
 * Thirty games per cell and one search seed leave substantial sampling uncertainty. Shared starting seeds do not remove it. The z scores in the generated table are descriptive approximations, not a paired significance analysis.
-* Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one-round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded studies include new environment seeds and matched transition allowances, but do not establish general superiority or equal CPU cost.
+* Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded studies include new environment seeds and matched transition allowances, but do not establish general superiority or equal CPU cost.
 * The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
 * Parallel merging is tested, and a separate bounded study now measures process
   scaling on three initial states. It does not establish linear scaling, full
@@ -435,8 +441,8 @@ I built this to understand how software compares uncertain outcomes under a limi
 - **Search algorithms.** Follow selection, expansion and rollout through one implementation. [Inspect the work](engine/mcts.py).
 - **Parallel work.** Read why work is divided between independent search roots and how results are combined. [Inspect the work](docs/design-decisions.md).
 - **Fair comparisons.** Compare recorded search results under stated seeds and budgets, including the weaker result. [Inspect the work](docs/benchmark-results.md).
-- **Python tooling.** Use an engine-only package with a separate recording and inspection companion. [Inspect the work](docs/episode-companion.md).
-- **Process ownership.** Follow explicit decision lifetime, fixed-work receipts and retryable cleanup. [Inspect the work](docs/managed-decider.md).
+- **Python tooling.** Use a package containing only the engine with a separate recording and inspection companion. [Inspect the work](docs/episode-companion.md).
+- **Process ownership.** Follow explicit decision lifetime, receipts for fixed amounts of work and retryable cleanup. [Inspect the work](docs/managed-decider.md).
 - **Software assurance.** Inspect bounded input, recovery and model checks with retained negative controls. [Inspect the work](docs/bounded-assurance.md).
 
 This demonstrates algorithm and experiment design. Applying it to routing or scheduling would need a new domain model, constraints and validation; the current project does not claim that deployment.
