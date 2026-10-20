@@ -175,10 +175,13 @@ win/loss objective.
 
 The report binds the qualified nine engine body hashes, observed installation,
 saved decision producer, reference producer and exact state representation.
-An unqualified installed engine is refused. The two explicitly qualified raw
-source maps identify the original engine and its documentation-only MCTS
-docstring correction. A complete report binds its observed engine to its own
-declared qualified map. Historical reports keep that original declaration.
+An unqualified installed engine is refused. The
+[complete qualified source maps](https://github.com/T92T1914/mcts-combat-engine/blob/3888e6fc0d17a990f03b0eb6e2c81d00a5cd59ca/reference/report.py) preserve the original
+engine declarations and later separately qualified implementations. The
+[compatibility guide](model-compatibility.md) explains the threshold and reward
+documentation changes without rewriting historical identities. A complete report
+binds its observed engine to its own declared qualified map. Historical reports
+keep that original declaration.
 A decision from different engine code can have its supported state priced,
 but its quality comparison is ineligible.
 Original source-byte hashes remain retained claims. Hashes identify bytes, not
