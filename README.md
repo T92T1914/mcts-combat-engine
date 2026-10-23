@@ -20,7 +20,7 @@ reference does not establish a better complete encounter. The later
 
 [Run it](#run-it) · [Optional root allocation](#optional-root-allocation) · [Results](#results) · [How it works](#how-it-works) · [Design decisions](docs/design-decisions.md)
 
-[Explore the browser demo](https://t92t1914.github.io/mcts-combat-engine/) · [Open in Codespaces](https://codespaces.new/T92T1914/mcts-combat-engine)
+[Explore the browser demo](https://t92t1914.github.io/mcts-combat-engine/) · [Open in Codespaces](https://codespaces.new/T92T1914/mcts-combat-engine) · [Read in another language](https://github.com/T92T1914/T92T1914/blob/main/TRANSLATION.md)
 
 Use **Link to this example** in the browser demo to share the selected result.
 The URL keeps the example's visible label, and Back and Forward restore earlier
