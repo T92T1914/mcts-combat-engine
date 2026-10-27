@@ -541,10 +541,13 @@ test('decision editions follow effective appearance, preserve scale and download
   assert.equal(await visible.getAttribute('src'), 'decision-obscur.png');
   const noScript = await fixture(t, {javaScriptEnabled:false,colorScheme:'dark',viewport:{width:390,height:844}});
   await noScript.goto(base);
+  assert.equal(await noScript.locator('html').getAttribute('data-appearance'), 'obscur');
+  assert.equal(await noScript.locator('#appearance').inputValue(), 'obscur');
   const noScriptImage = noScript.locator('#decision-figure img:visible');
   assert.equal(await noScriptImage.getAttribute('src'), 'decision-obscur.png');
   await noScript.emulateMedia({colorScheme:'light'});
-  assert.equal(await noScriptImage.getAttribute('src'), 'decision-clair.png');
+  assert.equal(await noScriptImage.count(), 1);
+  assert.equal(await noScriptImage.getAttribute('src'), 'decision-obscur.png');
 });
 
 
@@ -720,9 +723,10 @@ for (const mode of ['clair','obscur']) test(`${mode} accepted evidence routes pr
   assert.equal(await visible.getAttribute('src'),'request-edge-reuse-clair.png');
   const noScript = await fixture(t,{javaScriptEnabled:false,colorScheme:mode==='clair'?'light':'dark',viewport:{width:390,height:844}});
   await noScript.goto(base+'/');
+  assert.equal(await noScript.locator('html').getAttribute('data-appearance'), 'obscur');
   assert.equal(await noScript.locator('#accepted-evidence').isVisible(),true);
   assert.deepEqual(await noScript.getByRole('region',{name:'Same-work relative search timing'}).locator('tbody tr').evaluateAll(rows=>rows.map(row=>[...row.cells].map(cell=>cell.textContent))),expected);
-  assert.equal(await noScript.locator('#request-edge-reuse-figure img:visible').getAttribute('src'),`request-edge-reuse-${mode}.png`);
+  assert.equal(await noScript.locator('#request-edge-reuse-figure img:visible').getAttribute('src'),'request-edge-reuse-obscur.png');
   assert.match(await noScript.locator('#decision-figure').textContent(),/earlier saved decision from source a82e1a6/);
   assert.equal(await noScript.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
 });
