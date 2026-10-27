@@ -26,8 +26,8 @@ Use **Link to this example** in the browser demo to share the selected result.
 The URL keeps the example's visible label, and Back and Forward restore earlier
 selections. These links inspect saved evidence; they do not run a new calculation.
 
-The action inspector supports Auto, Clair and Obscur. Auto follows the system
-appearance, while a saved choice stays local to this project. Switching keeps the
+The action inspector starts in Obscur. Auto follows the system appearance, and
+an explicit Auto, Clair or Obscur choice stays local to this project. Switching keeps the
 selected action, metrics and share link. The original recorded diagram and JSON
 stay unchanged. Inter is used when installed locally, with a system font fallback
 for other visitors and no remote font download. Code keeps its monospace font.

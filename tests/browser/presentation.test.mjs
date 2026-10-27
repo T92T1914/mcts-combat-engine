@@ -159,6 +159,7 @@ for (const mode of ['clair','obscur']) test(`${mode} repeated execution report p
   assert.equal(await table.textContent(),before);
   const noScript = await fixture(t,{javaScriptEnabled:false,colorScheme:mode==='obscur'?'dark':'light',hasTouch:true,viewport:{width:390,height:844}});
   await noScript.goto(base+'/same-forest-repeatability.html');
+  assert.equal(await background(noScript),'rgb(9, 9, 9)');
   assert.equal(await noScript.locator('tbody tr').count(),24);
   assert.equal(await noScript.getByRole('img').count(),2);
   assert.equal(await noScript.getByRole('link',{name:'Download public receipts',exact:true}).count(),1);
@@ -241,7 +242,7 @@ for (const mode of ['obscur','clair']) test(`${mode} same forest report preserve
   const noScript = await fixture(t,{javaScriptEnabled:false,colorScheme:mode === 'obscur' ? 'dark' : 'light'});
   await noScript.goto(base+'/same-forest.html');
   assert.deepEqual(await noScript.locator('tbody').allTextContents(),tables);
-  assert.equal(await background(noScript),mode === 'obscur' ? 'rgb(9, 9, 9)' : 'rgb(248, 247, 243)');
+  assert.equal(await background(noScript),'rgb(9, 9, 9)');
 });
 
 test('Auto, prepaint preference, reload, selection and browser history stay independent', async t => {
@@ -280,6 +281,12 @@ test('Auto, prepaint preference, reload, selection and browser history stay inde
   assert.equal(await background(page), 'rgb(9, 9, 9)');
   await page.emulateMedia({colorScheme:'light'});
   assert.equal(await background(page), 'rgb(248, 247, 243)');
+  assert.equal(await page.evaluate(() => localStorage.getItem('mcts-combat-engine.appearance.v1')), 'auto');
+  await page.reload();
+  await page.locator('#interactive:visible').waitFor();
+  assert.equal(await page.locator('#appearance').inputValue(), 'auto');
+  assert.equal(await background(page), 'rgb(248, 247, 243)');
+  assert.equal(await page.locator('#metrics').textContent(), before);
   await page.locator('#choice').selectOption('2');
   await page.goBack();
   assert.equal(await page.locator('#choice').inputValue(), '1');
@@ -288,13 +295,14 @@ test('Auto, prepaint preference, reload, selection and browser history stay inde
   assert.equal(await page.locator('#example-link').getAttribute('href'), page.url());
 });
 
-test('blocked storage keeps an in-memory override and no-script Auto preserves evidence', async t => {
+test('blocked storage keeps an in-memory override and no-script Obscur preserves evidence', async t => {
   const page = await fixture(t, {colorScheme:'light'}, true);
   await ready(page);
-  await page.locator('#appearance').selectOption('obscur');
   assert.equal(await background(page), 'rgb(9, 9, 9)');
-  await page.reload();
+  await page.locator('#appearance').selectOption('clair');
   assert.equal(await background(page), 'rgb(248, 247, 243)');
+  await page.reload();
+  assert.equal(await background(page), 'rgb(9, 9, 9)');
   const noScript = await fixture(t, {javaScriptEnabled:false, colorScheme:'dark'});
   await noScript.goto(base);
   assert.equal(await background(noScript), 'rgb(9, 9, 9)');
@@ -304,7 +312,7 @@ test('blocked storage keeps an in-memory override and no-script Auto preserves e
   assert.equal(await noScript.locator('#decision-figure a[href="data.json"]').count(), 1);
   assert.equal(await noScript.locator('#decision-figure a[href="example.svg"]').count(), 1);
   await noScript.emulateMedia({colorScheme:'light'});
-  assert.equal(await background(noScript), 'rgb(248, 247, 243)');
+  assert.equal(await background(noScript), 'rgb(9, 9, 9)');
 });
 
 for (const mode of ['clair','obscur']) test(`${mode} preserves every action, figure and keyboard/narrow layouts`, async t => {
@@ -478,7 +486,7 @@ for (const mode of ['obscur','clair']) test(`${mode} process report keeps every 
 });
 
 test('process report needs no script and handles unavailable storage and print separately', async t => {
-  const noScript = await fixture(t, {javaScriptEnabled:false, colorScheme:'dark'});
+  const noScript = await fixture(t, {javaScriptEnabled:false, colorScheme:'light'});
   await noScript.goto(base+'/parallel-scaling.html');
   assert.equal(await background(noScript), 'rgb(9, 9, 9)');
   assert.equal(await noScript.locator('tbody tr').count(), 166);
@@ -491,7 +499,7 @@ test('process report needs no script and handles unavailable storage and print s
   await page.emulateMedia({media:'screen'});
   assert.equal(await background(page), 'rgb(9, 9, 9)');
   await page.reload();
-  assert.equal(await background(page), 'rgb(248, 247, 243)');
+  assert.equal(await background(page), 'rgb(9, 9, 9)');
 });
 
 

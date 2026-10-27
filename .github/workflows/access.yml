@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
-      - run: node --test tests/selection-state.test.mjs
+      - run: node --test tests/selection-state.test.mjs tests/appearance.test.mjs
       - run: python tools/render_parallel_scaling.py --check
       - run: python tools/build_site.py
       - run: npm ci --ignore-scripts
