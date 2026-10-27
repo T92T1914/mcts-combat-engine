@@ -539,7 +539,8 @@ def markdown(record):
 def webpage(record):
     escape = html.escape
     parts = [
-        '<!doctype html><html lang="en"><head><meta charset="utf-8">',
+        '<!doctype html><html lang="en" data-appearance="obscur">'
+        '<head><meta charset="utf-8">',
         '<meta name="viewport" content="width=device-width,initial-scale=1">',
         "<title>Fixed work process scaling | MCTS Combat Engine</title>",
         '<script src="appearance.js"></script>'
@@ -553,8 +554,9 @@ def webpage(record):
         '<div class="appearance-control"><label for="appearance">Appearance</label>',
         '<select id="appearance" disabled><option value="auto">Auto</option>',
         '<option value="clair">Clair</option>'
-        '<option value="obscur">Obscur</option></select>',
-        "<noscript>Auto follows your system appearance.</noscript>"
+        '<option value="obscur" selected>Obscur</option></select>',
+        "<noscript>Obscur appearance. Enable JavaScript "
+        "to choose Clair or Auto.</noscript>"
         '</div><main id="main">',
         '<p class="eyebrow">A separate computational study</p>',
         '<h1>Fixed work process scaling</h1><div class="actions">',

@@ -421,7 +421,7 @@
     "docs/same-forest-repeatability-public-receipts.json": "4dfd39199cf55e61a53f527f055c562cdc4fc37598c80103749111786b8358e9",
     "docs/same-forest-repeatability-protocol.json": "aedc86e3107e65a99dbf5c20f33d408a350742df07400f23f45adf25ea16a143",
     "presentation/tokens.json": "96a3b9d2e35e074069b7a70213327b1f79ca898454c6e64906899e5d59ae0feb",
-    "tools/render_same_forest_repeatability.py": "415cb22a83d6fb9724ebe81adb28e1e262ddeca069f37561943b315c4ea53e3e",
+    "tools/render_same_forest_repeatability.py": "f52fdbac8b4a741c95e00ca0074e0e99dfee51db373ec3cbff5c5845eafbb434",
     "tools/render_same_forest_repeatability_figure.py": "a57865ae48cf81b108cfdb8c513b7c2b5d4cfb2e886dace68720c7e61c324f88"
   },
   "outputs_sha256": {

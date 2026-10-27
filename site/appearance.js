@@ -1,12 +1,13 @@
-/* This runs before styles paint. No storage or script is required for Auto. */
+/* This runs before styles paint. HTML supplies the no-script Obscur default. */
 (function () {
   'use strict';
   const key = 'mcts-combat-engine.appearance.v1';
   const root = document.documentElement;
-  let preference = 'auto';
+  let preference = ['auto', 'clair', 'obscur'].includes(root.dataset.appearance)
+    ? root.dataset.appearance : 'obscur';
   try {
     const saved = localStorage.getItem(key);
-    if (saved === 'clair' || saved === 'obscur') preference = saved;
+    if (['auto', 'clair', 'obscur'].includes(saved)) preference = saved;
   } catch (_) { /* A blocked store leaves a working in-memory preference. */ }
   root.dataset.appearance = preference;
   document.addEventListener('DOMContentLoaded', () => {
@@ -18,8 +19,7 @@
       preference = ['clair', 'obscur'].includes(control.value) ? control.value : 'auto';
       root.dataset.appearance = preference;
       try {
-        if (preference === 'auto') localStorage.removeItem(key);
-        else localStorage.setItem(key, preference);
+        localStorage.setItem(key, preference);
       } catch (_) { /* Switching remains usable when persistence is unavailable. */ }
     });
   });
