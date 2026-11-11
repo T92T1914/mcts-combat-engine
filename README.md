@@ -7,7 +7,7 @@
 
 I built this to explore how a search chooses an action when the outcome can change. It uses Monte Carlo Tree Search in a small combat simulator, with three encounters and random and greedy policies to compare against. The engine is pure Python and has no runtime dependencies.
 
-The reusable engine runs the model and search. A separate companion handles
+The engine package runs the model and search. A separate companion handles
 recording, replay, decisions from saved states and inspection. Start with a task:
 
 - **Inspect a saved decision.** Open the [browser example](https://t92t1914.github.io/mcts-combat-engine/) to read retained actions, sampled scores and visits. It performs no new search.
@@ -50,7 +50,7 @@ Elapsed time and simulations per second still vary. Without `--sims`, the demo
 keeps its time budget. The episode benchmark has the separate safety caps
 described below.
 
-Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `mypy`. CI tests Python 3.11, 3.12 and 3.13. `pip install .` installs the reusable `engine` package; `game`, `data` and the demonstration scripts remain separate examples.
+Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `mypy`. CI tests Python 3.11, 3.12 and 3.13. `pip install .` installs the `engine` package; `game`, `data` and the demonstration scripts remain separate examples.
 
 The [complete companion](docs/episode-companion.md) supports custom recording,
 replay, decisions from saved states and inspection with an installed engine and no
@@ -414,7 +414,7 @@ uses its own copy of the prior, just as it builds its own tree.
 
 * Thirty games per cell and one search seed leave substantial sampling uncertainty. Shared starting seeds do not remove it. The z scores in the generated table are descriptive approximations, not a paired significance analysis.
 * Random and greedy are simple baselines. Greedy never heals, while random sometimes does. The newer one round comparator covers every legal action but still shares the simulator and heuristic with the search. The bounded studies include new environment seeds and matched transition allowances, but do not establish general superiority or equal CPU cost.
-* The engine is separated from the example game, but broader generality has not been demonstrated on a second domain.
+* The engine package holds the combat model as well as the search, and it imports nothing from `game`. It has not been run on any other game, and nothing here claims it would work on one.
 * Parallel merging is tested, and a separate bounded study now measures process
   scaling on three initial states. It does not establish linear scaling, full
   game throughput or playing strength. Compilation speedups remain unmeasured.

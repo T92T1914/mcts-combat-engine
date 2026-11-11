@@ -1,7 +1,7 @@
 """Data-driven content: cards, scenarios, and boss rules defined as JSON.
 
 This mirrors how the engine's parent project worked — a knowledge base of
-structured content feeding a generic engine — scaled to a self-contained
+structured content feeding the engine — scaled to a self-contained
 repo. The engine never reads these files; it receives plain Card/Combatant
 objects, so swapping content means editing JSON, not code.
 
