@@ -112,7 +112,7 @@ fonts. Preserve the original diagram, decision source and later study results.
 Use these extra checks for presentation changes:
 
 ```sh
-node --test tests/selection-state.test.mjs
+node --test tests/selection-state.test.mjs tests/appearance.test.mjs
 npm ci --ignore-scripts
 python tools/render_parallel_scaling.py --check
 python tools/build_site.py
