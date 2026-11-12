@@ -50,7 +50,7 @@ Elapsed time and simulations per second still vary. Without `--sims`, the demo
 keeps its time budget. The episode benchmark has the separate safety caps
 described below.
 
-Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `mypy`. CI tests Python 3.11, 3.12 and 3.13. `pip install .` installs the `engine` package; `game`, `data` and the demonstration scripts remain separate examples.
+Install `pip install -e ".[dev]"` for development, then run `ruff check .` and `mypy`. CI tests Python 3.11, 3.12 and 3.13. `pip install .` installs the `engine` package. The `game` and `data` folders and the demonstration scripts remain separate examples.
 
 The [complete companion](docs/episode-companion.md) supports custom recording,
 replay, decisions from saved states and inspection with an installed engine and no

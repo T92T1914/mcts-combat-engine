@@ -35,6 +35,16 @@ class TwoRoundHorizonStudyTests(unittest.TestCase):
                 max_seconds=10,
             )
 
+    def test_collector_bytes_match_the_committed_receipts(self):
+        # The receipts record the SHA-256 of this file's committed LF bytes.
+        # A checkout that rewrites line endings would record a different hash.
+        expected = {
+            json.loads((study.DATA / name).read_bytes())["collector_sha256"]
+            for name in ("exploratory.json", "deciding.json")
+        }
+        actual = study.digest(Path(study.__file__).read_bytes())
+        self.assertEqual(expected, {actual})
+
     def test_public_model_and_both_actual_work_counts_preserve_root(self):
         state = study.construct_state(self.state)
         before = records.canonical(records.normalized(state))
