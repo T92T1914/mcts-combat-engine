@@ -207,8 +207,11 @@ correction does not revise their retained study results.
 * No robust child final selection in the engine. The companion compares
   visits-first and mean-first choices from the same captured statistics in
   that diagnostic. No RAVE, progressive widening, or transposition table.
-* No second game to test the "game agnostic" claim beyond the one 9 card
-  domain shipped here.
+* No second game. Closed on purpose: the search imports the combat state, legal
+  actions and round advance directly from the engine package, so a second game
+  would need a new state and action interface inside the search. The project
+  makes no claim that the engine works for any game, and the earlier
+  game-agnostic wording is removed.
 * The historical encounter benchmark uses the single process engine. Separate
   [process scaling](parallel-scaling-results.md), [same forest](same-forest-results.md)
   and [repeated execution](same-forest-repeatability-results.md) studies now

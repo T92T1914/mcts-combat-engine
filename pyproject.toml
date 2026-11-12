@@ -26,14 +26,15 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-# Development tools only; none of them are imported by the code.
-dev = ["ruff", "mypy", "pytest"]
+# Development tools only; none of them are imported by the code. The ruff and
+# mypy pins match the lint job in .github/workflows/ci.yml.
+dev = ["ruff==0.16.6", "mypy==2.2.0", "pytest"]
 
 [project.urls]
 Source = "https://github.com/T92T1914/mcts-combat-engine"
 
-# Only the game-agnostic engine is installable. game/, data/ and the two
-# scripts are the worked example, supplied by a separate companion or checkout.
+# Only the engine package is installable. It holds the combat model and the
+# search. game/, data/ and the two scripts are the worked example, supplied by a separate companion or checkout.
 [tool.setuptools]
 packages = ["engine"]
 

@@ -14,3 +14,8 @@ docs/mcts-decision-obscur-wide.svg text eol=lf
 docs/same-forest-repeatability-*.svg text eol=lf
 docs/request-edge-reuse-clair.svg text eol=lf
 docs/request-edge-reuse-obscur.svg text eol=lf
+
+# The horizon study pins its frozen inputs by SHA-256 of the committed LF bytes.
+docs/two-round-horizon/*.json text eol=lf
+# The collector records the SHA-256 of its own committed LF bytes in the receipts.
+tools/two_round_horizon_study.py text eol=lf
