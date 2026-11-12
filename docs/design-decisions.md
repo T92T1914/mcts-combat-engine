@@ -199,14 +199,22 @@ correction does not revise their retained study results.
 
 ## Not done, on purpose or not yet
 
-* No sensitivity sweep of the two reward shaping constants. The retained
+* No sensitivity sweep of the two reward shaping constants. Closed on purpose.
+  The encounter study found no demonstrated encounter win difference from a
+  better first action, so a sweep scored on first actions could not justify
+  changing a constant. A sweep scored on encounters would need a study on the
+  scale of the 2244 encounter deciding phase. The retained
   [stability diagnostic](episode-stability.md#retained-baseline) compares
   exploration coefficients 0.6/1.2/2.4 over six early states, with 216 completed
   calls. That scoped result retains the mean-first engine rule and the
   hand-chosen default 1.2. It does not establish stronger decisions or optimality.
+  The two shaping constants stay hand chosen.
 * No robust child final selection in the engine. The companion compares
   visits-first and mean-first choices from the same captured statistics in
   that diagnostic. No RAVE, progressive widening, or transposition table.
+  Closed on purpose. Each one changes the search, and ordinary UCT stays the
+  default. A change to the search needs a study specified in advance, and none
+  is planned. Nothing in the retained results depends on them.
 * No second game. Closed on purpose: the search imports the combat state, legal
   actions and round advance directly from the engine package, so a second game
   would need a new state and action interface inside the search. The project
@@ -216,4 +224,6 @@ correction does not revise their retained study results.
   [process scaling](parallel-scaling-results.md), [same forest](same-forest-results.md)
   and [repeated execution](same-forest-repeatability-results.md) studies now
   retain bounded timing comparisons. They do not establish full encounter
-  throughput, playing strength or general hardware scaling.
+  throughput, playing strength or general hardware scaling. Closed as a stated
+  limit. The benchmark stays on the single process engine, and the timing
+  studies keep the scope their own documents state.
