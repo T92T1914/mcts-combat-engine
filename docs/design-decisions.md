@@ -154,7 +154,7 @@ budget stops at a machine dependent number of simulations. The tests pin
 both, the demo's `--sims` does the same, and a loader test pins the exact
 RNG stream so a content edit cannot silently shift every seeded result.
 
-**Where.** `mcts_decider` docstring in `game/baselines.py`;
+**Where.** `mcts_decider` docstring in `engine/decider.py`,
 `test_determinism_under_fixed_seed`; `test_rng_stream_parity_with_precomputed_hand`;
 `demo.py`.
 
@@ -171,7 +171,8 @@ identical later random events.
 
 ## 12. Error bars come from code
 
-**Why.** Sixty games per cell is a small sample. Every benchmark cell
+Why. The first benchmark run used sixty games per cell and the
+committed table uses thirty. Both are small samples. Every benchmark cell
 carries a Wilson interval and every row a z score for the search against
 its best baseline, computed by `game/stats.py` and pinned by tests to the
 hand checked numbers of the first benchmark run (the committed table is a

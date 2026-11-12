@@ -91,7 +91,7 @@ retains its existing behavior. The table is not stored on a Node, policy,
 process pool or engine between decisions, and returned Actions do not carry a
 reference to it.
 
-The [implementation](https://github.com/T92T1914/mcts-combat-engine/blob/main/engine/mcts.py)
+The [measured implementation](https://github.com/T92T1914/mcts-combat-engine/blob/1f573c798c27e374fc9755417f07951e78883867/engine/mcts.py)
 changes this construction path only. The other eight engine payloads, including
 the Action type, simulator, rules, state arithmetic, managed policy and parallel
 interfaces, are byte-identical to the measured baseline. Selection order,
@@ -191,8 +191,10 @@ Release documentation and producer admission can add source files while
 preserving that measured engine payload. The companion manifest identifies
 the revision to acquire for its complete supported consumer layout.
 
-The reference consumers explicitly admit this complete nine-payload map in
-addition to the two historical qualified maps. Missing, extra or altered
+When this change landed, the reference consumers explicitly admitted this
+complete nine-payload map in addition to the two historical qualified maps.
+Later engine revisions, including root allocation, added their own explicit
+maps in `reference/report.py`. Missing, extra or altered
 payload declarations remain refused. No hash wildcard or dynamic admission is
 introduced, and the numerical model identities and reference methods are
 unchanged.

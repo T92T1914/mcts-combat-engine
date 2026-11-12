@@ -46,8 +46,10 @@ transitions, not command time, memory or accuracy.
 
 Core callers may select
 `MCTS(horizon_rounds=1, max_sims=32, max_transitions=32, root_allocation="sequential_halving", rng=random.Random(23)).search(state, time_budget_ms=None)`.
-The managed recording factory and parallel search retain their existing interfaces.
-This first optional mode does not add a parallel allocation implementation.
+When this mode was added, the managed recording factory and parallel search kept
+their existing interfaces. Later revisions let `mcts_decider(root_allocation=...)` and
+`episode.py record --root-allocation` select the same serial horizon one option.
+Parallel search still has no allocation implementation.
 
 ## What changes
 
