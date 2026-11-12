@@ -33,8 +33,8 @@ dev = ["ruff==0.16.6", "mypy==2.2.0", "pytest"]
 [project.urls]
 Source = "https://github.com/T92T1914/mcts-combat-engine"
 
-# Only the game-agnostic engine is installable. game/, data/ and the two
-# scripts are the worked example, supplied by a separate companion or checkout.
+# Only the engine package is installable. It holds the combat model and the
+# search. game/, data/ and the two scripts are the worked example, supplied by a separate companion or checkout.
 [tool.setuptools]
 packages = ["engine"]
 
