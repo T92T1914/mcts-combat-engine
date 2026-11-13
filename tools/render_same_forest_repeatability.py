@@ -1,4 +1,4 @@
-"""Validate repeated same-work receipts and summarize process-block uncertainty."""
+"""Validate repeated same work receipts and summarize process block uncertainty."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ PRIVATE_FAILED = {
 MEASURED_REVISION = "60bd4848427b2489e7bec4048170407b0c8f4e99"
 MEASURED_TREE = "a65a176e3640c5ec8991a40231e5c550fc66a97a"
 PUBLIC_MEASUREMENT_REVISION = "fb7addac28a6045fcb8f6cbaedc31c4808b4058a"
-T_CRITICAL = 2.571  # NIST table, two-sided 95 percent, five degrees of freedom.
+T_CRITICAL = 2.571  # NIST table, two sided 95 percent, five degrees of freedom.
 
 
 def nested_record_encoding(block, declared_sha256):
@@ -258,11 +258,11 @@ def summarize(record):
 
 def markdown(record, summary, provenance=None):
     lines = [
-        "# Repeated same-forest execution",
+        "# Repeated same forest execution",
         "",
         "[Public receipt derivative](same-forest-repeatability-public-receipts.json) | "
         "[Predeclared protocol](same-forest-repeatability-protocol.json) | "
-        "[Original one-observation control](same-forest-results.md)",
+        "[Original single observation control](same-forest-results.md)",
         "",
         "All 216 executions completed and matched the same computational "
         "receipts within every condition across six fresh Python controller "
@@ -271,9 +271,9 @@ def markdown(record, summary, provenance=None):
         "The search algorithm and seeds did not change.",
         "",
         "The table estimates a geometric mean of paired sequential/process "
-        "wall-time ratios. Above 1 favors processes. Each approximate "
-        "95-percent interval uses six process-block means, df 5 and the "
-        "predeclared rounded Student-t critical value 2.571. The two inner "
+        "wall time ratios. Above 1 favors processes. Each approximate "
+        "95 percent interval uses six process block means, df 5 and the "
+        "predeclared rounded Student t critical value 2.571. The two inner "
         "repetitions are not counted as independent processes. These are "
         "individual intervals, not simultaneous confidence across all 24 "
         "comparisons.",
@@ -296,18 +296,18 @@ def markdown(record, summary, provenance=None):
         "The original search timer includes engine construction in sequential "
         "and cold calls but excludes warm pool preparation. The new complete "
         "call includes preparation, the search, receipt conversion, the "
-        "root-mutation check and owned pool cleanup. Controller invocation "
+        "root mutation check and owned pool cleanup. Controller invocation "
         "cost is retained separately and is not apportioned among modes. "
         "Overlapping components must not be added.",
         "",
         "Fresh controllers share one machine and one interpreter installation. "
-        "No rebuild or cross-machine level was sampled. The approximate "
+        "No rebuild or cross machine level was sampled. The approximate "
         "interval assumes reasonably independent, approximately normal block "
         "means. Shared activity, drift and six blocks limit that assumption. "
         "Within the complete attempt, no search was discarded as warmup "
         "and no failed block was retried. "
-        "There was no outcome-based early stopping or tuning. The maximum-cost "
-        "rule was 300 seconds with a 70-second admission reserve.",
+        "There was no early stopping or tuning based on outcomes. The maximum cost "
+        "rule was 300 seconds with a 70 second admission reserve.",
         "",
         "Three fixed initial states and one seed do not represent all workloads "
         "or general search quality. Repetition cannot establish stronger play, "
@@ -331,9 +331,9 @@ def markdown(record, summary, provenance=None):
         "",
         "[NIST confidence limits for a mean]"
         "(https://www.itl.nist.gov/div898/handbook/eda/section3/eda352.htm) and "
-        "[Student-t critical values]"
+        "[Student t critical values]"
         "(https://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm) "
-        "define the declared ordinary mean interval on the process-block "
+        "define the declared ordinary mean interval on the process block "
         "log ratios and the rounded df 5 value.",
         "",
         "Validate this report without running search:",
@@ -358,13 +358,13 @@ def markdown(record, summary, provenance=None):
             f"{snapshot['public_equivalent_revision']}). Both trees are "
             f"`{snapshot['recorded_git_tree']}`, with identical paths, modes "
             "and blobs. The public commit has different commit metadata and "
-            "history. This is source-tree equivalence, not preservation of "
+            "history. This is source tree equivalence, not preservation of "
             "the original commit identity.",
             "",
             "No receipt revision, timer or measured value was rewritten for "
             "publication. A new collection from the public snapshot would "
             "record its public commit identity and produce a separate attempt. "
-            "Use the current public checkout for the retained-data validation "
+            "Use the current public checkout for the retained data validation "
             "command above. The local analysis correction recorded below is "
             "historical. The current report generator also includes later "
             "presentation and privacy work and is not the measured source.",
@@ -376,18 +376,18 @@ def markdown(record, summary, provenance=None):
             "(same-forest-repeatability-public-failed-attempt.json)",
             "",
             f"The first collection at `{failed['measured_revision']}` "
-            "failed after one completed cell. An in-memory dataclass tuple "
+            "failed after one completed cell. An in memory dataclass tuple "
             "was passed to a validator for retained JSON arrays. The saved "
             "first cell validates as JSON. This failed collection is retained "
             "and supplies no timing evidence.",
             "",
             "After the producer correction was independently reviewed, a "
             "new whole attempt used the same frozen protocol and resource "
-            "bounds. No partial block was reused and no outcome-based "
-            "budget or order change was made.",
+            "bounds. No partial block was reused and no budget or order "
+            "change based on outcomes was made.",
             "",
             "The complete attempt's first analysis stopped at the nested "
-            "raw-byte hash gate before producing a timing summary. All six "
+            "raw byte hash gate before producing a timing summary. All six "
             "saved blocks matched their declared hashes and the native "
             "Windows CRLF serializer. The analyzer correction accepts only "
             "exact canonical LF or CRLF forms. Changed values, arbitrary "
@@ -396,24 +396,24 @@ def markdown(record, summary, provenance=None):
             "",
             f"Validated analysis revision: `{analysis['validated_revision']}`. "
             "The measured source hashes were checked against committed "
-            "measured-revision blobs. The current non-analyzer inputs also "
+            "measured revision blobs. The current inputs other than the analyzer also "
             "matched retained pins. Subsequent report and figure rendering "
             "does not change the measured revision.",
             "",
             f"Outer job wall time: {complete['outer_job_wall_s']:.3f} seconds. "
             f"Full call wall time: {complete['full_call_wall_s']:.3f} seconds. "
             "The controller observed zero active owned processes at "
-            "retirement, stable input pins and a passed post-write resource "
-            "gate. The retained provenance records the limits separately "
-            "from the search and complete-call timers.",
+            "retirement, stable input pins and a passed resource "
+            "gate after the write. The retained provenance records the "
+            "limits separately from the search and complete call timers.",
             "",
             "## Public derivative boundary",
             "",
-            "[Field-removal manifest](same-forest-repeatability-public-fields.json)",
+            "[Field removal manifest](same-forest-repeatability-public-fields.json)",
             "",
             "The downloads are public receipt derivatives, not the exact original "
-            "raw files. They omit operating-system process IDs, the exact OS build, "
-            "the Python compiler/build string and the interpreter binary hash. "
+            "raw files. They omit operating system process IDs, the exact OS build, "
+            "the Python compiler and build string and the interpreter binary hash. "
             "Python 3.11.8, Windows, spawn and 16 logical CPUs remain as resource "
             "context. Every computational receipt, timer, declared control and "
             "schedule is unchanged. Public block hashes identify derived LF "
@@ -608,7 +608,7 @@ def webpage(record, summary, provenance):
         '<!doctype html><html lang="en" data-appearance="obscur">'
         '<head><meta charset="utf-8">',
         '<meta name="viewport" content="width=device-width,initial-scale=1">',
-        "<title>Repeated same-forest execution | MCTS Combat Engine</title>",
+        "<title>Repeated same forest execution | MCTS Combat Engine</title>",
         '<script src="appearance.js"></script>',
         '<link rel="stylesheet" href="appearance.css">',
         '<link rel="stylesheet" href="style.css"></head>',
@@ -712,7 +712,7 @@ def check_outputs(write=False):
         and fields["changed_fields"] == FIELDS
         and fields["private_originals_modified"] is False
         and fields["search_rerun"] is False,
-        "field-removal manifest differs",
+        "field removal manifest differs",
     )
     require(
         fields["attempts"]
