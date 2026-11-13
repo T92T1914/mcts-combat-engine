@@ -2,14 +2,14 @@
 
 The checkout demo can load your card and scenario JSON and emit a saved decision
 report. Use the existing `game.loader` input model. The engine wheel contains only
-`engine`; this command belongs to the worked example in the checkout.
+`engine`. This command belongs to the worked example in the checkout.
 
 ```console
 python demo.py trial --cards C:/work/cards.json --scenarios C:/work/scenarios.json --scenario-seed 11 --seed 19 --horizon 2 --sims 16 --json
 ```
 
 Both paths are required when supplying custom content. The positional name selects
-one entry from the scenarios file. Omitting the paths uses the built-in content,
+one entry from the scenarios file. Omitting the paths uses the built in content,
 with `boss` as the default. Omitting `--json` retains the usual text display.
 Unknown scenarios and malformed content are usage errors before search starts.
 
@@ -46,17 +46,17 @@ Save this as your scenarios file:
 
 The loader deals seven initial cards from the ordered deck with
 `--scenario-seed`, default 7. `--seed`, also default 7, independently seeds the
-search or one-round sampling. The existing card fields, combatant fields and two
+search or one round sampling. The existing card fields, combatant fields and two
 registered rule types, `punish_traps` and `enrage_below_half`, are supported.
 See [cards.json](../data/cards.json), [scenarios.json](../data/scenarios.json) and
 [game/loader.py](../game/loader.py) for the existing examples and validation.
-These files do not import arbitrary Python rules or describe saved mid-round
+These files do not import arbitrary Python rules or describe saved mid round
 states. Nonfinite JSON numbers and wrong container shapes are rejected.
 
 ## Damage cards that also restore HP
 
 For a `"type": "damage"` card, `"heal": 0` leaves drain disabled. A positive
-`heal` value enables drain; its magnitude does not set the restored HP. For each
+`heal` value enables drain. Its magnitude does not set the restored HP. For each
 target alive when damage resolution starts, the model resolves a separate hit after
 blades, traps, shields, resistance and boost. It converts that damage to a
 nonnegative integer `d`, removes up to the target's remaining HP, and restores
@@ -65,10 +65,10 @@ nonnegative integer `d`, removes up to the target's remaining HP, and restores
 Overkill is included in `d`. A resolved hit of 55 against a target with 10 HP
 therefore restores 27 HP when the caster has enough missing HP. With area
 damage, each target's contribution is rounded down separately: two resolved
-hits of 3 restore `1 + 1 = 2` HP before the maximum-HP cap.
+hits of 3 restore `1 + 1 = 2` HP before the maximum HP cap.
 
 A fizzle or zero resolved damage supplies no drain restoration. Later
-damage-over-time ticks do not restore HP. A `"type": "heal"` card instead
+damage over time ticks do not restore HP. A `"type": "heal"` card instead
 restores its `heal` amount directly, up to maximum HP. These are the existing
 simulator semantics, including overkill, rather than a new rule or a change to
 the reference models' admitted effects.
@@ -112,15 +112,15 @@ site-packages. These observations do not authenticate code or prove Git origin.
 Running an external copy of `demo.py` and `game/` requires a separately installed
 engine. The wheel does not install this demo, `game/` or the JSON content.
 
-Every `legal_actions` row has a zero-based `card_idx` and `target_idx`, plus a
+Every `legal_actions` row has a zero based `card_idx` and `target_idx`, plus a
 label. A null card index means Pass. A null target index means no enemy target,
-including self-targeted and area actions. Duplicate labels may refer to distinct
+including self targeted and area actions. Duplicate labels may refer to distinct
 hand slots or enemies, so use the index pair as identity. `ranking` preserves the
 existing policy's sampled order, and `recommendation` identifies its first row.
 
 For MCTS, `visits` and `value_sum` are the raw root statistics. An `unvisited`
 legal option has zero visits, zero sum and a null `mean_shaped_reward`. It has no
-estimated mean. One-round mode uses `samples` rather than MCTS visits:
+estimated mean. One round mode uses `samples` rather than MCTS visits:
 
 ```console
 python demo.py trial --cards C:/work/cards.json --scenarios C:/work/scenarios.json --one-round-samples 2 --seed 19 --json
@@ -130,10 +130,10 @@ Both methods use the existing simulator, with different terminal rewards. MCTS
 scores a terminal win as `1 - 0.045 * min(6, depth)`, favoring earlier wins.
 It scores a terminal loss as `0.15 * min(depth, h) / h`, where
 `h = max(1, horizon_rounds)`, giving a small survival reward for later losses.
-Here `depth` counts simulated rounds from the root. One-round sampling uses
+Here `depth` counts simulated rounds from the root. One round sampling uses
 terminal win 1 and loss 0. Both use the existing HP/setup heuristic for ongoing
 horizon states. The means are shaped rewards, not calibrated win probabilities.
-One-round sampling compares complete equal-sample sweeps over legal actions and
+One round sampling compares complete equal sample sweeps over legal actions and
 uses no search tree. The report preserves each method's raw totals and ranking.
 
 ## Work and reproducibility
@@ -142,7 +142,7 @@ uses no search tree. The report preserves each method's raw totals and ranking.
 The report keeps `requested_budget_ms` and reports the effective
 `time_budget_ms` as null in that mode. `--sims 0` produces an empty ranking and
 null recommendation while preserving unvisited legal choices. Timed searches
-use 800 ms by default; their actual counts depend on the machine. Elapsed seconds
+use 800 ms by default. Their actual counts depend on the machine. Elapsed seconds
 are observations, not a deadline guarantee.
 
 With unchanged code/runtime/content/configuration and both seeds, fixed work

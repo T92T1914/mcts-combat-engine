@@ -40,11 +40,11 @@ Keep policy randomness separate from environment outcomes. Record both seed
 ranges and inspect the exported decision simulation counts for budget shortfalls.
 The benchmark starts search fresh for each scenario, then retains its stream
 across that scenario's games. A change in scenario order must not change a
-completed fixed-budget result. Historical tables made with the earlier shared
+completed fixed budget result. Historical tables made with the earlier shared
 stream remain historical evidence and should not be overwritten by a new run.
 
-The [one-round comparison](docs/comparison-results.md) retains a frozen protocol,
-per-game outcomes and separate work counts across several search seeds. Regenerate
+The [one round comparison](docs/comparison-results.md) retains a frozen protocol,
+per game outcomes and separate work counts across several search seeds. Regenerate
 its tables with `python tools/render_comparison.py`, or check them without writing
 with `python tools/render_comparison.py --check`. Keep historical results intact
 when collecting a new study. The separate
@@ -94,7 +94,7 @@ committed comparison protocol before its timing evidence is collected.
 
 Open this repository in Codespaces or use VS Code Dev Containers. The container uses Python 3.11 and installs the project into `.venv` during setup. Its image is pinned by digest. The `Project access` workflow builds that same environment and runs `.devcontainer/smoke.sh`. Runtime dependencies still follow the project configuration. Codespaces uses the creating account's compute and storage allowance.
 
-Run `python tools/build_site.py` to assemble the public page in `_site`, then `python -m http.server 8080 --directory _site` to preview it. The builder copies only the listed example files. The page reads saved evidence; it does not silently rerun the experiment or claim current results. Pages deploys from `main` after the site and development environment checks pass.
+Run `python tools/build_site.py` to assemble the public page in `_site`, then `python -m http.server 8080 --directory _site` to preview it. The builder copies only the listed example files. The page reads saved evidence. It does not silently rerun the experiment or claim current results. Pages deploys from `main` after the site and development environment checks pass.
 
 The page uses the Clair/Obscur roles pinned in `presentation/tokens.json`.
 `tools/presentation.py` generates the small CSS adapter. Keep action values,
@@ -130,6 +130,6 @@ The browser suite checks both appearances, Auto, failed storage, no JavaScript,
 selection/history, keyboard navigation, narrow screens, enlarged text, print and
 forced colors. Set `MCTS_REQUIRE_INTER=1` only in an environment with the six
 documented local Inter faces installed. That strict check requires actual glyph
-providers for 400, 600, 700 and genuine italics, separately from the missing-font
+providers for 400, 600, 700 and genuine italics, separately from the missing font
 fallback control. These headless page checks do not establish native client or
 physical display acceptance. No font files are bundled or fetched by the page.

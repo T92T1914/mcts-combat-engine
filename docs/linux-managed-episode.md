@@ -1,6 +1,6 @@
 # One installed episode with Linux container ownership
 
-`linux_episode.py` supplies a small record-and-replay consumer to an existing
+`linux_episode.py` supplies a small record and replay consumer to an existing
 local Docker daemon on Linux. It verifies the exact container's kernel controls
 and process membership before transferring the public payload, installing the
 engine or recording an episode. The Windows managed encounter command keeps
@@ -57,26 +57,26 @@ daemon and runtime shim costs are outside the container's memory boundary.
 
 The consumer requests 256 MiB of cgroup v2 memory, no swap, 64 PID slots including
 threads and one CPU of quota. It verifies the literal controls against the
-created container and pinned root process, including a reconciled in-container
+created container and pinned root process, including a reconciled in container
 view. Memory accounting includes applicable anonymous memory, file cache, tmpfs
-and kernel charges for the container and descendants. Shared-page attribution
+and kernel charges for the container and descendants. Shared page attribution
 and costs outside the group remain outside this scope. `memory.max` can permit
 temporary overage. Sampled usage is not a lifetime peak guarantee.
 
 The trusted root runs as UID/GID 1001 with capabilities dropped and
-no-new-privileges. It has private PID/cgroup namespaces, no network, read-only
+no-new-privileges. It has private PID/cgroup namespaces, no network, read only
 root, a 32 MiB private temporary filesystem and disabled daemon logging. No host
 directory, socket, proc or cgroup mount is exposed. Only ordinary bounded public
 payload files are copied into the exact container. Input is limited to 256 files
 and 16 MiB. These are controls for trusted companion execution, not a security
 promise for arbitrary hostile code.
 
-The default admitted-work wall allowance is 30 seconds, covering payload
+The default admitted work wall allowance is 30 seconds, covering payload
 transfer, installation and execution. `--wall-seconds` permits 1 through 30
 seconds. Retained stdout and stderr each have 64 KiB allowances, with a combined
 128 KiB allowance. The controller stops excess output and preserves explicit
 observed and retained counts. The three named result files have a separate
-2 MiB aggregate artifact allowance. A separate ten-second cleanup interval
+2 MiB aggregate artifact allowance. A separate ten second cleanup interval
 observes retirement of the exact owned container.
 
 An independent root alarm exits after 60 seconds even when the external
@@ -107,16 +107,16 @@ consistent without claiming completion. Explicit empty or zero values remain
 known values. A complete outcome requires successful admitted work and the
 required observed cleanup.
 
-The optional `work_started` marker records the workload-client start callback
+The optional `work_started` marker records the workload client start callback
 after client creation and stream setup. It does not authenticate model execution.
 A false marker does not prove that no client existed or no instruction ran.
 Admission precedes that callback. A final phase or a client return code alone
 does not establish that the callback occurred.
 
 Missing or null `work_started` and `work_member_observed` markers remain unknown
-for schema 1 compatibility. Present non-null markers must be booleans. An explicit
+for schema 1 compatibility. Present non null markers must be booleans. An explicit
 false start marker contradicts a complete outcome or admitted phase. A true start
-or observed-member marker requires admitted work, and an observed member cannot
+or observed member marker requires admitted work, and an observed member cannot
 agree with an explicit false start marker. A short completed command can have
 `work_member_observed:false` because sampling can miss it.
 
@@ -137,7 +137,7 @@ does not search, replay, retry, resume or clean up other daemon objects.
 ## Acceptance boundary
 
 The source contains a finite native CI consumer and controlled memory, PID,
-descendant/session, output, wall, cancellation and controller-loss experiments.
+descendant/session, output, wall, cancellation and controller loss experiments.
 Memory and PID enforcement require actual kernel event observations. A nonzero
 child exit alone is not evidence of either limit. Each acceptance also requires
 the owned process/cgroup observations and truthful cleanup disposition.

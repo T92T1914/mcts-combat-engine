@@ -3,7 +3,7 @@
 [Protocol](serial-profile-protocol.json) | [Raw first attempt](serial-profile-results.json) | [Reproduction](serial-profile.md)
 
 The measured work does not justify a native port in this phase. Legal action
-enumeration is the largest individual self-time function, but it represents
+enumeration is the largest individual self time function, but it represents
 8.90 to 10.34 percent of recorded self time across these three decisions. The
 remaining cost is spread across action hashing, search traversal, simulator
 updates, random choices and Python object operations. I kept the engine
@@ -12,7 +12,7 @@ unchanged instead of expanding a small profiling task into a second simulator.
 All six searches completed 3,000 simulations and 15,000 transitions. Each
 instrumented run exactly matched its control's actual work, stop reasons, raw
 root visit counts and value sums, rankings and final random generator state.
-The input states remained unchanged. There were no retries or safety-cap
+The input states remained unchanged. There were no retries or safety cap
 shortfalls in this attempt.
 
 ## Recorded work and time
@@ -26,7 +26,7 @@ shortfalls in this attempt.
 These are single observations of three fixed initial states on a shared Windows
 machine. Other engineering agents held tests and builds during collection.
 Ordinary user applications remained in place, and external load and hardware
-counters were not measured. This is not an exclusive-machine performance test.
+counters were not measured. This is not an exclusive machine performance test.
 Construction, serialization and file writes are outside the search timer.
 
 cProfile changes the measured execution cost. The instrumented times are
@@ -55,7 +55,7 @@ For example, UCB evaluation called `math.log` 64,748 times in Duel, 78,773 in
 Gauntlet and 64,711 in Boss. Reusing a parent's logarithm across its children is
 a possible later Python experiment. The logarithm itself accounts for less than
 one percent of recorded self time here, which does not justify claiming a
-meaningful end-to-end gain without a separate paired experiment.
+meaningful end to end gain without a separate paired experiment.
 
 ## Decision and its limits
 

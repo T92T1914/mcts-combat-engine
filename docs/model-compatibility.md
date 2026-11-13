@@ -8,7 +8,7 @@ strictly below 50 percent of its maximum. The integer comparison is
 For maximum 4 and current HP 2, exact equality still adds none. Dead combatants,
 nonboss combatants and other rule events do not trigger it.
 
-The previous comparison, `hp < max_hp // 2`, missed the positive floor-half value
+The previous comparison, `hp < max_hp // 2`, missed the positive floor half value
 for odd maximums. Supported custom JSON can contain those maximums. This repair
 changes their simulated behavior, so their future transitions and search rewards
 can differ. It does not change the search objective, policy or rule serialization.
@@ -16,11 +16,11 @@ can differ. It does not change the search objective, policy or rule serializatio
 ## Saved episodes and fresh decisions
 
 Episode compatibility requires the full observed implementation and runtime
-identity, including the raw `rules.py` hash. A pre-repair episode therefore
+identity, including the raw `rules.py` hash. A pre repair episode therefore
 returns `incompatible` when replayed against the repaired implementation, before
 the replay creates its scenario. Keep the original record, source identity and
-historical replay receipt. An even-maximum input that behaves the same does not
-override this complete-source requirement.
+historical replay receipt. An even maximum input that behaves the same does not
+override this complete source requirement.
 
 Passive validation and inspection can still display a valid historical record
 without running its simulator. They check structure and consistency rather than
@@ -40,21 +40,21 @@ Python runtime or mismatched companion can carry different observed identities.
 
 ## Existing finite references
 
-The physical one-round, three-enemy, sum-convolution and two-round adaptive
+The physical one round, three enemy, sum convolution and two round adaptive
 references continue to exclude every state with a boss rule. Adding the repaired
 engine's source maps does not extend those model domains or price an enraged boss.
 Within their existing domains, the changed rule is absent and cannot fire.
 
-Reference source admission compares a complete nine-file raw hash map with an
+Reference source admission compares a complete nine file raw hash map with an
 explicitly qualified declaration. The seven historical declarations remain
 unchanged. The repair adds two separately checked declarations:
 
 | Source declaration | `rules.py` SHA-256 |
 | --- | --- |
-| Exact-half canonical LF | `61c52b9ad9f54a5f37b4e1a063dd285a3f0a07a8263a038241161439005ce211` |
-| Exact-half Windows CRLF | `0a098f932f51c8f529cdb37c2b296464fe43b41d1b341acbcf5da9425fe83d1c` |
+| Exact half canonical LF | `61c52b9ad9f54a5f37b4e1a063dd285a3f0a07a8263a038241161439005ce211` |
+| Exact half Windows CRLF | `0a098f932f51c8f529cdb37c2b296464fe43b41d1b341acbcf5da9425fe83d1c` |
 
-Each exact-half declaration retains the other eight members of its corresponding
+Each exact half declaration retains the other eight members of its corresponding
 historical managed map. The source check uses retained historical source, proves
 the LF and CRLF projections agree, and checks that the sole change between those
 historical declarations is the stated threshold predicate. Runtime admission never normalizes an
@@ -69,14 +69,14 @@ report crossed with a different map. Saved mismatch refusals remain readable
 without pretending that they are completed calculations. Reading these reports
 does not recompute their values or authenticate their producer.
 
-The identity test retains the exact pre-repair `engine/rules.py` body in
+The identity test retains the exact pre repair `engine/rules.py` body in
 `tests/fixtures/pre-exact-half-rules.json`. Its
 base64 field preserves literal source bytes through text checkout conversions.
 The test verifies the decoded length, SHA-256 and Git blob ID against the
-pre-repair declaration from
+pre repair declaration from
 [the retained rules source at commit 6f1a870](https://github.com/T92T1914/mcts-combat-engine/blob/6f1a870307f62cd73634fcbf5603781734151136/engine/rules.py).
 It uses those retained bytes for the
-historical line-ending check, rather than equating the changed current rule with
+historical line ending check, rather than equating the changed current rule with
 an old hash. The fixture is source evidence and is never imported as executable
 code.
 
@@ -89,28 +89,28 @@ At nonnegative rollout depth, a win scores `1 - 0.045 * min(6, depth)`, from
 not necessarily zero. The implementation preserves its original operation order.
 
 These bounds order individual terminal win and loss samples. Ongoing horizon
-states use a separate HP/setup heuristic in `[0, 1]`; they can score below a
+states use a separate HP/setup heuristic in `[0, 1]`. They can score below a
 terminal loss or above a terminal win. Search means average sampled shaped
 rewards. They are not calibrated win probabilities, and the ordering does not
 guarantee action rankings, a win, healing behavior or avoidance of stalling.
 No reward formula, RNG use, rollout, action order, policy or numerical reference
 model changes with this explanation.
 
-Even a prose-only edit changes raw source identity. The nine earlier complete
+Even a prose only edit changes raw source identity. The nine earlier complete
 reference declarations remain unchanged. Two additional complete declarations
-differ from the exact-half maps only in `mcts.py`:
+differ from the exact half maps only in `mcts.py`:
 
 | Source declaration | `mcts.py` SHA-256 |
 | --- | --- |
-| Reward-contract canonical LF | `4a07211b35234adce201ae492eba58f9229f0f2a2559c75855574854a385e4de` |
-| Reward-contract Windows CRLF | `6ada54a56acade263726662e4bfa7f985a1f9880c5ec6b7a203d5efc53bae1a7` |
+| Reward contract canonical LF | `4a07211b35234adce201ae492eba58f9229f0f2a2559c75855574854a385e4de` |
+| Reward contract Windows CRLF | `6ada54a56acade263726662e4bfa7f985a1f9880c5ec6b7a203d5efc53bae1a7` |
 
-The identity tests retain the exact pre-explanation `engine/mcts.py` body from
+The identity tests retain the exact pre explanation `engine/mcts.py` body from
 [commit d075b7e](https://github.com/T92T1914/mcts-combat-engine/blob/d075b7ea94d32de178d8e6e766ab7c66bf8b101e/engine/mcts.py)
 in `tests/fixtures/pre-reward-contract-mcts.json`. They check its literal byte
 length, SHA-256 and Git blob ID without importing it. Historical projections use
-that body and, where applicable, the retained pre-threshold rules body. The new
-projections use actual current source. Removing only the changed terminal-reward
+that body and, where applicable, the retained pre threshold rules body. The new
+projections use actual current source. Removing only the changed terminal reward
 docstring leaves identical syntax trees. This is a check of this specified edit,
 not a runtime rule for admitting unknown source.
 
@@ -119,7 +119,7 @@ returns `incompatible` before environment construction. Use its matching old
 source and runtime for historical replay. Fresh decisions retain the old
 provenance and report the implementation difference. New matching episodes and
 companions use the new identity. Existing reference models and admitted states
-remain unchanged; exact source admission still precedes numerical work.
+remain unchanged. Exact source admission still precedes numerical work.
 
 ## Delivery and evidence limits
 
@@ -128,7 +128,7 @@ externally installed engine. The companion manifest binds its exact source commi
 tree, payload and engine files. Existing installed checks reject an engine that
 does not match that manifest. Preserve earlier archives, records, reference
 reports and scientific studies as historical evidence with their original
-identities. The shipped even-maximum boss remains the existing fixture; it does
+identities. The shipped even maximum boss remains the existing fixture. It does
 not establish that every historical custom input is behaviorally unchanged.
 
 The threshold corpus and public JSON round case establish the repaired boundary.

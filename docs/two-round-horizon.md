@@ -2,36 +2,36 @@
 
 The October 18, 2026 study is inconclusive under its declared uncertainty rule.
 At 64 completed simulator transitions per search, horizon two had lower average
-first-action loss on the six fixed deciding states. Its mean advantage was
-`0.0292151` shaped-score units, with a conservative 95 percent interval of
+first action loss on the six fixed deciding states. Its mean advantage was
+`0.0292151` shaped score units, with a conservative 95 percent interval of
 `[-0.0548762, 0.1133064]`. That interval includes zero. Horizon one did better on
-the near-completion state D3. The result does not select a new default.
+the near completion state D3. The result does not select a new default.
 
 The caller is the public `engine.MCTS` API on explicitly modeled roots. The
 engineering decision was whether to spend this fixed transition allowance on
-64 horizon-one simulations or 32 horizon-two simulations. This compares those
+64 horizon one simulations or 32 horizon two simulations. This compares those
 whole configurations. It does not isolate lookahead depth from simulation count
 or the heuristic's scoring depth, and it does not compare elapsed CPU time.
 
 ## One target for both configurations
 
 For each root action, the existing [adaptive reference](episode-adaptive-reference.md)
-computes an exact two-round value `Q2(a)` under its qualified model. It fixes the
+computes an exact two round value `Q2(a)` under its qualified model. It fixes the
 first action and chooses an optimal legal second action separately for each
-complete first-round observation. The measured loss is
+complete first round observation. The measured loss is
 `max_a Q2(a) - Q2(selected physical root action)`. Zero means the selected action
-belongs to the exact best-action tie set.
+belongs to the exact best action tie set.
 
-This endpoint prices a first choice assuming optimal observed-state continuation.
+This endpoint prices a first choice assuming optimal observed state continuation.
 It does not estimate the search's actual second choice or full encounter return.
-The reference preserves source-order binary64 shaped scoring and binary53
-probability semantics. It is not a win-probability oracle. In particular, the
-preserved objective can rank an ongoing near-completion state above a win.
+The reference preserves source order binary64 shaped scoring and binary53
+probability semantics. It is not a win probability oracle. In particular, the
+preserved objective can rank an ongoing near completion state above a win.
 
-The existing saved-decision quality route still requires horizon two. This
+The existing saved decision quality route still requires horizon two. This
 study supplies normalized states directly to the reference and explicitly joins
 both searches' selected physical coordinates to the same complete action table.
-It does not relabel a horizon-one saved report or weaken historical identity
+It does not relabel a horizon one saved report or weaken historical identity
 admission. Identical card copies retain separate physical indices.
 
 ## Frozen cases, work and randomness
@@ -40,14 +40,14 @@ admission. Identical card copies retain separate physical indices.
 [complete normalized inputs](two-round-horizon/inputs.json) and
 [seed labels](two-round-horizon/seeds.json) were saved before collecting either
 phase's outcomes. The private owner evidence retains their prospective hashes
-and independent pre-run reviews. This is a local prospective record, not an
+and independent pre run reviews. This is a local prospective record, not an
 external preregistration or authenticated collection service.
 
-Every root has three zero-cost cards: a variable hit of 1 through 3, a fixed hit
+Every root has three zero cost cards: a variable hit of 1 through 3, a fixed hit
 of 2 and a pure heal. D5 replaces the fixed hit with a second physical copy of
 the variable hit. There is one plain enemy, no rules, effects or initial
 modifiers, and no random pip gain. Enemy accuracy below is the attack accuracy,
-separate from the model's enemy-attempt probability of 0.85.
+separate from the model's enemy attempt probability of 0.85.
 
 | Case | Player HP / maximum | Enemy HP / maximum | Enemy hit | Accuracy | Heal |
 | --- | --- | --- | --- | --- | --- |
@@ -62,13 +62,13 @@ separate from the model's enemy-attempt probability of 0.85.
 
 These are new tuples within a familiar modeled family. They are not a random
 sample of combat situations or a broad domain holdout. Ordinary episode capture
-refills a seven-card hand, so this small reference subset uses public model
+refills a seven card hand, so this small reference subset uses public model
 constructors rather than a fabricated captured episode.
 
 Before any search, each complete reference must cover every root action and
-every positive-mass first-round successor, with all those successors nonterminal.
-This gate establishes one transition per horizon-one simulation and two per
-horizon-two simulation. Each accepted search also independently counts actual
+every positive mass first round successor, with all those successors nonterminal.
+This gate establishes one transition per horizon one simulation and two per
+horizon two simulation. Each accepted search also independently counts actual
 `advance_round` calls, checks the engine's counters, requires zero unused
 transitions and verifies that its original root was unchanged. A failed gate
 aborts the phase without replacing a state, seed or missing result.
@@ -90,7 +90,7 @@ all expected search cells completed in one attempt per phase.
 ## Deciding results
 
 Lower loss is better. Each row averages the 256 frozen labels for that state and
-configuration. The hit columns count exact optimal-tie membership, not wins.
+configuration. The hit columns count exact optimal tie membership, not wins.
 
 | Case | Mean loss H1 | Mean loss H2 | Optimal hits H1 | Optimal hits H2 |
 | --- | --- | --- | --- | --- |
@@ -101,10 +101,10 @@ configuration. The hit columns count exact optimal-tie membership, not wins.
 | D5 | 0.0614408 | 0.0135649 | 25 | 205 |
 | D6 | 0.0359961 | 0.0018945 | 96 | 122 |
 
-D3 is an adverse result for horizon two. D4's strict hit-count difference
+D3 is an adverse result for horizon two. D4's strict hit count difference
 corresponds to extremely small exact score gaps. Its loss remains visible as a
 fraction in the data and contributes essentially no practical separation here.
-Do not convert that hit-count difference into a substantial quality claim or
+Do not convert that hit count difference into a substantial quality claim or
 round the exact values into invented ties.
 
 For each block, average `D = loss_H1 - loss_H2` equally across its six cases.
@@ -116,13 +116,13 @@ and unbiased sample variance was approximately `0.000443673113962033`.
 The prespecified interval uses
 `sqrt(2*s_squared*ln(80)/n) + 14*ln(80)/(3*(n-1))` as its radius, clipped to
 `[-1,1]`. This follows [Maurer and Pontil, Theorem 4, page 2](https://arxiv.org/pdf/0907.3740)
-by mapping `D` to `(D+1)/2`, applying both one-sided bounds with failure
+by mapping `D` to `(D+1)/2`, applying both one sided bounds with failure
 probability 0.025 each and rescaling. The collector uses exact fractions and
 conservative rational upper bounds for the logarithm and square root. Independent
 Decimal arithmetic checks those bounds. At 256 blocks the additive term alone
 is about 0.0802, so this design can leave a modest effect unresolved.
 
-The interval is conditional on independently initialized seed-label experiments
+The interval is conditional on independently initialized seed label experiments
 on these six fixed states and this source. It is not uncertainty over a
 population of scenarios. Its endpoints include zero, giving the declared
 inconclusive disposition. Sample means and adverse cases remain informative
@@ -133,13 +133,13 @@ descriptions without selecting a default or requesting more deciding samples.
 [Exploratory data](two-round-horizon/exploratory.json) and
 [deciding data](two-round-horizon/deciding.json) retain all selected actions and
 exact losses, complete root value tables, block contrasts, source maps and work
-totals. `cell_columns` names the compact cell-array columns. Seed labels are in
+totals. `cell_columns` names the compact cell array columns. Seed labels are in
 the separate frozen file. Every row had 64 reported and independently counted
 transitions, with 64 simulations for H1 and 32 for H2.
 
 The compact files are projections of retained full output. Their `full_results`
 and `reference_reports` fields identify the original bytes. The private owner
-evidence retains full root statistics, append-only cell logs, complete reference
+evidence retains full root statistics, append only cell logs, complete reference
 observations and attempt records. Hashes bind content and do not authenticate
 execution. The collector reproduces full outputs, including those omitted
 statistics and reference observations, from the supplied inputs.
@@ -167,23 +167,23 @@ The original collection used CPython 3.11.8 on Windows, source baseline
 identify the model, search and reference bytes. Reproduction on another runtime
 records its actual identity. Compare admitted actions, exact losses and work,
 rather than assuming all environment and producer metadata must hash equally.
-An external installed-consumer witness repeats only E1's first two search cells
+An external installed consumer witness repeats only E1's first two search cells
 and its reference to check delivery, not the deciding study.
 
 ## Research and interpretation boundaries
 
 [Phan, Chan and Koenig, AAAI 2025](https://ojs.aaai.org/index.php/AAAI/article/view/34867)
-discuss open-loop planning's information pattern and limited search resources.
+discuss open loop planning's information pattern and limited search resources.
 [Lecarpentier and colleagues, IJCAI 2018](https://www.ijcai.org/proceedings/2018/327)
-study reusing and executing tree-search plans. Their settings and guarantees do
-not establish this engine's quality. Their CORAL and tree-reuse algorithms are
+study reusing and executing tree search plans. Their settings and guarantees do
+not establish this engine's quality. Their CORAL and tree reuse algorithms are
 not implemented here. Consensus helped locate those papers, followed by reading
 the primary introductions and backgrounds. The statistical primary source was
 read for the actual theorem and variance definition.
 
-This study changes no engine, reward, reference model, source-admission rule,
-action order or default. Earlier horizon-four stability, one-round allowance,
-root-allocation and full-encounter studies answer different questions. PR59's
-inconclusive encounter result remains intact. No Windows-versus-Linux workload,
-hostile-code sandbox, GPU result or professional security experience follows
+This study changes no engine, reward, reference model, source admission rule,
+action order or default. Earlier horizon four stability, one round allowance,
+root allocation and full encounter studies answer different questions. PR59's
+inconclusive encounter result remains intact. No Windows versus Linux workload,
+hostile code sandbox, GPU result or professional security experience follows
 from this experiment.

@@ -1,29 +1,29 @@
 # A fresh decision from a saved episode state
 
 The optional `--root-allocation sequential_halving --horizon 1` route emits
-schema 3 with its sampling stages and survivor-first final treatment. Read the
+schema 3 with its sampling stages and survivor first final treatment. Read the
 [root allocation guide](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/root-allocation.md) for controls, zero/tiny work,
-inspection, reference use, fixed-allowance evidence and adverse results.
+inspection, reference use, fixed allowance evidence and adverse results.
 Omitting this new control preserves the schema 1 and 2 behavior below.
 
 The existing command and schema 1 defaults remain supported. Explicit
 `--exploration 0.6|1.2|2.4` or `--final-action-rule mean_visits|visits_mean`
 produces schema 2, including when the chosen values equal the old defaults.
 Schema 2 records the captured sampled root encounter order, the explicit rule,
-and the tie rule. A visits-first report reranks the same captured statistics
+and the tie rule. A visits first report reranks the same captured statistics
 without changing engine search. Complete ties retain encounter order.
-`--sims 0` also supports an explicit schema 2 no-work report.
+`--sims 0` also supports an explicit schema 2 no work report.
 
-The [stability diagnostic](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-stability.md) documents repeated fixed-work
+The [stability diagnostic](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-stability.md) documents repeated fixed work
 decisions and passive `--extract-cell` use. Extracted reports preserve the
-original search-performed claim and work, with a separate derivation declaring
+original search performed claim and work, with a separate derivation declaring
 that extraction performed no new search. The existing passive inspector and
 comparison accept both versions. Stored recording/replay schema and identity
 requirements remain unchanged.
 
-Select one pre-action step from a saved episode and ask the current engine for a
+Select one pre action step from a saved episode and ask the current engine for a
 new decision. The command uses the saved hand positions, enemy positions,
-resources, modifiers, damage-over-time and registered rules. It needs no
+resources, modifiers, damage over time and registered rules. It needs no
 original cards or scenarios files and does not replay the earlier rounds.
 
 ```text
@@ -98,12 +98,12 @@ decision quality. The search leaves the reconstructed root unchanged.
 ## Read the JSON report
 
 The report has format `mcts-episode-decision-report`. The legacy default emits
-schema version 1 with coefficient 1.2 and the engine's mean-first ordering.
-Explicit coefficient or final-action controls emit schema version 2. Both
+schema version 1 with coefficient 1.2 and the engine's mean first ordering.
+Explicit coefficient or final action controls emit schema version 2. Both
 versions retain these fields:
 
 - `source_record` identifies the one captured byte buffer by length and SHA-256.
-- `selection` gives the step, round and exact selected-state pointer.
+- `selection` gives the step, round and exact selected state pointer.
 - `selected_state` contains the complete current reconstructed state.
 - `stored_action` and `stored_provenance` preserve the saved action, content,
   scenario/deck, recording configuration, implementation and RNG declarations.
@@ -116,8 +116,8 @@ versions retain these fields:
   rule to the captured statistics, retaining root encounter order for complete
   ties. Changing that report rule performs no additional search.
 - `implementation` observes current engine, complete game helpers, entry and
-  runtime. `identity_comparisons` separates engine-file, example-file and
-  runtime-field equality and names the different entrypoint roles.
+  runtime. `identity_comparisons` separates engine file, example file and
+  runtime field equality and names the different entrypoint roles.
 
 Schema 2 also retains `root_encounter_order` and `derivation`. A fresh decision
 has a null derivation. A passively extracted stability cell identifies its saved
@@ -135,10 +135,10 @@ runtime differences do not prevent a fresh decision when the state remains
 fully supported, but the differences remain visible in the report.
 
 Identity reads admit at most 128 source or extension files, 4 MiB per file and
-16 MiB total. These are observed-file reading limits. Directory enumeration and
+16 MiB total. These are observed file reading limits. Directory enumeration and
 its memory use are not covered by a separate traversal limit.
 
-Means are the existing shaped simulator rewards, including depth-shaped terminal
+Means are the existing shaped simulator rewards, including depth shaped terminal
 scores and the ongoing HP/setup heuristic. They are not calibrated win
 probabilities or proof of an optimum. Exact agreement with a direct current
 engine call is consistency within that engine, not an independent mathematical
@@ -164,13 +164,13 @@ stdout also changes the stream behavior. See the
 | Exit | Meaning |
 | --- | --- |
 | 0 | Complete decision or truthful `no_work` report |
-| 2 | Argument, record, selected-state or terminal refusal, no JSON |
+| 2 | Argument, record, selected state or terminal refusal, no JSON |
 | 1 | Search, identity, report or output failure |
 | 130 | Interrupted operation |
 
 Input errors name the selected location where applicable. Current code identity
 is observed before work and rechecked before successful return. Unsupported
-representations refuse rather than drop fields. Some schema-admitted fabricated
+representations refuse rather than drop fields. Some schema admitted fabricated
 states can still cause an arithmetic failure in the unchanged engine. That is a
 contextual runtime error, not a silent model repair or a reachability proof.
 
@@ -178,5 +178,5 @@ Failures before output leave stdout empty. A sink failure while writing or
 flushing may leave partial bytes, which are not a valid successful report. The
 entry retires a failed buffered sink before interpreter shutdown can retry it.
 The original input is never rewritten. A caller changing it after capture does
-not change the captured-buffer identity, and no immutability guarantee against
+not change the captured buffer identity, and no immutability guarantee against
 other processes is claimed.

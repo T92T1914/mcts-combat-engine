@@ -2,17 +2,17 @@
 
 Use the existing installed engine and separate episode companion. The engine
 reuses immutable physical action coordinates within each search request, while
-recomputing legality and current-hand actions for every realized state. No new
+recomputing legality and current hand actions for every realized state. No new
 flag, command, model or record format is needed.
 
 The qualified local installed API comparison had a geometric mean of condition
 median paired baseline/candidate time ratios of 1.1331546109842285. Its inverse,
 0.8824921068197623, corresponds to approximately 11.75 percent lower search
 time under that aggregate definition. All six condition rules and three
-separate Python traced-peak rules passed. Two individual timing pairs were
+separate Python traced peak rules passed. Two individual timing pairs were
 slower and remain in the complete results.
 
-These are bounded pure-Python search observations on one shared Windows host.
+These are bounded pure Python search observations on one shared Windows host.
 They do not establish stronger decisions, lower complete CLI latency, compiled
 or parallel speed, or a general improvement on other machines. Defaults,
 rewards, selection, physical action identity and work limits are unchanged.
@@ -26,11 +26,11 @@ The companion separately carries the example entries, documentation and
 evidence. A development checkout and development extras are unnecessary.
 
 The examples below use the already distributed D1 custom inputs from the
-[search-allowance diagnostic](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-search-allowance.md).
+[search allowance diagnostic](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-search-allowance.md).
 They create a new episode under the current producer, so they do not attempt to
 rewrite or replay an older study capture with different engine hashes.
 
-Use PowerShell 7.4 or later for byte-preserving native stdout redirection. Use
+Use PowerShell 7.4 or later for byte preserving native stdout redirection. Use
 fresh output paths in an existing parent directory, keep stderr separate and
 check `$LASTEXITCODE` after every command. Shell redirection can create or
 overwrite a file even when the command fails. These paths follow the companion
@@ -49,7 +49,7 @@ Replay applies the saved actions and environment random stream without search.
 It requires matching source/runtime identities and the original custom content
 bytes. Inspecting the episode is passive and performs no replay or search.
 
-Request two fresh bounded decisions from the same retained pre-action state.
+Request two fresh bounded decisions from the same retained pre action state.
 Each has its own explicit search seed and allowance. The existing hand is read
 without refilling it or continuing the capture's search random stream:
 
@@ -62,13 +62,13 @@ without refilling it or continuing the capture's search random stream:
 & $py "$companion\reference_episode.py" C:\work\edge-reference-a.json --inspect --compare-report C:\work\edge-reference-b.json --appearance obscur > C:\work\edge-reference-comparison.html
 ```
 
-Read the complete status and source-identity fields before using a result. A
+Read the complete status and source identity fields before using a result. A
 refusal or incomplete output is not a verified decision. The HTML displays
 the saved physical actions, source identities, exact reference values and ties,
 selected losses and comparison eligibility. It does not run another search or
-reference calculation. This small horizon-one journey exercises the supported
+reference calculation. This small horizon one journey exercises the supported
 producer and consumer interfaces. It does not reproduce the performance study's
-horizon-three and horizon-six workload.
+horizon three and horizon six workload.
 
 The existing [bounded adaptive reference](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-adaptive-reference.md)
 also uses the same qualified source admission. Its model, domain, resource
@@ -76,16 +76,16 @@ limits and independent numerical method are unchanged.
 
 ## What is reused
 
-An Action holds a physical card-slot index and an optional target index. During
+An Action holds a physical card slot index and an optional target index. During
 tree selection, the edge uses the original root hand slot, while the action
 applied to the simulator uses the card's current position after earlier
 removals. Two slots can reference the same Card object and still represent
 different physical actions.
 
-The search-local table is keyed by original slot and target. The first
+The search local table is keyed by original slot and target. The first
 occurrence creates the frozen edge value, and later occurrences reuse that
 value at any selection depth. Each realized state still produces a fresh
-ordered legal-action list and a fresh mapping to current-hand actions. Pips,
+ordered legal action list and a fresh mapping to current hand actions. Pips,
 living targets, depletion and newly legal options are checked every time. PASS
 retains its existing behavior. The table is not stored on a Node, policy,
 process pool or engine between decisions, and returned Actions do not carry a
@@ -94,9 +94,9 @@ reference to it.
 The [measured implementation](https://github.com/T92T1914/mcts-combat-engine/blob/1f573c798c27e374fc9755417f07951e78883867/engine/mcts.py)
 changes this construction path only. The other eight engine payloads, including
 the Action type, simulator, rules, state arithmetic, managed policy and parallel
-interfaces, are byte-identical to the measured baseline. Selection order,
+interfaces, are byte identical to the measured baseline. Selection order,
 random draws, reward arithmetic and declared work remain the same. Existing
-caller-owned input and read-only definition responsibilities still apply.
+caller owned input and read only definition responsibilities still apply.
 
 Independent qualification compared eight complete trace pairs, covering ten
 search requests per engine. It retained intermediate states, ordered
@@ -104,8 +104,8 @@ legality/root-slot mappings, expansion/UCB choices, RNG endpoints, rule events,
 binary64 rewards and backpropagation, complete root statistics and lifetime
 observations. The paired collection includes 1,122 transitions per engine and
 905 complete backpropagation updates. It covers duplicate copies, changing
-pips/targets, priors, boss rules/DoT, pass-only, terminal, zero-work,
-transition-remainder and repeated-request cases. These are finite execution
+pips/targets, priors, boss rules/DoT, pass only, terminal, zero work,
+transition remainder and repeated request cases. These are finite execution
 checks plus the source preservation argument. They are not a proof of a new
 objective's quality or a universal memory bound.
 
@@ -118,23 +118,23 @@ warmup computation receipts, condition medians, adverse observations and source
 identities. These are static evidence documents, not new engine input formats
 or a claim that every retained private review artifact is bundled.
 
-The timing comparison used installed baseline and candidate pure-Python wheels,
+The timing comparison used installed baseline and candidate pure Python wheels,
 the same separate companion, CPython 3.11.8 and an AMD Ryzen 7 7800X3D on Windows.
 The host was shared and not exclusively controlled. Processes ran serially
-under the existing Windows owner, with a 512-MiB aggregate committed-memory
-ceiling, a thirty-second outer wall per operation and bounded cleanup/transport.
+under the existing Windows owner, with a 512-MiB aggregate committed memory
+ceiling, a thirty second outer wall per operation and bounded cleanup/transport.
 Those resource limits are distinct from the measured Python traced peaks.
 
 Each measured search used 3,000 simulations, a transition ceiling of horizon
 times 3,000, a 60,000-ms search safety cap, exploration 1.2 and the existing
-mean-then-visits final ranking, without priors. Ordinary scenario construction
+mean then visits final ranking, without priors. Ordinary scenario construction
 used the declared environment seed, then player pips were set to seven. Each
 process first ran a disclosed 300-simulation warmup with the same state/seed
 and a separate root and engine. Five baseline/candidate pairs per condition
 alternated order. There was no unreported warmup, timing resampling, failed
 cell or criterion change.
 
-| Condition | Environment / search seeds | Horizon | Median paired baseline/candidate search-time ratio |
+| Condition | Environment / search seeds | Horizon | Median paired baseline/candidate search time ratio |
 | --- | --- | ---: | ---: |
 | Duel | 302 / 44 | 3 | 1.152042404732763 |
 | Duel | 778 / 903 | 6 | 1.1059543856841143 |
@@ -147,7 +147,7 @@ The timer surrounds `MCTS.search`, including its clock checks, fresh legality,
 selection, rollout, transitions, backpropagation and ranking. Imports,
 state/engine preparation, warmup, process start/containment/cleanup, input
 admission and receipt writing are excluded. No profiler or intermediate trace
-runs inside these timed calls. This boundary measures search-only API cost.
+runs inside these timed calls. This boundary measures search only API cost.
 
 For each condition, the metric is the median of five paired ratios. The
 aggregate is their equally weighted geometric mean, with larger values
@@ -173,9 +173,9 @@ per scenario. Every candidate/baseline ratio passed the frozen 1.10 maximum:
 | Boss | 842,928 | 630,708 | 0.7482347246739935 |
 
 These peaks cover traced Python allocations during the declared warmed search.
-They do not measure resident memory, committed-memory reduction, cold start,
-total allocation volume or arbitrary-input peaks. Memory-run elapsed times do
-not enter the timing gate. The sixty-six cells completed 198,000 measured
+They do not measure resident memory, committed memory reduction, cold start,
+total allocation volume or arbitrary input peaks. Memory run elapsed times do
+not enter the timing gate. The sixty six cells completed 198,000 measured
 simulations and 900,000 measured transitions, plus 19,800 warmup simulations and
 90,000 warmup transitions. Every measured and warmup pair retains complete
 matching computations and unchanged inputs. These totals describe executed
@@ -192,7 +192,7 @@ preserving that measured engine payload. The companion manifest identifies
 the revision to acquire for its complete supported consumer layout.
 
 When this change landed, the reference consumers explicitly admitted this
-complete nine-payload map in addition to the two historical qualified maps.
+complete nine payload map in addition to the two historical qualified maps.
 Later engine revisions, including root allocation, added their own explicit
 maps in `reference/report.py`. Missing, extra or altered
 payload declarations remain refused. No hash wildcard or dynamic admission is
