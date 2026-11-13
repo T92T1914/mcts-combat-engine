@@ -1,10 +1,10 @@
 # Transition allowance comparison
 
-This study gives MCTS and one-round action enumeration the same allowance of 300 forward simulator transitions per decision. Whole simulations and whole equal-action sweeps can leave different unused remainders. Random and damage-only greedy remain contextual controls with no sampled forward search.
+This study gives MCTS and one round action enumeration the same allowance of 300 forward simulator transitions per decision. Whole simulations and whole equal action sweeps can leave different unused remainders. Random and damage only greedy remain contextual controls with no sampled forward search.
 
 ## Method
 
-The [protocol](transition-comparison-protocol.json) was declared before outcomes. The allowance is a bounded engineering choice, not a tuned value. MCTS uses a five-round horizon. The comparator evaluates one-round successors using the same starting random seed for every candidate in a sweep. Both use the existing simulator and heuristic, so neither is independent ground truth.
+The [protocol](transition-comparison-protocol.json) was declared before outcomes. The allowance is a bounded engineering choice, not a tuned value. MCTS uses a five round horizon. The comparator evaluates one round successors using the same starting random seed for every candidate in a sweep. Both use the existing simulator and heuristic, so neither is independent ground truth.
 
 Environment seeds 200 through 204 are reused across policy/search seed bases 7, 42 and 99. These are five environments per scenario, not 15 independent trials. Policy and environment RNGs are separate. Search starts fresh for each scenario and continues across its five games. Different actions can consume different random draws even with the same initial seed.
 
@@ -15,7 +15,7 @@ python benchmark.py 5 --transitions 300 --seed 99 --policy-seed 99 --game-seed 2
 python tools/render_transition_comparison.py --check
 ```
 
-The last command validates retained data and checks this report. It does not run the experiment. MCTS and one-round enumeration each have a 60-second safety cap per decision, checked between complete units. The cap is not a hard deadline.
+The last command validates retained data and checks this report. It does not run the experiment. MCTS and one round enumeration each have a 60 second safety cap per decision, checked between complete units. The cap is not a hard deadline.
 
 ## Every measured condition
 
@@ -115,12 +115,12 @@ Recorded time shortfalls: 0. Every decision reached its ordinary allowance stop.
 | boss | 99 | one_round | 201 | unfinished | 30 |
 | boss | 99 | one_round | 203 | unfinished | 30 |
 
-An unfinished game reached the 30-round limit. It is neither a clean win nor a loss. Every terminal loss and win is retained in the JSON as well.
+An unfinished game reached the 30 round limit. It is neither a clean win nor a loss. Every terminal loss and win is retained in the JSON as well.
 
 ## Evidence and limits
 
 Evaluated source: `c25ad84a2d07259ec7c94ce99c4a6e623be18413`. The three serial runs took 9.31 seconds in the benchmark on Python 3.11.8, Windows-10-10.0.26200-SP0. This records the environment, not a policy speed comparison.
 
-The [retained JSON](transition-comparison-results.json) keeps all 180 game records, actual seeds, terminal results, exact decision work, stop reasons and half-open decision ranges for each game. Source hashes use UTF-8 text with LF newlines and no BOM. The [earlier study](comparison-results.md) remains unchanged.
+The [retained JSON](transition-comparison-results.json) keeps all 180 game records, actual seeds, terminal results, exact decision work, stop reasons and half open decision ranges for each game. Source hashes use UTF-8 text with LF newlines and no BOM. The [earlier study](comparison-results.md) remains unchanged.
 
-Equal transition allowances do not equalize CPU time, memory or cloning overhead. Total work also depends on game length and whole-unit remainders. The small fixed environment set and repeated conditions do not establish general playing strength. The new environment set also prevents treating this as a controlled before/after improvement over the earlier study.
+Equal transition allowances do not equalize CPU time, memory or cloning overhead. Total work also depends on game length and whole unit remainders. The small fixed environment set and repeated conditions do not establish general playing strength. The new environment set also prevents treating this as a controlled before/after improvement over the earlier study.

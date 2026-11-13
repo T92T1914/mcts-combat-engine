@@ -1,14 +1,14 @@
-# One-round comparator study
+# One round comparator study
 
-The one-round policy could use healing and defense that damage-only greedy ignored. It won every duel condition here, including one that MCTS did not finish within the 30-round limit. MCTS won more gauntlet and boss games. Random also beat the one-round policy in one gauntlet repeat and one boss repeat. The new baseline makes the comparison more demanding without establishing a universal ranking.
+The one round policy could use healing and defense that damage only greedy ignored. It won every duel condition here, including one that MCTS did not finish within the 30 round limit. MCTS won more gauntlet and boss games. Random also beat the one round policy in one gauntlet repeat and one boss repeat. The new baseline makes the comparison more demanding without establishing a universal ranking.
 
 ## Method and reproduction
 
 The [protocol](comparison-protocol.json) was fixed before these outcomes. Each repeat used environment seeds 0 through 4 for every policy and scenario. The search seeds were 7, 42 and 99. Their corresponding policy seed ranges were 7 through 11, 42 through 46 and 99 through 103. Policy randomness is separate from the environment. MCTS starts a fresh search stream per scenario and continues it across that scenario's five games.
 
-At each decision, the new policy enumerates legal actions and samples eight one-round successors per action. Every candidate starts from the same eight sample seeds, although its subsequent draw path can differ. It uses terminal results or the existing state heuristic. This decision algorithm does not use the search tree, but it shares the simulator and heuristic with MCTS. It is not independent ground truth.
+At each decision, the new policy enumerates legal actions and samples eight one round successors per action. Every candidate starts from the same eight sample seeds, although its subsequent draw path can differ. It uses terminal results or the existing state heuristic. This decision algorithm does not use the search tree, but it shares the simulator and heuristic with MCTS. It is not independent ground truth.
 
-MCTS receives 300 simulations per decision, a five-round horizon and a 60-second safety cap. All runs use one process. The comparator's successor transitions and MCTS simulations are different work units. One simulation can advance several rounds, so these are unequal compute budgets and do not support an efficiency claim.
+MCTS receives 300 simulations per decision, a five round horizon and a 60 second safety cap. All runs use one process. The comparator's successor transitions and MCTS simulations are different work units. One simulation can advance several rounds, so these are unequal compute budgets and do not support an efficiency claim.
 
 ```sh
 python benchmark.py 5 --sims 300 --seed 7 --policy-seed 7 --one-round-samples 8 --json seed-7.json
@@ -65,7 +65,7 @@ Average rounds to win, conditional on winning. A dash means no clean win, not ze
 
 ## Observed work
 
-| Scenario | Seed base | One-round decisions | Successor transitions | MCTS decisions | MCTS simulations | Shortfalls |
+| Scenario | Seed base | One round decisions | Successor transitions | MCTS decisions | MCTS simulations | Shortfalls |
 |---|---|---|---|---|---|---|
 | duel | 7 | 104 | 4720 | 100 | 30000 | 0 |
 | gauntlet | 7 | 107 | 6632 | 99 | 29700 | 0 |
@@ -85,4 +85,4 @@ The three sequential runs took 27.01 seconds inside the benchmark on Python 3.11
 
 The five environment seeds are a small fixed sample. Search randomness continues between games and the repeats reuse those environments. Neither wins nor shaped scores establish calibrated uncertainty or general playing strength. Different actions can consume different environment draws even when the initial seeds match. Parallel search and larger budgets were not evaluated here. No policy parameters were tuned after these results.
 
-The zero boss wins for the one-round policy and MCTS's unfinished duel remain in the record. A useful next experiment would test a predeclared set of new environment seeds with matched transition or elapsed-work accounting. The historical reports remain separate and unchanged.
+The zero boss wins for the one round policy and MCTS's unfinished duel remain in the record. A useful next experiment would test a predeclared set of new environment seeds with matched transition or elapsed work accounting. The historical reports remain separate and unchanged.
