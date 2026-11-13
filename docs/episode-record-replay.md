@@ -6,7 +6,7 @@ does not rerun MCTS to choose them again.
 
 This is a checkout example. The installed wheel contains only `engine/`, so keep
 `episode.py`, `demo.py`, `game/` and `data/` together when copying the example.
-The accepted single-decision `demo.py` command remains available.
+The accepted single decision `demo.py` command remains available.
 
 ## Record and retain the inputs
 
@@ -23,12 +23,12 @@ python episode.py record trial --cards cards.json --scenarios scenarios.json --e
 python episode.py replay episode.json --cards cards.json --scenarios scenarios.json > replay-result.json
 ```
 
-Both commands always emit JSON. There is no output-path or overwrite API. Shell
+Both commands always emit JSON. There is no output path or overwrite API. Shell
 redirection controls the destination and may overwrite it, so choose a new name
 when retaining an earlier episode. On Windows, use a shell that preserves native
 stdout bytes, such as PowerShell 7.4 or later. Keep stderr separate when saving
 the record. Combining stderr/stdout creates a text stream, and older Windows
-PowerShell can re-encode redirected output. See Microsoft's
+PowerShell can re encode redirected output. See Microsoft's
 [redirection behavior](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection?view=powershell-7.5)
 and [Windows PowerShell encoding](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1).
 The command itself writes canonical bytes directly to stdout, including one LF.
@@ -36,7 +36,7 @@ Replay requires UTF-8 input.
 
 A record identifies the exact captured content bytes by SHA-256 and byte count.
 It does not embed the caller's original files. Retain them unchanged. Custom
-replay requires the same custom pair. Built-in replay reads current built-in
+replay requires the same custom pair. Built in replay reads current built in
 files. Changing whitespace in a content file changes its identity.
 
 Defaults are scenario `boss`, environment seed 7, search seed 7, 30 rounds,
@@ -48,13 +48,13 @@ override them.
 
 A version 1 `mcts-episode-record` contains:
 
-- captured content identity, scenario name/environment seed and ordered deck;
-- complete initial state, including modeled defaults and effective rule parameters;
-- observed implementation/runtime identity and recording configuration;
+- captured content identity, scenario name/environment seed and ordered deck.
+- complete initial state, including modeled defaults and effective rule parameters.
+- observed implementation/runtime identity and recording configuration.
 - ordered steps with a detached state after hand refill and before decision,
-  round number and exact zero-based `card_idx`/`target_idx` plus label;
+  round number and exact zero based `card_idx`/`target_idx` plus label.
 - complete final state, returned score, terminal result, completed rounds and
-  terminal versus round-limit completion;
+  terminal versus round limit completion.
 - environment RNG checkpoint digests after scenario creation and at completion.
 
 Action labels may repeat. The index pair identifies the current hand card and
@@ -87,13 +87,13 @@ Successful output has format `mcts-episode-replay-result`, status
 `environment_replay_verified`, verified step count, current identities, the final
 result and `search_recomputed: false`. Final verification includes full state,
 score, terminal result, round count, completion reason and RNG checkpoint. A
-terminal result on the last allowed round remains terminal. An ongoing round-limit
+terminal result on the last allowed round remains terminal. An ongoing round limit
 score is the existing heuristic, not a calibrated win probability.
 
 Mismatches include a deterministic first relative JSON location, such as
 `/steps/1/state/player/hp` or `/final/state/enemies/0/hp`. Objects are traversed by
 sorted key, arrays by index. Missing entries identify their key/index. Keys escape
-`~` as `~0` and `/` as `~1`, following JSON Pointer syntax. Object-key order is
+`~` as `~0` and `/` as `~1`, following JSON Pointer syntax. Object key order is
 irrelevant. Exact canonical comparison distinguishes integer, float and boolean
 representations and adds no tolerance. Preserve numeric representations if
 rewriting a record. Its captured record digest identifies the actual retained
@@ -114,7 +114,7 @@ interrupted recording does not emit a successful partial episode.
 
 The command checks that its output stream accepted every JSON byte and the final
 LF, then explicitly flushes before returning the record or replay status. An
-incomplete write or refused write/flush returns 1; interruption during delivery
+incomplete write or refused write/flush returns 1. Interruption during delivery
 returns 130. Errors before output starts leave stdout empty. A delivery failure
 can leave partial or complete bytes in a redirected file or pipe, so check the
 exit status before using them. The command does not retry or remove those bytes.
@@ -123,7 +123,7 @@ Flush acceptance does not establish durable disk storage or atomic replacement.
 Calling `main()` keeps the caller's output stream open. The executable retires a
 failed buffered stdout before interpreter shutdown can retry it and replace the
 intended failure status. Replay still requires matching implementation hashes,
-including `episode.py`; an entry change makes a record from a different entry
+including `episode.py`. An entry change makes a record from a different entry
 incompatible (exit 3), before scenario work. Keep that record with its matching
 source instead of rewriting its stored hashes.
 
@@ -149,7 +149,7 @@ unsupported rules. States retain complete dataclass fields. Snapshot modifier
 lists are bounded to 128 entries each and dots to 256 per combatant. Record
 numeric magnitudes cannot exceed 10^300. Steps cannot exceed the round cap and
 must have contiguous indices. Arbitrary states, Python rules, callbacks and
-mid-round imports are unsupported.
+mid round imports are unsupported.
 
 ## Compatibility and evidence limits
 
@@ -158,7 +158,7 @@ machine/pointer width, cache tag, RNG version, platform and actual imported
 engine/example hashes and distribution metadata. These hashes use observed raw
 bytes. They do not authenticate executing code or establish Git provenance.
 Code filenames are comparison labels, never paths loaded from the record.
-Relocation is supported. Cross-version replay is not promised. A source checkout
+Relocation is supported. Cross version replay is not promised. A source checkout
 and installed wheel can have different bytes/import metadata even with the same
 package version, so record and replay within the same observed implementation.
 

@@ -1,20 +1,20 @@
-# Compare search allowances against the saved one-round objective
+# Compare search allowances against the saved one round objective
 
 Use the existing installed engine and separate episode companion to inspect a
 fixed 8-versus-64 simulation comparison, then repeat a decision from the same
 saved state. The diagnostic measures the exact score loss of the selected
-physical action under the existing independent one-round reference. It asks
+physical action under the existing independent one round reference. It asks
 whether more search work helped on these declared modeled states.
 
 The four deciding cases had a pooled mean loss of approximately 0.01690538 at
 8 simulations and 0.00428602 at 64. That is a reduction of approximately
 0.01261936 score units, or 74.65 percent. Of the 64 deciding seed pairs, 22 had
-lower loss at 64, 3 had higher loss and 39 had equal loss. Exact best-action
+lower loss at 64, 3 had higher loss and 39 had equal loss. Exact best action
 selection increased from 27 of 64 to 42 of 64. The exploratory E2 case was
 adverse to the larger allowance and remains in the evidence.
 
-These are finite-corpus results under one declared objective. They do not
-establish stronger full-encounter play, a population effect, win probability or
+These are finite corpus results under one declared objective. They do not
+establish stronger full encounter play, a population effect, win probability or
 a new default. The selector stays `mean_visits`, exploration stays 1.2, and
 engine defaults and rewards remain unchanged. This comparison holds those
 controls fixed. The separate [stability diagnostic](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-stability.md)
@@ -34,7 +34,7 @@ The `docs/search-allowance/` directory contains:
 | --- | --- |
 | [cards.json](search-allowance/cards.json), [scenarios.json](search-allowance/scenarios.json) | Exact custom input bytes for all six cases |
 | [protocol.json](search-allowance/protocol.json) | Frozen cases, controls, seed split, work limits and prospective deciding gate |
-| [results.json](search-allowance/results.json) | All 144 cells' exact recommendations, losses, work and input hashes, six complete action-value tables, ties, outcome masses, paired results and the deciding gate |
+| [results.json](search-allowance/results.json) | All 144 cells' exact recommendations, losses, work and input hashes, six complete action value tables, ties, outcome masses, paired results and the deciding gate |
 | `E1.episode.json` through `D4.episode.json`, with corresponding `.replay.json` files | Six original captures and their completed environment replay reports |
 | `{case}.seed-{seed}.sims-{8,64}.{decision,reference}.json` | Original decision/reference pairs for the first seed in each frozen list, 301 for E and 2001 for D |
 
@@ -43,11 +43,11 @@ selected raw decision/reference documents. It does not include the other 264
 raw documents. Their hashes remain in the table, and the full raw corpus is
 retained in the private release evidence. This compact publication sample was
 chosen deterministically after collection, using each case's first listed seed.
-The first-seed reader checks were part of the frozen protocol. No raw capture
+The first seed reader checks were part of the frozen protocol. No raw capture
 or selected report was rewritten for distribution. This evidence table is a static study artifact,
 not a new input format for the engine or reference command.
 
-Use PowerShell 7.4 or later for byte-preserving native stdout redirection.
+Use PowerShell 7.4 or later for byte preserving native stdout redirection.
 Choose fresh output paths in an existing parent directory, keep stderr
 separate and check `$LASTEXITCODE` after each command. Redirection can create
 or overwrite a file even when the command fails. These examples use the
@@ -82,9 +82,9 @@ report. Historical incompatibility remains visible.
 & $py "$companion\episode.py" replay "$evidence\D1.episode.json" --cards "$evidence\cards.json" --scenarios "$evidence\scenarios.json" > C:\work\D1-replay.json
 ```
 
-Request two fresh decisions from the retained step-zero state. They use the
+Request two fresh decisions from the retained step zero state. They use the
 same seed and differ only in the simulation allowance. The command reads the
-existing seven-card hand without refilling it or continuing the capture's
+existing seven card hand without refilling it or continuing the capture's
 search random stream:
 
 ```powershell
@@ -97,8 +97,8 @@ search random stream:
 
 The fresh decision has its own observed installation/runtime identity. Read
 its identity comparisons instead of assuming it equals a historical producer.
-The recorder includes `demo.py` in its example identity, while the saved-state
-decision records its `game/` helpers. Their example-file maps can differ by
+The recorder includes `demo.py` in its example identity, while the saved state
+decision records its `game/` helpers. Their example file maps can differ by
 role. That does not erase engine or runtime differences, and it does not change
 the existing compatibility rules.
 
@@ -138,24 +138,24 @@ without priors, parallel workers or a search time budget.
 
 For the full repeat, use each original `{case}.episode.json` with every listed
 seed at both allowances, then price every resulting decision using the explicit
-physical-reference controls above. Do not select cases or seeds after inspecting
+physical reference controls above. Do not select cases or seeds after inspecting
 the repeated results. Compare complete raw reports to `results.json` using
 their state, action, exact fraction, work and identity fields. A new raw hash
-can differ when producer metadata differs. Hash equality is a byte-identity
+can differ when producer metadata differs. Hash equality is a byte identity
 claim, not a substitute for checking those fields.
 
 The inputs give each root eight ordered physical actions: pass plus seven
 card positions. Repeated copies of the same card stay separate actions. The
 variable damage, fixed damage and shield alternatives have different expected
-values. All admitted one-round outcomes remain ongoing. The smallest enemy HP
+values. All admitted one round outcomes remain ongoing. The smallest enemy HP
 is 16 and the largest player hit is 10. The smallest player HP is 24 and the
 largest enemy hit is 20. No terminal payoff is encountered in these cases.
 
 The reference model is
 `independent_one_round_binary53_shaped_v1`, with the original physical method.
-It exactly weights source-order binary64 shaped payoffs under its declared
-independent binary53 accuracy and inclusive integer-damage law. Its objective
-matches horizon-one MCTS. The existing sampled one-round comparator has
+It exactly weights source order binary64 shaped payoffs under its declared
+independent binary53 accuracy and inclusive integer damage law. Its objective
+matches horizon one MCTS. The existing sampled one round comparator has
 different terminal win/loss values and is excluded. The reported loss is the
 exact best action expectation minus the selected physical action expectation.
 Stability of a recommendation is not the same quantity.
@@ -171,7 +171,7 @@ not enter this gate. Exact fractions and the evaluated conditions are in
 ## Work, failures and delivery limits
 
 Each search declares 8 or 64 simulations of one round. The reference is limited
-to 100 physical leaves per action, 800 across the root and a one-second
+to 100 physical leaves per action, 800 across the root and a one second
 cooperative calculation deadline. These bounds are explicit repeat controls,
 not performance measurements. The cooperative deadline does not cap startup,
 identity capture, input validation, output, memory or hard wall time. A consumer
@@ -185,15 +185,15 @@ episode replay incompatibility exits 3. See the existing
 [reference limits](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-reference.md#supported-subset-and-limits) and
 [record/replay contract](https://github.com/T92T1914/mcts-combat-engine/blob/main/docs/episode-record-replay.md) for the full boundaries.
 
-Private collection-helper qualification failures are retained separately from
+Private collection helper qualification failures are retained separately from
 the accepted corpus and accounted for in the public results. They are not
 silently skipped cells or claims that the engine/reference was defective.
 Successful episode replay establishes reproduction of saved transitions.
 Reference agreement and independent mathematical review supply different
 evidence. Neither proves correctness outside the declared model or these cases.
 
-The companion retains its existing 128-member, 1 MiB-per-member and 8 MiB-total
+The companion retains its existing 128-member, 1 MiB per member and 8 MiB total
 payload limits. Static study evidence is explicitly listed in the existing
-companion and Pages builders. The engine wheel and saved-episode reader kit are
+companion and Pages builders. The engine wheel and saved episode reader kit are
 unchanged. Study documents retain their original source declarations, while the
 companion manifest and Pages presentation identify the delivery revision.

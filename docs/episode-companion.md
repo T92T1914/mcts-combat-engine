@@ -6,7 +6,7 @@ retained progress without executing or replacing trials.
 
 For one small installed journey on an already supported Linux Docker host, use
 the [Linux managed episode guide](linux-managed-episode.md). Its kernel ownership,
-controller-loss deadline and distinct passive recovery receipt are separate
+controller loss deadline and distinct passive recovery receipt are separate
 from the Windows capture contract.
 
 The separate `episode-companion.zip` contains the existing example commands,
@@ -14,7 +14,7 @@ their complete `game/` helpers and default cards/scenarios. Extract the whole
 companion into a fresh directory, then install the engine with Python and pip.
 You do not need Git, a development checkout or the development extras. The
 engine package still installs only `engine/`. The companion contains no engine
-or wheel and does not change the existing saved-episode reader kit.
+or wheel and does not change the existing saved episode reader kit.
 
 ## Acquire both parts
 
@@ -44,9 +44,9 @@ string alone does not establish matching code.
 `manifest.json` records source, payload and separate reference engine identities.
 Every payload file, including this guide, is literal committed source.
 
-The exact half-health repair changes odd-maximum boss behavior. Historical
-records retain their original source identities. New-source replay refuses an
-old identity, while passive inspection and an explicitly current-model decision
+The exact half health repair changes odd maximum boss behavior. Historical
+records retain their original source identities. New source replay refuses an
+old identity, while passive inspection and an explicitly current model decision
 remain separate paths. See [model compatibility](model-compatibility.md) for the
 threshold, historical record treatment and unchanged finite reference domains.
 
@@ -55,7 +55,7 @@ recovery, text and public model checks, their independent expectations and the
 distinction between consistency and authentication. Its executable tests remain
 in the source checkout.
 
-Keep `demo.py`, `episode.py`, the saved-record entries, `reference_episode.py`,
+Keep `demo.py`, `episode.py`, the saved record entries, `reference_episode.py`,
 and the full `game/`, `reference/` and `data/` together. `demo.py` participates in implementation identity even when
 you never run it. Move the whole directory when relocating the companion.
 Do not add a local `engine/`, which would shadow the installed engine.
@@ -68,7 +68,7 @@ enemies. Supply both `--cards` and `--scenarios` when recording or replaying
 custom content. Keep their exact bytes: replay checks their recorded hashes.
 See [record and replay](episode-record-replay.md) for validation, the supported
 card/rule schema, bounds and status meanings. A valid tiny custom pair is used
-by the installed-consumer CI witness; the default files are also usable inputs.
+by the installed consumer CI witness. The default files are also usable inputs.
 
 ## Complete one bounded journey
 
@@ -94,7 +94,7 @@ $companion = 'C:\work\episode-companion'
 Recording runs a new episode with fixed search work and a round bound. Replay
 applies the saved actions and environment stream, with no new search. Passive
 HTML inspection performs neither replay nor search. `decide_episode.py` is the
-explicit fresh-search operation: it reads the existing pre-action `/steps/0/state`
+explicit fresh search operation: it reads the existing pre action `/steps/0/state`
 and uses the newly supplied search seed and allowance. It does not refill the
 hand or continue the recorded policy's random stream. Comparison reads two
 saved reports without computing another decision. Open the completed HTML
@@ -103,10 +103,10 @@ files locally to inspect them.
 ## Agreement, differences and limits
 
 Environment replay requires matching implementation, runtime labels and exact
-original content. Source-checkout and installed-engine identities differ.
+original content. Source checkout and installed engine identities differ.
 Historical files retain these rules and are never rewritten to make a replay
 pass. A matching installation and literal companion may replay an older record
-when all recorded identities agree; arbitrary cross-version compatibility is
+when all recorded identities agree. Arbitrary cross version compatibility is
 not promised. Passive reading has its existing structural admission rules and
 does not require the original custom content or matching runtime labels.
 
@@ -114,7 +114,7 @@ Record/replay keep their existing statuses: 0 for completed recording or
 agreement, 1 for a valid replay mismatch or runtime/delivery failure, 2 for
 invalid input, 3 for replay incompatibility, and 130 for interruption. The
 reading and decision guides specify their own unchanged statuses. Complete
-JSON output ends with LF and is flushed by its entry; shell redirection itself
+JSON output ends with LF and is flushed by its entry. Shell redirection itself
 does not preserve prior output files or make a result durable.
 
 Fixed simulations and rounds bound declared work, not elapsed time or memory.
@@ -123,44 +123,44 @@ independent mathematical validation. Comparison explains eligibility and
 differences in retained reports, including search settings, without promising
 that one action improves on another. Hashes establish compared byte identity,
 not authentication. Read [inspection](episode-inspection.md) and
-[saved-state decisions](episode-decision.md) for complete admission and limits.
+[saved state decisions](episode-decision.md) for complete admission and limits.
 
 For maintainers, `python tools/build_episode_companion.py` generates the ZIP
 and sidecar from a clean committed checkout using the reader kit's bounded
 source capture and archive primitives. The existing site builder publishes
-both distinct distributions. Output writes are not atomic as a pair; a failed
+both distinct distributions. Output writes are not atomic as a pair. A failed
 pair must not be published.
 
-The same companion supports a [bounded saved-state stability diagnostic](episode-stability.md).
-It repeats fixed-work decisions across admitted seeds and coefficients, then
+The same companion supports a [bounded saved state stability diagnostic](episode-stability.md).
+It repeats fixed work decisions across admitted seeds and coefficients, then
 extracts a constituent for this existing inspector and comparison. Included
 baseline evidence and repeat commands preserve source identities. The engine's
 default selector, rewards and coefficient remain unchanged.
 
-The complete companion also includes an [independent one-round reference](episode-reference.md).
-It prices a saved horizon-one decision, including an extracted stability cell,
+The complete companion also includes an [independent one round reference](episode-reference.md).
+It prices a saved horizon one decision, including an extracted stability cell,
 and produces exact action expectations and score losses for passive inspection
 and comparison. The default retains the original one/two-enemy subset.
 `reference_episode.py --model three-enemy` explicitly selects the separately
-identified exactly-three-enemy model. The reference guide includes a complete
+identified exactly three enemy model. The reference guide includes a complete
 bundled gauntlet recording, replay, calculation and passive comparison journey.
 Saved reports retain their declared model, including historical version-1
 reports. The probability law and cooperative limits are explicit. This addition
 preserves the engine and separate reader kit.
 
-The companion includes a [fixed search-allowance comparison](episode-search-allowance.md).
+The companion includes a [fixed search allowance comparison](episode-search-allowance.md).
 Inspect original 8/64 decision/reference pairs, replay their custom episode or
 request a fresh decision from the same state. The complete 144-cell result
-table retains exact score losses and work under the declared one-round model.
+table retains exact score losses and work under the declared one round model.
 The finding is limited to its frozen cases and leaves engine defaults unchanged.
 
-The [request-local action reuse guide](request-edge-reuse.md) documents the
+The [request local action reuse guide](request-edge-reuse.md) documents the
 qualified installed search comparison and a fresh capture, replay, decision,
 reference and inspection journey with the same companion. Its source identity,
 local timing boundary and two adverse individual measurements remain explicit.
 
-The optional [root allocation mode](root-allocation.md) makes a horizon-one
-saved-state decision through the same command, with a separate sampling and
-final-selection report. Its fixed-allowance qualification retains every modeled
-case, uncertainty and two adverse exact-best hit rates. It changes sampling
+The optional [root allocation mode](root-allocation.md) makes a horizon one
+saved state decision through the same command, with a separate sampling and
+final selection report. Its fixed allowance qualification retains every modeled
+case, uncertainty and two adverse exact best hit rates. It changes sampling
 trajectories and leaves the ordinary default unchanged.

@@ -24,7 +24,7 @@ python demo.py boss --sims 10000 --seed 7 --horizon 6
 The public synthetic boss scenario starts from the demo's fixed deal seed 7.
 The search also uses seed 7 and a horizon of six. The safety time cap was not
 reached. Reward values in the image use the three decimal places printed by
-the demo; visit counts are exact. The reward axis begins at zero and is not
+the demo. Visit counts are exact. The reward axis begins at zero and is not
 a probability axis. No confidence interval is inferred from those visits.
 
 The boss retaliates when a trap is cast. Weakness Mark is therefore ranked
@@ -81,7 +81,7 @@ The website chooses its layout from the figure container at 560 pixels and keeps
 its existing Auto, Clair and Obscur appearance setting. The README uses a 1024
 pixel viewport breakpoint, while these notes use 768 pixels to account for their
 wider reading column. These choices follow measurements of the actual GitHub
-columns, not an assumption that viewport width equals image width. Signed-out
-system appearance is covered. Signed-in appearance overrides remain unverified.
+columns, not an assumption that viewport width equals image width. Signed out
+system appearance is covered. Signed in appearance overrides remain unverified.
 
 Wide [Clair SVG](mcts-decision-clair-wide.svg) and [Obscur SVG](mcts-decision-obscur-wide.svg) preserve the original units, qualifications and Inter outlines. Narrow editions remain available above.

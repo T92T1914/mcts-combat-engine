@@ -40,13 +40,13 @@ mode, including with one worker.
 
 The policy owns its search engine and workers. The supplied `GameState` and
 its model definitions remain caller-owned. Managed lifetime does not create
-a deep-frozen snapshot of that input.
+a deep frozen snapshot of that input.
 
 Serial simulations clone the changing combat state: combatant scalars, hand
-and enemy lists, charm-list membership and each DoT. Card and existing Charm
-objects, resist/boost maps, enemy-policy dictionaries and stateless boss-rule
-configuration remain shared under the read-only definition convention.
-The data classes and dictionaries are writable in Python. Read-only use is
+and enemy lists, charm list membership and each DoT. Card and existing Charm
+objects, resist/boost maps, enemy policy dictionaries and stateless boss rule
+configuration remain shared under the read only definition convention.
+The data classes and dictionaries are writable in Python. Read only use is
 a caller responsibility, not enforcement by frozen input types. See the
 [manual clone design](design-decisions.md#7-clone-by-hand-share-what-never-mutates).
 
@@ -56,7 +56,7 @@ apply their effects to the simulated combat state without changing shared
 definition data or storing evolving state in the shared rule object. Parallel
 process serialization does not provide an atomic snapshot barrier against
 concurrent caller mutation. The same responsibility applies to serial,
-one-worker and multiple-worker decisions.
+one worker and multiple worker decisions.
 
 A returned `Action` addresses the supplied root's physical hand slot and
 target index. Apply it to the corresponding current hand and targets before
@@ -70,7 +70,7 @@ call, context and close contract below.
 Select `parallel=True, mode="fixed", budget_ms=None` and supply nonnegative
 integer `seed` and `max_sims` values. Optional `max_transitions` is another
 nonnegative total ceiling per decision. Fixed mode refuses a clock budget and
-does not select serial search. It uses the existing independent-root allocation,
+does not select serial search. It uses the existing independent root allocation,
 receipt validation and failure behavior from
 [the fixed work contract](parallel-fixed-work.md).
 
@@ -87,7 +87,7 @@ with mcts_decider(
 ```
 
 On Windows run this inside a guarded `main()` in a file. The complete
-[installed-package example](../examples/managed_fixed.py) constructs its own
+[installed package example](../examples/managed_fixed.py) constructs its own
 state, prints actions and receipts, and shows refusal after context exit.
 It needs only the installed engine and standard library.
 
@@ -101,15 +101,15 @@ For a fixed state, seed, worker count, implementation and verified runtime,
 repeated computational receipts agree. Elapsed and startup durations can
 change. Another worker count changes the forest and may change the action.
 Independent trees do not reproduce one larger serial tree. Fixed work does
-not establish a production wall-clock deadline. The lower-level process
+not establish a production wall clock deadline. The lower level process
 watchdog remains 60 seconds, and local work with one worker has no process
 watchdog.
 
 `last_report` exposes the immutable `FixedWorkReport` from the latest fixed
-attempt. Open admission clears it before per-call seed validation or search.
+attempt. Open admission clears it before per call seed validation or search.
 A rejected seed or an attempt that produces no report therefore leaves `None`.
-Closed or retirement-pending refusal preserves the previous receipt, as does
-successful close. Timed and serial policies have no fixed-work receipt.
+Closed or retirement pending refusal preserves the previous receipt, as does
+successful close. Timed and serial policies have no fixed work receipt.
 
 In fixed mode `on_work` receives `dataclasses.asdict(last_report)`, a detached
 dictionary, whenever an attempt produces a report. This includes an incomplete
@@ -120,15 +120,15 @@ count observer cannot hide the work notification. Serial callback order and
 dictionary shape are unchanged. `on_search` is not called for a failed search.
 
 If a search error or caller interrupt and the work callback both raise, the
-search error remains primary. A best-effort note names the callback error's
+search error remains primary. A best effort note names the callback error's
 class. A callback failure after a successful search propagates normally, with
 the receipt still available. Callbacks do not retry search or advance seeds.
 
 An incomplete fixed batch raises `ParallelSearchError` and returns no action.
 Its report retains known counts and unknown totals. No failed allowance is
-rerun serially. Zero or below-horizon ceilings are valid accounting requests.
+rerun serially. Zero or below horizon ceilings are valid accounting requests.
 If they fund no complete simulation at a nonterminal root, the policy raises
-`ValueError` after reporting the complete zero-work receipt instead of choosing
+`ValueError` after reporting the complete zero work receipt instead of choosing
 Pass. A terminal root retains Pass with zero work. Pool reuse and explicit
 cleanup follow the same managed contract below.
 
@@ -144,11 +144,11 @@ If termination or joining raises, the policy retains its engine and blocks new
 decisions and context entry. The cleanup error remains visible. An explicit
 `choose.close()` retries retirement. Only successful retirement finishes the
 policy lifetime. The handle remaining owned does not prove that workers have
-physically exited, and operating-system retirement has no hard completion
+physically exited, and operating system retirement has no hard completion
 deadline.
 
 A context retires the policy when its body finishes. If its body raises and
-retirement also fails, the original exception object propagates. A best-effort
+retirement also fails, the original exception object propagates. A best effort
 exception note records the cleanup class without converting either exception
 to text. A failed diagnostic cannot replace the original error. If the body
 succeeded, a cleanup failure propagates normally.
@@ -167,10 +167,10 @@ explicit ownership.
 
 Timed mode preserves the existing action selection, search budgets,
 random streams and callbacks. A terminal root and an uncapped empty result
-retain the existing Pass action. A transition-capped nonterminal search without
+retain the existing Pass action. A transition capped nonterminal search without
 a complete simulation still raises `ValueError`. Mean shaped search values
 remain distinct from calibrated win probabilities. This lifecycle interface
-adds no search-quality or throughput claim.
+adds no search quality or throughput claim.
 
 ## Source identity for recorded consumers
 

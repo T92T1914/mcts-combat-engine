@@ -17,7 +17,7 @@ and deciding capture in separate new directories with their own protocols.
 
 ## Protocol and execution
 
-The bounded UTF-8 JSON protocol declares the three built-in presets in exactly
+The bounded UTF-8 JSON protocol declares the three built in presets in exactly
 this order, a cap of 30 rounds, 32 simulations, horizon one, an external timeout per
 trial, a total collection deadline, and paired seed blocks. No custom content,
 deeper horizon, priors, parallel search or search limited by a clock is admitted.
@@ -61,7 +61,7 @@ do not separate Python Random streams.
 
 The optional `metadata` object retains method and provenance material without
 adding execution controls. If `metadata.freeze` is present, its `implementation`
-and `content` values must exactly match the capture source and built-in content
+and `content` values must exactly match the capture source and built in content
 before any child starts. Other metadata remains declared material for the
 independent analysis.
 
@@ -146,8 +146,8 @@ An incomplete capture exits one and retains the incomplete inventory and receipt
 ## Reading the evidence
 
 A terminal win by round 30 is the primary binary endpoint available to a frozen
-analysis. Terminal loss and an unfinished round-limit encounter are separate
-reported categories. A round-limit encounter is a nonwin for that endpoint and
+analysis. Terminal loss and an unfinished round limit encounter are separate
+reported categories. A round limit encounter is a nonwin for that endpoint and
 is not labeled a terminal loss. The model score stays separate from the terminal
 result and is not a calibrated probability.
 
@@ -179,6 +179,6 @@ apply. A fresh decision from a saved state performs new search and does not
 recompute or authenticate the original policy's search trace.
 
 The complete companion includes this capture tool, benchmark entry and guide.
-The engine wheel remains the nine-member `engine` package, without game content,
-benchmark tools or evaluation artifacts. The saved-state reader kit keeps its
+The engine wheel remains the nine member `engine` package, without game content,
+benchmark tools or evaluation artifacts. The saved state reader kit keeps its
 existing payload and scope.

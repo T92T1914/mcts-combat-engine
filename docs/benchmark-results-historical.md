@@ -2,8 +2,8 @@
 
 This 2026-09-05 wall clock run describes earlier code with a known search action identity defect. It is retained for provenance, not as a current performance claim.
 
-60 games per policy per scenario, game seeds paired across policies; 120 ms of search per decision, single process.
-Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs; AMD Ryzen 7 7800X3D (8 cores / 16 threads), 64 GB RAM, Windows 11 Pro.
+60 games per policy per scenario, game seeds paired across policies. 120 ms of search per decision, single process.
+Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs. AMD Ryzen 7 7800X3D (8 cores / 16 threads), 64 GB RAM, Windows 11 Pro.
 Run on 2026-09-05 in 7.1 min.
 
 | scenario | random | greedy | mcts (120 ms) | search vs best baseline |

@@ -10,9 +10,9 @@ I built this to explore how a search chooses an action when the outcome can chan
 The engine package runs the model and search. A separate companion handles
 recording, replay, decisions from saved states and inspection. Start with a task:
 
-- **Inspect a saved decision.** Open the [browser example](https://t92t1914.github.io/mcts-combat-engine/) to read retained actions, sampled scores and visits. It performs no new search.
-- **Make a small bounded decision.** Follow the [public Python API recipe](docs/episode-adaptive-reference.md#search-the-same-state-through-the-public-python-api) for a state with two cards, using explicit simulation and transition limits. Use the [complete companion](docs/episode-companion.md) for recording, decisions from saved states, replay and passive inspection with a separately installed engine.
-- **Run a supported managed consumer.** Follow the [Windows encounter guide](docs/managed-encounters.md) or [Linux episode guide](docs/linux-managed-episode.md). Each declares its supported host, process ownership, limits and recovery scope.
+- Inspect a saved decision. Open the [browser example](https://t92t1914.github.io/mcts-combat-engine/) to read retained actions, sampled scores and visits. It performs no new search.
+- Make a small bounded decision. Follow the [public Python API recipe](docs/episode-adaptive-reference.md#search-the-same-state-through-the-public-python-api) for a state with two cards, using explicit simulation and transition limits. Use the [complete companion](docs/episode-companion.md) for recording, decisions from saved states, replay and passive inspection with a separately installed engine.
+- Run a supported managed consumer. Follow the [Windows encounter guide](docs/managed-encounters.md) or [Linux episode guide](docs/linux-managed-episode.md). Each declares its supported host, process ownership, limits and recovery scope.
 
 Ordinary UCT remains the default. A better first action under a bounded
 reference does not establish a better complete encounter. The later
@@ -22,9 +22,9 @@ reference does not establish a better complete encounter. The later
 
 [Explore the browser demo](https://t92t1914.github.io/mcts-combat-engine/) · [Open in Codespaces](https://codespaces.new/T92T1914/mcts-combat-engine) · [Read in another language](https://github.com/T92T1914/T92T1914/blob/main/TRANSLATION.md)
 
-Use **Link to this example** in the browser demo to share the selected result.
+Use Link to this example in the browser demo to share the selected result.
 The URL keeps the example's visible label, and Back and Forward restore earlier
-selections. These links inspect saved evidence; they do not run a new calculation.
+selections. These links inspect saved evidence. They do not run a new calculation.
 
 The action inspector starts in Obscur. Auto follows the system appearance, and
 an explicit Auto, Clair or Obscur choice stays local to this project. Switching keeps the
@@ -36,7 +36,7 @@ separates the page revision from the source revision of the saved decision.
 
 ## Run it
 
-Python 3.11+; no installation is needed to run the example or standard library tests from a checkout.
+Python 3.11+. No installation is needed to run the example or standard library tests from a checkout.
 
 ```sh
 python demo.py boss --sims 10000
@@ -189,7 +189,7 @@ Weakness Mark -> Frost Tyrant      0.495     1,831
 Recommended: Spark -> Frost Tyrant
 ```
 
-The reward is a mean shaped value, **not a calibrated win probability**. The compatibility field `RankedAction.win_rate` retains its original name. The boss punishes traps, and the search ranks Weakness Mark below passing in this decision. Timing depends on the machine and its load; the seeded visit counts do not, provided the safety time cap is not reached.
+The reward is a mean shaped value, not a calibrated win probability. The compatibility field `RankedAction.win_rate` retains its original name. The boss punishes traps, and the search ranks Weakness Mark below passing in this decision. Timing depends on the machine and its load. The seeded visit counts do not, provided the safety time cap is not reached.
 
 ## Results
 
@@ -220,7 +220,7 @@ allocation alone, match random trajectories or establish lower CPU time.
 Exact best action hits worsened in two cases: NEW-KT1 fell from 3,732 to 3,543
 out of 4,096, and NEW-KT4 from 4,033 to 3,935. Five individual state uncertainty
 intervals include zero. The pooled benefit interval is conditional on the
-declared independent Monte Carlo replication assumptions; it does not certify
+declared independent Monte Carlo replication assumptions. It does not certify
 a reduction of at least 25%. These results do not establish universal
 superiority, full encounter improvement or calibrated win probability.
 
@@ -240,10 +240,10 @@ encounter work.
 
 ### Historical encounter benchmark
 
-**Recorded fixed budget benchmark (September 6, 2026):** search wins 30/30 duels, 30/30 gauntlets and 15/30 boss encounters at 3,000 simulations per decision. Random wins 27, 17 and 8; greedy wins 11, 11 and 0. These are small samples from one search seed, not a general playing strength guarantee.
+Recorded fixed budget benchmark (September 6, 2026): search wins 30/30 duels, 30/30 gauntlets and 15/30 boss encounters at 3,000 simulations per decision. Random wins 27, 17 and 8. Greedy wins 11, 11 and 0. These are small samples from one search seed, not a general playing strength guarantee.
 
-30 games per policy per scenario, game seeds paired across policies; 3000 simulations per decision, search seed 42, horizon 5, 60 second safety cap, single process.
-Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs; AMD Ryzen 7 7800X3D; Windows 11; 64 GB RAM.
+30 games per policy per scenario, game seeds paired across policies. 3000 simulations per decision, search seed 42, horizon 5, 60 second safety cap, single process.
+Python 3.11.8 on Windows 10-10.0.26200 SP0, 16 logical CPUs. AMD Ryzen 7 7800X3D. Windows 11. 64 GB RAM.
 Run on 2026-09-06.
 
 These recorded results predate the separate policy stream and the search reset
@@ -259,7 +259,7 @@ repaired experiment protocol and should be reported separately.
 *win % = clean wins (95% Wilson interval) · Nr = average rounds to win, when it won · bold = best in row*
 
 
-[Full results and raw measurements](docs/benchmark-results.md) include a matched comparison against the pre repair engine. Fixing action identity changed search wins from **29 / 30 / 16** to **30 / 30 / 15** across the three encounters. The boss result decreased by one game. This is a correctness repair, with no claim of universal improvement.
+[Full results and raw measurements](docs/benchmark-results.md) include a matched comparison against the pre repair engine. Fixing action identity changed search wins from 29 / 30 / 16 to 30 / 30 / 15 across the three encounters. The boss result decreased by one game. This is a correctness repair, with no claim of universal improvement.
 
 The [historical wall clock results](docs/benchmark-results-historical.md) describe earlier code and are explicitly archived. For machine budget exploration, `python benchmark.py 60 120` still runs the timed benchmark. Wall clock runs can differ because their simulation counts differ.
 
@@ -378,20 +378,20 @@ retains the full profile and the limits of that decision to leave the implementa
 ## How it works
 
 1. Clone the current state and replay an action sequence under fresh randomness.
-2. Map tree edges to stable root hand slots. Removing a card cannot shift an edge onto another card; duplicate copies keep separate identities.
+2. Map tree edges to stable root hand slots. Removing a card cannot shift an edge onto another card. Duplicate copies keep separate identities.
 3. Recompute legal moves in each realized state. In default UCT, expand newly available choices and select only available edges by UCB1. An unavailable edge receives no backup as if it were a pass. The separate root allocation mode uses the sampling stages described above.
 4. Roll out to the configured horizon, score the result and back up the shaped reward.
 5. By default, rank root actions by mean reward, with visit count as a tie break. Optional independent worker processes merge visit counts and value sums. The separate root allocation mode uses the final ranking described above.
 
 The simulator also validates externally supplied moves. Invalid targets, unaffordable cards and out of range indexes become a pass without consuming a card. Search correctness does not rely on that fallback: an instrumented regression checks that every search generated move is legal.
 
-Open loop nodes store action sequences rather than full chance trees. Their values average sampled outcomes, conditional on an edge being available. The example supplies the current state; this is stochastic planning, not an information set search over hidden opponent hands.
+Open loop nodes store action sequences rather than full chance trees. Their values average sampled outcomes, conditional on an edge being available. The example supplies the current state. This is stochastic planning, not an information set search over hidden opponent hands.
 
-Terminal wins receive a depth discount; losses have a small survival component. Unfinished rollouts use an HP heuristic that credits setup. Those choices help a shallow search value healing, blades and traps, but were not subjected to a parameter sweep. Selection and rollout both stop at the configured horizon.
+Terminal wins receive a depth discount. Losses have a small survival component. Unfinished rollouts use an HP heuristic that credits setup. Those choices help a shallow search value healing, blades and traps, but were not subjected to a parameter sweep. Selection and rollout both stop at the configured horizon.
 
 An optional opening book supplies `{card_name: (count, mean_reward)}` priors.
 Counts must be nonnegative integers and rewards finite numbers between zero and
-one. JSON list pairs also work. Zero observations add no evidence; positive
+one. JSON list pairs also work. Zero observations add no evidence. Positive
 counts contribute three virtual visits per observation, capped at 30 per action.
 The whole book is validated before sampling or starting worker processes, so a
 corrupt entry raises `ValueError` instead of contaminating the rankings. Virtual
@@ -406,7 +406,7 @@ uses its own copy of the prior, just as it builds its own tree.
 | [engine/actions.py](engine/actions.py) | Enumeration and validation share legality rules |
 | [engine/simulator.py](engine/simulator.py) | One stochastic round and invalid input handling |
 | [engine/parallel.py](engine/parallel.py) | Independent worker searches and aggregation of visits and value sums |
-| [game/loader.py](game/loader.py) | Validated JSON content; the engine never imports the game |
+| [game/loader.py](game/loader.py) | Validated JSON content. The engine never imports the game |
 | [tests/test_action_identity.py](tests/test_action_identity.py) | Regressions for shifted cards, duplicate copies, target changes and horizon bounds |
 | [Design decisions](docs/design-decisions.md) | Tradeoffs and alternatives tied to implementation |
 
@@ -438,13 +438,13 @@ Found a problem or have a useful comparison? [Open an issue](https://github.com/
 
 I built this to understand how software compares uncertain outcomes under a limited compute budget. The useful part for me is being able to trace a choice back to its samples, its assumptions and the benchmark that tested it.
 
-- **Search algorithms.** Follow selection, expansion and rollout through one implementation. [Inspect the work](engine/mcts.py).
-- **Parallel work.** Read why work is divided between independent search roots and how results are combined. [Inspect the work](docs/design-decisions.md).
-- **Fair comparisons.** Compare recorded search results under stated seeds and budgets, including the weaker result. [Inspect the work](docs/benchmark-results.md).
-- **Python tooling.** Use a package containing only the engine with a separate recording and inspection companion. [Inspect the work](docs/episode-companion.md).
-- **Process ownership.** Follow explicit decision lifetime, receipts for fixed amounts of work and retryable cleanup. [Inspect the work](docs/managed-decider.md).
-- **Software assurance.** Inspect bounded input, recovery and model checks with retained negative controls. [Inspect the work](docs/bounded-assurance.md).
+- Search algorithms. Follow selection, expansion and rollout through one implementation. [Inspect the work](engine/mcts.py).
+- Parallel work. Read why work is divided between independent search roots and how results are combined. [Inspect the work](docs/design-decisions.md).
+- Fair comparisons. Compare recorded search results under stated seeds and budgets, including the weaker result. [Inspect the work](docs/benchmark-results.md).
+- Python tooling. Use a package containing only the engine with a separate recording and inspection companion. [Inspect the work](docs/episode-companion.md).
+- Process ownership. Follow explicit decision lifetime, receipts for fixed amounts of work and retryable cleanup. [Inspect the work](docs/managed-decider.md).
+- Software assurance. Inspect bounded input, recovery and model checks with retained negative controls. [Inspect the work](docs/bounded-assurance.md).
 
-This demonstrates algorithm and experiment design. Applying it to routing or scheduling would need a new domain model, constraints and validation; the current project does not claim that deployment.
+This demonstrates algorithm and experiment design. Applying it to routing or scheduling would need a new domain model, constraints and validation. The current project does not claim that deployment.
 
 See [sharing previews](docs/sharing-preview.md) for the maintained link image and its source.

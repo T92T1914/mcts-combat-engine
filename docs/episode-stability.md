@@ -1,8 +1,8 @@
-# How stable is a saved-state decision?
+# How stable is a saved state decision?
 
 The installed engine and separate episode companion can repeat a bounded
 decision across search seeds and exploration coefficients. The report compares
-the existing mean-first recommendation with a visits-first choice from the same
+the existing mean first recommendation with a visits first choice from the same
 statistics. It shows sensitivity, not stronger decisions or optimality.
 
 Use the existing [companion acquisition](episode-companion.md) instructions.
@@ -12,10 +12,10 @@ reader or browser service is needed. The engine wheel still contains only
 
 ## Compute, extract and inspect
 
-Choose an existing ongoing pre-action step. `$py` and `$companion` are the
+Choose an existing ongoing pre action step. `$py` and `$companion` are the
 installed Python and extracted companion paths from the acquisition guide.
 Use fresh output names, keep stderr separate and check `$LASTEXITCODE` after
-each command. PowerShell 7.4+ preserves native stdout bytes; older Windows
+each command. PowerShell 7.4+ preserves native stdout bytes. Older Windows
 PowerShell can transcode them.
 
 ```powershell
@@ -31,14 +31,14 @@ same physical state, creates a new search RNG and runs exactly 64 simulations.
 It does not replay earlier rounds, refill cards or continue the recording's
 search stream. Horizon is 1..8, default four. The coefficient set is a unique
 subset of `0.6,1.2,2.4`, default all three. This half/current/double grid measures
-sensitivity on the unchanged shaped-reward scale, not an optimal constant.
+sensitivity on the unchanged shaped reward scale, not an optimal constant.
 
 Supply 2..16 signed 64-bit seed labels with distinct absolute values. Opposite
 integer signs initialize the same Python RNG stream, so `7` and `-7` cannot
-count as separate runs. Ordinary single decisions retain signed-seed acceptance.
+count as separate runs. Ordinary single decisions retain signed seed acceptance.
 Cells follow supplied coefficient order, then supplied seed order. Cell indices
 are zero based. The maximum sweep is 48 serial calls, 3,072 simulations and
-24,576 round transitions. There are no priors, workers or time-based search
+24,576 round transitions. There are no priors, workers or time based search
 deadlines. These bounds concern work counts, not wall time, memory or accuracy.
 
 ## Meaning and saved reports
@@ -48,21 +48,21 @@ deadlines. These bounds concern work counts, not wall time, memory or accuracy.
 root encounter order for complete ties. Physical card/target indices remain
 identities even for duplicate names. Unvisited choices remain unvisited.
 
-Each cell stores a validated schema 2 mean-first decision. Both diagnostic
+Each cell stores a validated schema 2 mean first decision. Both diagnostic
 rankings use that one captured search. Changed coefficients require separate
 searches. Matching seed labels across coefficients do not guarantee identical
-trajectories or identical random-stream consumption.
+trajectories or identical random stream consumption.
 
 The JSON reports constituent decisions, requested/completed work, action
-frequencies, modal counts, unordered seed-pair disagreements, same-stat selector
+frequencies, modal counts, unordered seed pair disagreements, same stat selector
 disagreement, exact leading primary/full tie counts, leading gaps, and matched
 seed coefficient differences. Tie counts include the chosen action. Gaps are
 null with fewer than two sampled choices. Visit gaps can be negative in
-mean-first order; mean gaps can be negative in visits-first order.
+mean first order. Mean gaps can be negative in visits first order.
 
-The seed-pair denominator is `n*(n-1)/2`. Overlapping pairs are dependent
-descriptive comparisons, not an independent-trial confidence sample. Shaped
-rewards are not calibrated win probabilities. No policy-quality evaluation runs.
+The seed pair denominator is `n*(n-1)/2`. Overlapping pairs are dependent
+descriptive comparisons, not an independent trial confidence sample. Shaped
+rewards are not calibrated win probabilities. No policy quality evaluation runs.
 
 Extraction passively admits the saved grid, shared state and producer identity,
 all constituents and recomputed diagnostics. It emits one ordinary schema 2
@@ -77,7 +77,7 @@ not authenticated origin or proof that the reported search occurred.
 | Exit | Meaning |
 | --- | --- |
 | 0 | Complete sweep or complete passive extraction |
-| 2 | Argument, record, selected-state or saved-report refusal |
+| 2 | Argument, record, selected state or saved report refusal |
 | 1 | Runtime/output failure or explicitly incomplete failed sweep |
 | 130 | Interruption, including an explicitly incomplete interrupted sweep |
 
@@ -85,15 +85,15 @@ A failure after admission retains the completed cell prefix, identifies its
 next unfinished cell or finalization stage and sets `status=incomplete`.
 Finalization requires every declared cell to have completed. An interruption
 immediately after a cell is committed retains that cell. Complete diagnostics
-are null. Work totals describe completed admitted constituents;
-an unfinished cell can have performed additional work without a complete report.
-There is no retry, imputation or partial-success claim. A completed cell can
+are null. Work totals describe completed admitted constituents.
+An unfinished cell can have performed additional work without a complete report.
+There is no retry, imputation or partial success claim. A completed cell can
 still be extracted with its incomplete source status preserved. An unfinished
 cell cannot be extracted.
 
 Captured/generated JSON is limited to 8 MiB, sixteen container levels and
 200,000 aggregate values. Repeated fixed payload and maximum choices are
-preflighted before search; final byte and schema admission remain mandatory.
+preflighted before search. Final byte and schema admission remain mandatory.
 A large state or identity can exceed the report cap even with a small grid.
 No constituent is silently omitted. Current identity is observed before work
 and checked during reporting. A changed source refuses completion.
@@ -114,7 +114,7 @@ completed on 2026-10-10: 216 calls, 13,824 simulations and 55,296 transitions,
 with no failed cell or unused allowance. These are scoped sensitivity
 measurements of six early states, not a sampled workload or quality test.
 
-| Slice/state | Coefficient | Mean-first seed-pair differences | Visits-first seed-pair differences | Same-stat selector differences |
+| Slice/state | Coefficient | Mean first seed pair differences | Visits first seed pair differences | Same stat selector differences |
 | --- | ---: | ---: | ---: | ---: |
 | Exploratory duel | 0.6 | 0/28 | 0/28 | 0/8 |
 | Exploratory duel | 1.2 | 7/28 | 7/28 | 0/8 |
@@ -164,7 +164,7 @@ Repeat each confirmatory input (`confirmatory-duel.json`,
 Substitute the other input names and fresh outputs. The default grid supplies
 all three coefficients. The delivered companion observes changed helper/entry
 hashes and possibly a different runtime. These commands make fresh diagnostics
-from retained states, not bit-identical source replay of the frozen baseline.
+from retained states, not bit identical source replay of the frozen baseline.
 Historical episode replay keeps its stricter identity requirements. The baseline
-does not establish late-round, prior, root-parallel, other-horizon or arbitrary
-custom-content policy quality.
+does not establish late round, prior, root parallel, other horizon or arbitrary
+custom content policy quality.
