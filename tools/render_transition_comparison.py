@@ -302,17 +302,17 @@ def render(report: dict) -> str:
     lines = [
         "# Transition allowance comparison",
         "",
-        "This study gives MCTS and one-round action enumeration the same allowance "
+        "This study gives MCTS and one round action enumeration the same allowance "
         "of 300 forward simulator transitions per decision. Whole simulations and "
-        "whole equal-action sweeps can leave different unused remainders. Random "
-        "and damage-only greedy remain contextual controls with no sampled "
+        "whole equal action sweeps can leave different unused remainders. Random "
+        "and damage only greedy remain contextual controls with no sampled "
         "forward search.",
         "",
         "## Method",
         "",
         "The [protocol](transition-comparison-protocol.json) was declared before "
         "outcomes. The allowance is a bounded engineering choice, not a tuned value. "
-        "MCTS uses a five-round horizon. The comparator evaluates one-round "
+        "MCTS uses a five round horizon. The comparator evaluates one round "
         "successors using the same starting random seed for every candidate in a "
         "sweep. Both use the existing simulator and heuristic, so neither is "
         "independent ground truth.",
@@ -335,8 +335,8 @@ def render(report: dict) -> str:
         "```",
         "",
         "The last command validates retained data and checks this report. It does "
-        "not run the experiment. MCTS and one-round enumeration each have a "
-        "60-second safety cap per decision, checked between complete units. "
+        "not run the experiment. MCTS and one round enumeration each have a "
+        "60 second safety cap per decision, checked between complete units. "
         "The cap is not a hard deadline.",
         "",
         "## Every measured condition",
@@ -434,7 +434,7 @@ def render(report: dict) -> str:
     elapsed = report["evaluation"]["benchmark_elapsed_seconds"]
     lines += [
         "",
-        "An unfinished game reached the 30-round limit. It is neither a clean "
+        "An unfinished game reached the 30 round limit. It is neither a clean "
         "win nor a loss. Every terminal loss and win is retained in the JSON as well.",
         "",
         "## Evidence and limits",
@@ -446,12 +446,12 @@ def render(report: dict) -> str:
         "",
         "The [retained JSON](transition-comparison-results.json) keeps all 180 "
         "game records, actual seeds, terminal results, exact decision work, stop "
-        "reasons and half-open decision ranges for each game. Source hashes use "
+        "reasons and half open decision ranges for each game. Source hashes use "
         "UTF-8 text with LF newlines and no BOM. The [earlier study]"
         "(comparison-results.md) remains unchanged.",
         "",
         "Equal transition allowances do not equalize CPU time, memory or cloning "
-        "overhead. Total work also depends on game length and whole-unit remainders. "
+        "overhead. Total work also depends on game length and whole unit remainders. "
         "The small fixed environment set and repeated conditions do not establish "
         "general playing strength. The new environment set also prevents treating "
         "this as a controlled before/after improvement over the earlier study.",

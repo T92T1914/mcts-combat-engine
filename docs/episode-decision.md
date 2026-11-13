@@ -98,7 +98,7 @@ decision quality. The search leaves the reconstructed root unchanged.
 ## Read the JSON report
 
 The report has format `mcts-episode-decision-report`. The legacy default emits
-schema version 1 with coefficient 1.2 and the engine's mean first ordering.
+schema version 1 with coefficient 1.2 and the engine's `mean-first` ordering.
 Explicit coefficient or final action controls emit schema version 2. Both
 versions retain these fields:
 

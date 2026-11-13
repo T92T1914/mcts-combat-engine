@@ -2,7 +2,7 @@
 
 The installed engine and separate episode companion can repeat a bounded
 decision across search seeds and exploration coefficients. The report compares
-the existing mean first recommendation with a visits first choice from the same
+the existing `mean-first` recommendation with a `visits-first` choice from the same
 statistics. It shows sensitivity, not stronger decisions or optimality.
 
 Use the existing [companion acquisition](episode-companion.md) instructions.
@@ -48,7 +48,7 @@ deadlines. These bounds concern work counts, not wall time, memory or accuracy.
 root encounter order for complete ties. Physical card/target indices remain
 identities even for duplicate names. Unvisited choices remain unvisited.
 
-Each cell stores a validated schema 2 mean first decision. Both diagnostic
+Each cell stores a validated schema 2 `mean-first` decision. Both diagnostic
 rankings use that one captured search. Changed coefficients require separate
 searches. Matching seed labels across coefficients do not guarantee identical
 trajectories or identical random stream consumption.
@@ -58,7 +58,7 @@ frequencies, modal counts, unordered seed pair disagreements, same stat selector
 disagreement, exact leading primary/full tie counts, leading gaps, and matched
 seed coefficient differences. Tie counts include the chosen action. Gaps are
 null with fewer than two sampled choices. Visit gaps can be negative in
-mean first order. Mean gaps can be negative in visits first order.
+`mean-first` order. Mean gaps can be negative in `visits-first` order.
 
 The seed pair denominator is `n*(n-1)/2`. Overlapping pairs are dependent
 descriptive comparisons, not an independent trial confidence sample. Shaped

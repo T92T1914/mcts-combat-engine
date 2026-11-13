@@ -1,7 +1,7 @@
 # Root allocation at a fixed search allowance
 
 Use the existing saved state decision command to select the optional
-`sequential_halving` root policy. It makes a new horizon one decision, records
+`sequential_halving` root policy. It makes a new `horizon-one` decision, records
 the actual sampling stages and final selection rule, and works with the existing
 passive inspector, comparison and one round reference. The ordinary UCT default,
 recording policy and historical reports keep their original behavior.
@@ -48,7 +48,7 @@ Core callers may select
 `MCTS(horizon_rounds=1, max_sims=32, max_transitions=32, root_allocation="sequential_halving", rng=random.Random(23)).search(state, time_budget_ms=None)`.
 When this mode was added, the managed recording factory and parallel search kept
 their existing interfaces. Later revisions let `mcts_decider(root_allocation=...)` and
-`episode.py record --root-allocation` select the same serial horizon one option.
+`episode.py record --root-allocation` select the same serial `horizon-one` option.
 Parallel search still has no allocation implementation.
 
 ## What changes
@@ -73,7 +73,7 @@ visits/sum and a null mean. This final treatment is part of the candidate. The s
 does not isolate allocation while keeping every selection/tie rule identical.
 
 The simulator, reward objective, rollout and deeper tree code are unchanged. The
-new mode is restricted to horizon one. It changes the sampling policy and random
+new mode is restricted to `horizon-one`. It changes the sampling policy and random
 trajectory. It is not the earlier same trajectory action reuse optimization.
 
 The method is motivated by [Karnin, Koren and Somekh's sequential halving method](https://proceedings.mlr.press/v28/karnin13.pdf).
@@ -93,7 +93,7 @@ raw cumulative action statistics and actual simulations/transitions.
 The passive validator checks the declared schedule, phase eliminations, remainder,
 winner, action inventory and final ranking. It does not regroup phase sums to demand
 bitwise equality with a differently accumulated raw sum. No epsilon defines a tie.
-Schema 3 cannot be relabeled as an ordinary mean first report or passively extracted
+Schema 3 cannot be relabeled as an ordinary `mean-first` report or passively extracted
 as a stability cell. The old versions remain readable and keep their own semantics.
 
 Zero requested work gives a complete no work report with no search, RNG or transition.

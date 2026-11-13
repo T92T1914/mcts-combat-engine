@@ -11,12 +11,12 @@ ROOT = Path(__file__).resolve().parents[1]
 def render(report: dict) -> str:
     labels = ["random", "greedy", "one_round (8 samples/action)", "mcts (300 sims)"]
     lines = [
-        "# One-round comparator study",
+        "# One round comparator study",
         "",
-        "The one-round policy could use healing and defense that damage-only greedy "
+        "The one round policy could use healing and defense that damage only greedy "
         "ignored. It won every duel condition here, including one that MCTS "
-        "did not finish within the 30-round limit. "
-        "MCTS won more gauntlet and boss games. Random also beat the one-round "
+        "did not finish within the 30 round limit. "
+        "MCTS won more gauntlet and boss games. Random also beat the one round "
         "policy in one gauntlet repeat and one boss repeat. The new baseline "
         "makes the comparison more demanding without establishing a universal ranking.",
         "",
@@ -30,14 +30,14 @@ def render(report: dict) -> str:
         "scenario and continues it across that scenario's five games.",
         "",
         "At each decision, the new policy enumerates legal actions and samples "
-        "eight one-round successors per action. Every candidate starts from the "
+        "eight one round successors per action. Every candidate starts from the "
         "same eight sample seeds, although its subsequent draw path can differ. "
         "It uses terminal results or the existing state heuristic. This decision "
         "algorithm does not use the search tree, but it shares the simulator and "
         "heuristic with MCTS. It is not independent ground truth.",
         "",
-        "MCTS receives 300 simulations per decision, a five-round horizon and a "
-        "60-second safety cap. All runs use one process. The comparator's successor "
+        "MCTS receives 300 simulations per decision, a five round horizon and a "
+        "60 second safety cap. All runs use one process. The comparator's successor "
         "transitions and MCTS simulations are different work units. One simulation "
         "can advance several rounds, so these are unequal compute budgets and "
         "do not support an efficiency claim.",
@@ -87,7 +87,7 @@ def render(report: dict) -> str:
         cells = " | ".join("-" if value is None else f"{value:.2f}" for value in values)
         lines.append(f"| {name} | {seed} | {cells} |")
     lines += ["", "## Observed work", "",
-              "| Scenario | Seed base | One-round decisions | Successor transitions | "
+              "| Scenario | Seed base | One round decisions | Successor transitions | "
               "MCTS decisions | MCTS simulations | Shortfalls |",
               "|---|---|---|---|---|---|---|"]
     for name, seed, row in rows:
@@ -120,9 +120,9 @@ def render(report: dict) -> str:
         "when the initial seeds match. Parallel search and larger budgets were not "
         "evaluated here. No policy parameters were tuned after these results.",
         "",
-        "The zero boss wins for the one-round policy and MCTS's unfinished duel "
+        "The zero boss wins for the one round policy and MCTS's unfinished duel "
         "remain in the record. A useful next experiment would test a predeclared "
-        "set of new environment seeds with matched transition or elapsed-work "
+        "set of new environment seeds with matched transition or elapsed work "
         "accounting. "
         "The historical reports remain separate and unchanged.",
     ]
