@@ -26,14 +26,6 @@ Use Link to this example in the browser demo to share the selected result.
 The URL keeps the example's visible label, and Back and Forward restore earlier
 selections. These links inspect saved evidence. They do not run a new calculation.
 
-The action inspector starts in Obscur. Auto follows the system appearance, and
-an explicit Auto, Clair or Obscur choice stays local to this project. Switching keeps the
-selected action, metrics and share link. The original recorded diagram and JSON
-stay unchanged. Inter is used when installed locally, with a system font fallback
-for other visitors and no remote font download. Code keeps its monospace font.
-The generated site's [presentation record](https://t92t1914.github.io/mcts-combat-engine/presentation.json)
-separates the page revision from the source revision of the saved decision.
-
 ## Run it
 
 Python 3.11+. No installation is needed to run the example or standard library tests from a checkout.
@@ -374,6 +366,14 @@ rankings and random generator states. Cost was spread across legal actions,
 hashing, tree traversal and simulator operations. The bounded result did not
 justify a native port, so the Python reference remains unchanged. The report
 retains the full profile and the limits of that decision to leave the implementation unchanged.
+
+The action inspector starts in Obscur. Auto follows the system appearance, and
+an explicit Auto, Clair or Obscur choice stays local to this project. Switching keeps the
+selected action, metrics and share link. The original recorded diagram and JSON
+stay unchanged. Inter is used when installed locally, with a system font fallback
+for other visitors and no remote font download. Code keeps its monospace font.
+The generated site's [presentation record](https://t92t1914.github.io/mcts-combat-engine/presentation.json)
+separates the page revision from the source revision of the saved decision.
 
 ## How it works
 
